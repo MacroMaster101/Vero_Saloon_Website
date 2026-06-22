@@ -1,0 +1,12 @@
+# GitGuardian config — https://docs.gitguardian.com/ggshield-docs/reference
+# Test files contain SYNTHETIC fixtures (fake passwords used to exercise
+# password-validation logic), never real credentials. Excluded from scanning
+# to avoid false positives.
+version: 2
+
+secret:
+  ignored-paths:
+    - 'tests/**'
+  ignored-matches:
+    - name: synthetic password fixtures in password.test.ts
+      # placeholder; GitGuardian fills the match hash when you resolve the alert

@@ -1,0 +1,41 @@
+'use client';
+import type { Service } from '@/lib/supabase/types';
+import { serviceIcon } from '@/lib/icons';
+import { money } from '@/lib/format';
+
+export function StepService({
+  services,
+  selectedId,
+  onSelect,
+}: {
+  services: Service[];
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+}) {
+  return (
+    <div className="step active" data-step="0">
+      <h3 className="step__title">What are you booking?</h3>
+      <p className="step__hint">Pick one — you can add notes for your stylist at the end.</p>
+      <div className="choices" id="serviceList">
+        {services.map((s) => (
+          <button
+            type="button"
+            key={s.id}
+            className={`choice${selectedId === s.id ? ' sel' : ''}`}
+            onClick={() => onSelect(s.id)}
+            aria-pressed={selectedId === s.id}
+          >
+            <span className="choice__ic">{serviceIcon(s.icon)}</span>
+            <span className="choice__txt">
+              <b>{s.name}</b>
+              <small>
+                {s.description} · {s.duration_min} min
+              </small>
+            </span>
+            <span className="choice__price">{money(s.price_lkr)}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
