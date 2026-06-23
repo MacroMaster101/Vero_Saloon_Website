@@ -28,6 +28,7 @@ export interface Database {
           bookable: boolean;
           sort_order: number;
           is_active: boolean;
+          is_featured: boolean;
         };
         Insert: {
           id?: string;
@@ -41,6 +42,7 @@ export interface Database {
           bookable?: boolean;
           sort_order?: number;
           is_active?: boolean;
+          is_featured?: boolean;
         };
         Update: Partial<Database['public']['Tables']['services']['Insert']>;
         Relationships: [];

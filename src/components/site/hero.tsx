@@ -1,38 +1,31 @@
 'use client';
 import { useEffect, useRef } from 'react';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { SplineHero } from './spline-hero';
 import { BLOCK_DEFAULTS, type HeroContent } from '@/lib/content/blocks';
 
 export function Hero({ content = BLOCK_DEFAULTS.hero }: { content?: HeroContent }) {
   const heroRef = useRef<HTMLElement>(null);
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const rx = useSpring(useTransform(my, [-0.5, 0.5], [6, -6]), { stiffness: 150, damping: 18 });
+  const ry = useSpring(useTransform(mx, [-0.5, 0.5], [-8, 8]), { stiffness: 150, damping: 18 });
 
   useEffect(() => {
     const hero = heroRef.current;
     if (!hero) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      hero.classList.add('ehero--in');
-      return;
-    }
-    // staggered entrance (double-rAF so initial hidden state paints first)
-    requestAnimationFrame(() =>
-      requestAnimationFrame(() => hero.classList.add('ehero--in')),
-    );
-
-    // subtle parallax drift on the centerpiece
-    const stage = hero.querySelector<HTMLElement>('.ehero__stage');
-    if (!stage) return;
-    let ticking = false;
-    const onScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        stage.style.transform = `translateY(${window.scrollY * 0.08}px)`;
-        ticking = false;
-      });
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) { hero.classList.add('ehero--in'); return; }
+    requestAnimationFrame(() => requestAnimationFrame(() => hero.classList.add('ehero--in')));
   }, []);
+
+  const onMove = (e: React.PointerEvent) => {
+    if (e.pointerType !== 'mouse') return;
+    const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    mx.set((e.clientX - r.left) / r.width - 0.5);
+    my.set((e.clientY - r.top) / r.height - 0.5);
+  };
+  const onLeave = () => { mx.set(0); my.set(0); };
 
   return (
     <section className="ehero" ref={heroRef}>
@@ -47,9 +40,7 @@ export function Hero({ content = BLOCK_DEFAULTS.hero }: { content?: HeroContent 
           <p className="ehero__lead">{content.lead}</p>
           <div className="ehero__actions">
             <a href="#book" className="btn btn--primary btn--lg">Reserve your visit</a>
-            <a href="#services" className="ehero__link">
-              Explore the menu <span aria-hidden="true">→</span>
-            </a>
+            <a href="#services" className="ehero__link">Explore the menu <span aria-hidden="true">→</span></a>
           </div>
           <dl className="ehero__facts">
             <div><dt>Rated</dt><dd>4.9 ★ Google</dd></div>
@@ -58,15 +49,15 @@ export function Hero({ content = BLOCK_DEFAULTS.hero }: { content?: HeroContent 
           </dl>
         </div>
 
-        <div className="ehero__stage">
+        <motion.div className="ehero__stage" onPointerMove={onMove} onPointerLeave={onLeave}
+          style={{ rotateX: rx, rotateY: ry, transformPerspective: 900 }}>
           <span className="ehero__vlabel">Vero — Hair &amp; Beauty</span>
           <div className="ehero__frame">
             <SplineHero />
           </div>
           <span className="ehero__caption">01 — A studio built around you</span>
-        </div>
+        </motion.div>
       </div>
-
       <div className="ehero__scroll"><span>Scroll</span><i /></div>
     </section>
   );

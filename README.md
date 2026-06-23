@@ -37,11 +37,15 @@
 | 📅 | **4-step booking** — service → stylist → date & time → details, with real server-side availability |
 | 🔒 | **Race-proof slots** — a Postgres `EXCLUDE` constraint makes double-booking impossible |
 | 🔑 | **Accounts & auth** — split-screen **login** + **signup** (email/password with live password-strength rules, or Google OAuth), email-confirmation flow |
-| 👤 | **Customer account** — sidebar dashboard: profile, bookings history, member-since/last-sign-in, account deletion |
+| 👤 | **Customer account** — sidebar dashboard: profile, avatar upload (DiceBear fallback), bookings history, member-since/last-sign-in, account deletion |
+| ⭐ | **Ratings & reviews** — customers rate their own **completed** visits; the stylist's running average is recomputed app-side (shared with the mobile app), and admins moderate reviews |
 | 🧑‍🤝‍🧑 | **Roles** — `user` / `staff` / `admin`, enforced by Supabase RLS; admins manage roles & stylist links in **People** |
 | 📧 | **Email confirmations** — via Resend, with a pluggable SMS stub for later |
-| 🛠️ | **Admin & staff dashboard** — sidebar shell, live bookings (Realtime), status controls, searchable/filterable lists, blocked-slot management, staff "my schedule" |
-| ✅ | **Tested** — Vitest unit + integration and a Playwright end-to-end booking flow |
+| ✍️ | **Editable site content** — homepage copy lives in a `site_content` table and is editable from the admin **Content** page (no redeploy needed) |
+| 🛠️ | **Admin dashboard** — sidebar shell with live bookings (Realtime), status controls, searchable/filterable lists, and full CRUD for **Services**, **Stylists**, **Gallery**, **Content**, **Reviews**, **People**, **Schedule** & **Blocked slots** |
+| 🧑‍🔧 | **Staff dashboard** — staff see only their own RLS-scoped **My schedule** and today's bookings, with the same search/filter toolbar |
+| 🔏 | **Privacy-aware deletion** — account deletion anonymizes past bookings (strips PII, keeps business records) via a `security definer` DB function |
+| ✅ | **Tested** — Vitest unit + integration (availability, schemas, roles, reviews, …) and a Playwright end-to-end booking flow |
 
 ---
 
@@ -94,8 +98,11 @@ npm install
 Apply the migrations with the Supabase CLI using a direct DB connection string (no `supabase login` needed):
 
 ```bash
-# 0001_init.sql     — tables, RLS, the double-booking EXCLUDE constraint
-# 0002_realtime.sql — adds `bookings` to the realtime publication
+# 0001_init.sql           — core tables, RLS, the double-booking EXCLUDE constraint
+# 0002_realtime.sql       — adds `bookings` to the realtime publication
+# 0003_auth_roles.sql     — `profiles` table (role + stylist link) and role RLS
+# 0004_data_retention.sql — anonymize_user_bookings() for privacy-safe deletion
+# 0005_site_content.sql   — `site_content` key/value table for editable copy
 npx supabase db push --db-url "postgresql://postgres:<DB_PASSWORD>@db.<ref>.supabase.co:5432/postgres"
 ```
 
@@ -156,8 +163,11 @@ npm run e2e        # 🎭 Playwright e2e (run `npm run build` first)
 - 🧮 **Availability** (`lib/availability.ts`) — a pure, unit-tested function: given business hours, a service duration, and busy intervals (confirmed bookings + blocked slots), it returns open start times. The `getAvailability` server action feeds it real data; "any stylist" unions every stylist's openings.
 - 🔒 **Double-booking protection** — enforced in Postgres by a GiST `EXCLUDE` constraint, so two confirmed bookings for the same stylist can't overlap. `createBooking` catches the violation (`23P01`) and returns a graceful "slot just taken." Price & duration are always re-derived from the DB — never trusted from the client.
 - 📨 **Notifications** (`lib/notify/`) — go through a `Notifier` interface. Resend sends the email; an SMS stub logs a placeholder. Email no-ops safely when `RESEND_API_KEY` is unset, so bookings still succeed without it.
-- 🔑 **Auth & accounts** — `/login` and `/signup` (split-screen) use Supabase email/password or Google OAuth; both flow through `/auth/callback`. Signup enforces password rules (`lib/auth/password.ts`) on the client *and* server. `safeNext` sanitizes every post-login redirect; `roleDefaultPath` sends each role to its home. `/account` is a sidebar dashboard (profile, bookings, account deletion).
-- 🛠️ **Admin & staff** (`/admin`) — guarded by `requireRole`; a sidebar shell with role-scoped nav. Admins see all bookings (live via Supabase Realtime) with status controls, a searchable/filterable table, **People** (role + stylist management), and blocked-slot management. Staff see only **My schedule** — their own RLS-scoped bookings — with the same search/filter toolbar.
+- 🔑 **Auth & accounts** — `/login` and `/signup` (split-screen) use Supabase email/password or Google OAuth; both flow through `/auth/callback`. Signup enforces password rules (`lib/auth/password.ts`) on the client *and* server. `safeNext` sanitizes every post-login redirect; `roleDefaultPath` sends each role to its home. `/account` is a sidebar dashboard (profile, avatar upload, bookings, account deletion). Avatars resolve via `lib/avatar.ts` — an uploaded photo wins, otherwise a deterministic DiceBear fallback seeded by email/name.
+- ⭐ **Ratings & reviews** (`lib/reviews.ts`, `account/review-actions.ts`) — a customer may review only their **own completed** booking; ownership and state are re-verified server-side. The stylist's running average is recomputed app-side (`computeUpdatedRating` / `computeRemovedRating`) to match the mobile app that shares the same database, and the pure helpers are unit-tested.
+- ✍️ **Editable content** (`lib/content/`) — homepage copy is stored per-block in the `site_content` table; `blocks.ts` defines each block's shape, `get.ts` fetches, and `merge.ts` overlays saved values onto defaults so the site renders even before anything is edited. Admins edit it from **Admin → Content**.
+- 🔏 **Privacy & deletion** — deleting an account calls the `anonymize_user_bookings()` `security definer` function (migration `0004`), which strips PII from past bookings while keeping the rows for business records.
+- 🛠️ **Admin & staff** (`/admin`) — guarded by `requireRole`; a sidebar shell with role-scoped nav. Admins see all bookings (live via Supabase Realtime) with status controls and a searchable/filterable table, plus full management of **Services**, **Stylists**, **Gallery**, **Content**, **Reviews**, **People** (role + stylist links), **Schedule** and **Blocked slots**. Staff see only **My schedule** — their own RLS-scoped bookings — with the same search/filter toolbar.
 
 ---
 
@@ -166,16 +176,21 @@ npm run e2e        # 🎭 Playwright e2e (run `npm run build` first)
 ```
 app/                   # 🧭 routes: public page, /book actions
   login/ · signup/     # 🔑 split-screen auth (email/password + Google)
-  account/             # 👤 customer sidebar dashboard (profile, bookings, delete)
-  admin/(protected)/   # 🛠️ role-guarded shell: dashboard, people, schedule, blocked-slots
+  account/             # 👤 customer dashboard (profile, avatar, bookings, reviews, delete)
+  admin/(protected)/   # 🛠️ role-guarded shell: dashboard, services, stylists, gallery,
+                       #     content, reviews, people, schedule, blocked-slots
+  staff/               # 🧑‍🔧 staff "my schedule" + today view
   auth/callback/       # 🔁 OAuth + email-confirmation handler
 components/site/        # 🎨 marketing sections (hero, lookbook, services, …)
 components/booking/     # 📅 4-step wizard
-components/admin/       # 🛠️ bookings table, list-toolbar (search/filter), block form
+components/admin/       # 🛠️ bookings table, list-toolbar (search/filter), block/image forms
+components/reviews/     # ⭐ star row + review list
 components/ui/          # 🧩 shared primitives (size-constrained Icon, …)
 lib/                    # 🧰 availability, time, validators, queries, notify, supabase clients
 lib/auth/              # 🔐 password rules, redirect-safety (safeNext), roles
-supabase/migrations/    # 🗄️ schema + RLS + realtime
+lib/content/           # ✍️ editable site-content blocks (get / merge / shapes)
+lib/reviews.ts          # ⭐ pure rating-average helpers (unit-tested)
+supabase/migrations/    # 🗄️ schema + RLS + realtime + roles + retention + content (0001–0005)
 supabase/seed.sql       # 🌱 real Vero data
 tests/                  # 🧪 vitest unit/integration; tests/e2e Playwright
 ```

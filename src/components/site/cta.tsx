@@ -1,4 +1,5 @@
 import { BLOCK_DEFAULTS, type CtaContent } from '@/lib/content/blocks';
+import { MagneticButton } from './magnetic-button';
 
 export function Cta({ content = BLOCK_DEFAULTS.cta }: { content?: CtaContent }) {
   return (
@@ -8,7 +9,7 @@ export function Cta({ content = BLOCK_DEFAULTS.cta }: { content?: CtaContent }) 
         <h2 className="cta__title">{content.title}</h2>
         <p className="cta__sub">{content.sub}</p>
         <div className="cta__actions">
-          <a href="#book" className="btn btn--primary btn--lg">Book your visit</a>
+          <MagneticButton href="#book" className="btn btn--primary btn--lg">Book your visit</MagneticButton>
           <a href={content.phoneHref} className="btn btn--ghost-light btn--lg">{content.phoneLabel}</a>
         </div>
       </div>

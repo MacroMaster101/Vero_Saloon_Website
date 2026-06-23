@@ -15,15 +15,17 @@ import { Visit } from '@/components/site/visit';
 import { Cta } from '@/components/site/cta';
 import { Footer } from '@/components/site/footer';
 import { BottomNav } from '@/components/site/bottom-nav';
+import { MobileHome } from '@/components/site/mobile-home';
+import { ReviewsSection } from '@/components/site/reviews-section';
 import { BookingWizard } from '@/components/booking/booking-wizard';
 import { LoadingScreen } from '@/components/site/loading-screen';
-import { getGallery, getBookableServices, getStylists } from '@/lib/queries';
+import { getGallery, getBookableServices, getStylists, getRecentReviews } from '@/lib/queries';
 import { getSiteContent } from '@/lib/content/get';
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ deleted?: string }> }) {
   const sp = await searchParams;
   const deleted = sp.deleted === '1';
-  const [gallery, services, stylists, quote, cta, story, hero, stats, contact] = await Promise.all([
+  const [gallery, services, stylists, quote, cta, story, hero, stats, contact, recentReviews] = await Promise.all([
     getGallery(),
     getBookableServices(),
     getStylists(),
@@ -33,6 +35,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
     getSiteContent('hero'),
     getSiteContent('stats'),
     getSiteContent('contact'),
+    getRecentReviews(),
   ]);
   return (
     <>
@@ -47,10 +50,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
       <RevealObserver />
       <Nav />
       <main id="top">
-        <Hero content={hero} />
+        <MobileHome services={services} stylists={stylists} />
+        <div className="is-desktop-only"><Hero content={hero} /></div>
         <Marquee />
-        <Stats content={stats} />
-        <Services />
+        <div className="is-desktop-only"><Stats content={stats} /></div>
+        <div className="is-desktop-only"><Services /></div>
         <Lookbook items={gallery} />
         <HowItWorks />
         <section className="section booking" id="book">
@@ -67,9 +71,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
             <BookingWizard services={services} stylists={stylists} />
           </div>
         </section>
-        <Stylists />
+        <div className="is-desktop-only"><Stylists /></div>
         <Story content={story} />
         <Quote content={quote} />
+        <ReviewsSection reviews={recentReviews} />
         <Visit content={contact} />
         <Cta content={cta} />
       </main>

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 
-function getFallbackImage(src: string | null | undefined, alt: string): string | null {
+export function getFallbackImage(src: string | null | undefined, alt: string): string | null {
   if (src && src.trim() !== '') {
     return src;
   }

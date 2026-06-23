@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { poppins } from '@/lib/fonts';
+import { poppins, fraunces } from '@/lib/fonts';
 import { ThemeScript } from '@/components/theme/theme-script';
 import './globals.css';
 
@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <head><ThemeScript /></head>
-      <body className={poppins.variable}>{children}</body>
+      <body className={`${poppins.variable} ${fraunces.variable}`}>{children}</body>
     </html>
   );
 }

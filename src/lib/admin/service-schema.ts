@@ -20,6 +20,7 @@ export const serviceInputSchema = z
     icon: z.string().trim().min(1).default('scissors'),
     bookable: z.coerce.boolean().default(true),
     is_active: z.coerce.boolean().default(true),
+    is_featured: z.coerce.boolean().default(false),
     sort_order: numberFromForm.int().default(0),
   })
   .transform((v) => ({ ...v, slug: v.slug ? slugify(v.slug) : slugify(v.name) }));

@@ -14,10 +14,11 @@ export async function Stylists() {
           <p className="lead">A friendly, skilled team for hair, colour and beauty — book by name, or let us match you with whoever&apos;s free.</p>
         </div>
         <div className="team reveal">
-          {stylists.map((s) => (
-            <article className="barber" key={s.id}>
+          {stylists.map((s, i) => (
+            <article className={`barber${i === 0 ? ' barber--feature' : ''}`} key={s.id}>
               <ImgSlot src={s.avatar_url} alt={s.name} />
               <div className="barber__body">
+                {i === 0 && <span className="barber__lead-tag">Lead stylist</span>}
                 <h4>{s.name}</h4>
                 <div className="barber__role">{s.role}</div>
                 <div className="barber__tags">
