@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { safeNext } from '@/lib/auth/redirect';
 import { env } from '@/lib/env';
-import { landingPathForRole } from '@/lib/auth/roles';
+import { routeForSession } from '@/lib/auth/routing';
 import { getProfile } from '@/lib/supabase/auth';
 
 export async function signInWithGoogle(formData: FormData): Promise<void> {
@@ -22,7 +22,6 @@ export async function signInWithPassword(_prev: unknown, formData: FormData): Pr
   const explicitNext = safeNext(String(formData.get('next') ?? ''));
   const { error } = await sb.auth.signInWithPassword({ email, password });
   if (error) return { error: error.message };
-  if (explicitNext) redirect(explicitNext);
   const profile = await getProfile();
-  redirect(landingPathForRole(profile?.role ?? null));
+  redirect(routeForSession(profile?.role ?? null, profile?.stylistId ?? null, false, explicitNext));
 }

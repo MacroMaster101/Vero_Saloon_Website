@@ -31,6 +31,7 @@ function ServiceFields({ s }: { s?: Service }) {
       <Field label="Sort order"><TextInput name="sort_order" type="number" defaultValue={s?.sort_order ?? 0} /></Field>
       <Switch name="bookable" label="Bookable" defaultChecked={s?.bookable ?? true} />
       <Switch name="is_active" label="Active (shown on site)" defaultChecked={s?.is_active ?? true} />
+      <Switch name="is_featured" label="Featured (highlighted in the app)" defaultChecked={s?.is_featured ?? false} />
     </>
   );
 }
@@ -59,7 +60,7 @@ function EditRow({ s }: { s: Service }) {
     <li className="arow">
       <div className="arow__head">
         <span className="arow__name">{s.name}</span>
-        <span className="arow__meta">{money(s.price_lkr)} · {durationLabel(s.duration_min)} · {s.category}{s.is_active ? '' : ' · hidden'}</span>
+        <span className="arow__meta">{money(s.price_lkr)} · {durationLabel(s.duration_min)} · {s.category}{s.is_featured ? ' · featured' : ''}{s.is_active ? '' : ' · hidden'}</span>
       </div>
       <div className="arow__actions">
         <details className="arow__edit">
@@ -91,6 +92,7 @@ export function ServicesList({ services }: { services: Service[] }) {
     { id: 'all', label: 'All', match: () => true },
     { id: 'hair', label: 'Hair', match: (s) => s.category === 'hair' },
     { id: 'beauty', label: 'Beauty', match: (s) => s.category === 'beauty' },
+    { id: 'featured', label: 'Featured', match: (s) => s.is_featured },
     { id: 'hidden', label: 'Hidden', match: (s) => !s.is_active },
   ];
   return (
