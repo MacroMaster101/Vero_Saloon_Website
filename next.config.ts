@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   turbopack: { root: __dirname },
+  // Hide the floating Next.js dev badge in the corner during `next dev`.
+  devIndicators: false,
   images: {
     // DiceBear is the avatar fallback for stylists/users (see lib/avatar.ts).
     // Its avatars are SVG, so allow SVG but sandbox it with a strict CSP.

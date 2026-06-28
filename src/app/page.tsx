@@ -22,11 +22,17 @@ import {
 } from '@/lib/queries';
 import type { Service } from '@/lib/supabase/types';
 
+// One link per on-page section, in DOM (top→bottom) order so the scroll-spy
+// highlight moves left → right as you scroll. Keep these ids in sync with the
+// section ids in this file AND with SECTIONS in home-effects.tsx.
 const NAV_LINKS = [
-  { href: '#how', label: 'How it works' },
+  { href: '#about', label: 'Story' },
   { href: '#services', label: 'Services' },
+  { href: '#how', label: 'How it works' },
   { href: '#looks', label: 'Lookbook' },
   { href: '#team', label: 'Stylists' },
+  { href: '#reviews', label: 'Reviews' },
+  { href: '#faq', label: 'FAQ' },
   { href: '#visit', label: 'Visit' },
 ];
 

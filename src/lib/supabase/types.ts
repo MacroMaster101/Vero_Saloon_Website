@@ -25,6 +25,7 @@ export interface Database {
           price_lkr: number;
           duration_min: number;
           icon: string;
+          image_url: string | null;
           bookable: boolean;
           sort_order: number;
           is_active: boolean;
@@ -39,6 +40,7 @@ export interface Database {
           price_lkr: number;
           duration_min: number;
           icon?: string;
+          image_url?: string | null;
           bookable?: boolean;
           sort_order?: number;
           is_active?: boolean;

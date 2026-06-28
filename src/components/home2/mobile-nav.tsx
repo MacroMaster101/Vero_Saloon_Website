@@ -2,11 +2,15 @@
 import { useEffect, useState } from 'react';
 import { BookButton } from '@/components/site/book-button';
 
+// Keep in sync with NAV_LINKS in page.tsx (one entry per on-page section).
 const LINKS = [
-  { href: '#how', label: 'How it works' },
+  { href: '#about', label: 'Story' },
   { href: '#services', label: 'Services' },
+  { href: '#how', label: 'How it works' },
   { href: '#looks', label: 'Lookbook' },
   { href: '#team', label: 'Stylists' },
+  { href: '#reviews', label: 'Reviews' },
+  { href: '#faq', label: 'FAQ' },
   { href: '#visit', label: 'Visit' },
 ];
 

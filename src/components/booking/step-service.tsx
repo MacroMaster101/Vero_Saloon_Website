@@ -2,6 +2,7 @@
 import type { Service } from '@/lib/supabase/types';
 import { serviceIcon } from '@/lib/icons';
 import { money } from '@/lib/format';
+import { servicePhoto } from '@/lib/service-photo';
 
 export function StepService({
   services,
@@ -25,7 +26,22 @@ export function StepService({
             onClick={() => onSelect(s.id)}
             aria-pressed={selectedId === s.id}
           >
-            <span className="choice__ic">{serviceIcon(s.icon)}</span>
+            {(() => {
+              const photo = servicePhoto(s);
+              return (
+                // eslint-disable-next-line @next/next/no-img-element -- local default + remote admin uploads; site uses plain <img>
+                <img
+                  className="choice__photo"
+                  src={photo.type === 'img' ? photo.src : ''}
+                  alt=""
+                  onError={(e) => {
+                    // graceful fallback: swap a broken photo for the neutral default tile
+                    const el = e.currentTarget;
+                    if (!el.dataset.fallback) { el.dataset.fallback = '1'; el.src = '/images/services/hair.png'; }
+                  }}
+                />
+              );
+            })()}
             <span className="choice__txt">
               <b>{s.name}</b>
               <small>

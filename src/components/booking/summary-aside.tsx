@@ -6,12 +6,25 @@ export function SummaryAside({
   service,
   stylistLabel,
   whenLabel,
+  variant = 'full',
 }: {
   service: Service | null;
   /** null = not chosen yet, otherwise the label ("Any available" / a name) */
   stylistLabel: string | null;
   whenLabel: string | null;
+  variant?: 'full' | 'bar';
 }) {
+  if (variant === 'bar') {
+    return (
+      <div className="book__bar">
+        <div className="book__bar-info">
+          <b>{service ? service.name : 'Select a service'}</b>
+          <small>{stylistLabel ?? 'Any available'} · {whenLabel ?? 'pick a time'}</small>
+        </div>
+        <div className="book__bar-total">{money(service?.price_lkr ?? 0)}</div>
+      </div>
+    );
+  }
   return (
     <aside className="book__aside">
       <span className="eyebrow gold summary__eyebrow">Your appointment</span>
