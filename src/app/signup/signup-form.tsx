@@ -26,7 +26,7 @@ export function SignupForm({ next }: { next: string }) {
   const loginHref = next ? `/login?next=${encodeURIComponent(next)}` : '/login';
 
   const check = checkPassword(pw);
-  const barColor = check.score <= 2 ? 'var(--error)' : check.score <= 4 ? 'var(--accent)' : '#167f48';
+  const barColor = check.score <= 2 ? 'var(--error)' : check.score <= 4 ? 'var(--accent)' : 'var(--success)';
   const matches = confirm.length > 0 && pw === confirm;
 
   if (state && 'ok' in state) {
