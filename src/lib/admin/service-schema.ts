@@ -18,6 +18,7 @@ export const serviceInputSchema = z
     price_lkr: numberFromForm.int().min(0, 'Price cannot be negative'),
     duration_min: numberFromForm.int().positive('Duration must be greater than 0'),
     icon: z.string().trim().min(1).default('scissors'),
+    image_url: z.string().trim().default(''),
     bookable: z.coerce.boolean().default(true),
     is_active: z.coerce.boolean().default(true),
     is_featured: z.coerce.boolean().default(false),

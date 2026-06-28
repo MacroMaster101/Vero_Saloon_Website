@@ -2,18 +2,21 @@
 
 import { useEffect, useState } from 'react';
 
+/* Must be in true DOM (top-to-bottom) order so the scroll-spy lights up the
+   right link. These ids mirror NAV_LINKS in page.tsx (plus 'top' for the hero). */
 const SECTIONS = [
   { id: 'top', label: 'Home' },
-  { id: 'how', label: 'How it works' },
+  { id: 'about', label: 'Story' },
   { id: 'services', label: 'Services' },
+  { id: 'how', label: 'How it works' },
   { id: 'looks', label: 'Lookbook' },
   { id: 'team', label: 'Stylists' },
+  { id: 'reviews', label: 'Reviews' },
   { id: 'faq', label: 'FAQ' },
   { id: 'visit', label: 'Visit' },
 ];
 
 export function HomeEffects() {
-  const [activeSection, setActiveSection] = useState('top');
   const [scrollProgress, setScrollProgress] = useState(0);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
@@ -36,26 +39,31 @@ export function HomeEffects() {
         header.classList.toggle('is-scrolled', window.scrollY > 12);
       }
 
-      // 2. Active section highlights
+      // 2. Active section highlights — viewport-relative, robust top→bottom.
+      // A section is "current" once its top crosses a line ~32% down the screen
+      // (just below the sticky pill). Iterating in DOM order, the last match wins.
       let current = 'top';
-      const spyOffset = window.innerHeight * 0.4; // 40% of viewport height
-      const scrollPos = window.scrollY + spyOffset;
-      
+      const line = window.innerHeight * 0.32;
+
       for (const section of SECTIONS) {
         const el = document.getElementById(section.id);
-        if (el) {
-          if (scrollPos >= el.offsetTop) {
-            current = section.id;
-          }
+        if (el && el.getBoundingClientRect().top <= line) {
+          current = section.id;
         }
       }
-      
-      // Fallback: force last section when scrolled to absolute bottom
-      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 40) {
-        current = 'visit';
+
+      // Fallback: force the last nav section when scrolled to the very bottom,
+      // so short final sections still light their link.
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) {
+        current = SECTIONS[SECTIONS.length - 1]?.id ?? current;
       }
-      
-      setActiveSection(current);
+
+      // Apply active class directly — robust against nav re-renders.
+      const navLinks = document.querySelectorAll('.v2-nav a');
+      navLinks.forEach((link) => {
+        const href = link.getAttribute('href');
+        link.classList.toggle('is-active', href === `#${current}`);
+      });
 
       // 3. Scroll progress percentage
       const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
@@ -66,6 +74,22 @@ export function HomeEffects() {
 
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
+
+    // Smooth-scroll in-page #links, offset for the floating pill, keep the #hash.
+    const onAnchorClick = (e: MouseEvent) => {
+      const target = (e.target as HTMLElement)?.closest('a[href^="#"]') as HTMLAnchorElement | null;
+      if (!target) return;
+      const hash = target.getAttribute('href') ?? '';
+      const id = hash.slice(1);
+      if (!id) return;
+      const el = id === 'top' ? document.body : document.getElementById(id);
+      if (!el) return;
+      e.preventDefault();
+      const y = id === 'top' ? 0 : el.getBoundingClientRect().top + window.scrollY - 88;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+      history.replaceState(null, '', hash); // reflect #section in the URL
+    };
+    document.addEventListener('click', onAnchorClick);
 
     // 4. Reveal elements in viewport
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -91,60 +115,20 @@ export function HomeEffects() {
 
     return () => {
       window.removeEventListener('scroll', onScroll);
+      document.removeEventListener('click', onAnchorClick);
       if (io) io.disconnect();
     };
   }, []);
-
-  // Update header desktop links active state
-  useEffect(() => {
-    const navLinks = document.querySelectorAll('.v2-nav a');
-    navLinks.forEach((link) => {
-      const href = link.getAttribute('href');
-      if (href === `#${activeSection}` || (activeSection === 'top' && href === '#top')) {
-        link.classList.add('is-active');
-      } else {
-        link.classList.remove('is-active');
-      }
-    });
-  }, [activeSection]);
-
-  const handleDotClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
-    e.preventDefault();
-    const el = document.getElementById(id);
-    if (el) {
-      const offset = id === 'top' ? 0 : el.offsetTop - 76;
-      window.scrollTo({
-        top: offset,
-        behavior: 'smooth',
-      });
-    }
-  };
 
   if (!mounted) return null;
 
   return (
     <>
       {/* ── Top Scroll Progress Bar ── */}
-      <div 
-        className="v2-scroll-progress" 
-        style={{ width: `${scrollProgress}%` }} 
+      <div
+        className="v2-scroll-progress"
+        style={{ width: `${scrollProgress}%` }}
       />
-
-      {/* ── Floating Desktop Side Dots Navigator ── */}
-      <nav className="v2-dots-nav" aria-label="Section navigation">
-        {SECTIONS.map((sec) => (
-          <a
-            key={sec.id}
-            href={`#${sec.id}`}
-            onClick={(e) => handleDotClick(e, sec.id)}
-            className={`v2-dot-nav-item ${activeSection === sec.id ? 'is-active' : ''}`}
-            title={sec.label}
-          >
-            <span className="dot" />
-            <span className="label">{sec.label}</span>
-          </a>
-        ))}
-      </nav>
 
       {/* ── Luxury Load Splash Screen ── */}
       {loading && (

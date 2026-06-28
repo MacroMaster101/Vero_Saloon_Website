@@ -192,6 +192,7 @@ export function BookingWizard({ services, stylists }: { services: Service[]; sty
   return (
     <>
     <div className="book__card reveal in" id="bookCard">
+      <SummaryAside service={service} stylistLabel={stylistLabel} whenLabel={whenLabel} variant="bar" />
       <div className="book__main">
         <div className="steps" id="steps">
           {STEP_LABELS.map((label, i) => {

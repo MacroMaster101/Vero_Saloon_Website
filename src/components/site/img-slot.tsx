@@ -66,12 +66,14 @@ export function ImgSlot({ src, alt, className, priority = false }: { src?: strin
         />
       )}
       
-      <Image 
-        src={imageSrc} 
-        alt={alt} 
-        fill 
+      <Image
+        src={imageSrc}
+        alt={alt}
+        fill
         priority={priority}
-        sizes="(max-width: 980px) 100vw, 33vw" 
+        loading={priority ? 'eager' : 'lazy'}
+        fetchPriority={priority ? 'high' : 'auto'}
+        sizes="(max-width: 980px) 100vw, 33vw"
         onLoad={() => setIsLoaded(true)}
         style={{ 
           objectFit: 'cover',

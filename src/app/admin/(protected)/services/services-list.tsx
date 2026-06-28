@@ -2,6 +2,7 @@
 import { useActionState } from 'react';
 import { ListToolbar, type FilterChip } from '@/components/admin/list-toolbar';
 import { Field, TextInput, Segmented, Switch, SubmitButton, FormStatus } from '@/components/admin/form-kit';
+import { ImageField } from '@/components/admin/image-field';
 import { createService, updateService, deleteService } from './actions';
 import { money } from '@/lib/format';
 import type { Service } from '@/lib/supabase/types';
@@ -28,6 +29,7 @@ function ServiceFields({ s }: { s?: Service }) {
         <Field label="Duration (min)"><TextInput name="duration_min" type="number" min={1} defaultValue={s?.duration_min ?? 30} required /></Field>
       </div>
       <Field label="Icon"><TextInput name="icon" defaultValue={s?.icon ?? 'scissors'} /></Field>
+      <ImageField name="image_url" label="Service photo" defaultValue={s?.image_url ?? ''} />
       <Field label="Sort order"><TextInput name="sort_order" type="number" defaultValue={s?.sort_order ?? 0} /></Field>
       <Switch name="bookable" label="Bookable" defaultChecked={s?.bookable ?? true} />
       <Switch name="is_active" label="Active (shown on site)" defaultChecked={s?.is_active ?? true} />
