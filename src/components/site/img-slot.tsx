@@ -38,7 +38,7 @@ export function getFallbackImage(src: string | null | undefined, alt: string): s
   return null;
 }
 
-export function ImgSlot({ src, alt, className }: { src?: string | null; alt: string; className?: string }) {
+export function ImgSlot({ src, alt, className, priority = false }: { src?: string | null; alt: string; className?: string; priority?: boolean }) {
   const [isLoaded, setIsLoaded] = useState(false);
   const imageSrc = getFallbackImage(src, alt);
 
@@ -51,7 +51,7 @@ export function ImgSlot({ src, alt, className }: { src?: string | null; alt: str
   }
 
   return (
-    <div className={`img-slot ${className ?? ''}`} style={{ position: 'relative', overflow: 'hidden', backgroundColor: 'rgba(21, 13, 14, 0.3)' }}>
+    <div className={`img-slot ${className ?? ''}`} style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden', backgroundColor: 'rgba(21, 13, 14, 0.3)' }}>
       {/* Skeleton / Blur Loading Placeholder */}
       {!isLoaded && (
         <div 
@@ -70,6 +70,7 @@ export function ImgSlot({ src, alt, className }: { src?: string | null; alt: str
         src={imageSrc} 
         alt={alt} 
         fill 
+        priority={priority}
         sizes="(max-width: 980px) 100vw, 33vw" 
         onLoad={() => setIsLoaded(true)}
         style={{ 

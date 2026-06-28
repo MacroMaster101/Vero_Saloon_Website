@@ -3,6 +3,7 @@ import { useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { Icon, type IconName } from '@/components/ui/icon';
 import { signOut } from '@/app/admin/actions';
+import { ThemeToggle } from '@/components/theme/theme-toggle';
 
 type Tab = 'profile' | 'bookings' | 'settings';
 const NAV: { id: Tab; label: string; icon: IconName }[] = [
@@ -48,6 +49,7 @@ export function AccountTabs({
         </nav>
         <div className="side__foot">
           <form action={signOut}><button className="btn btn--ghost" type="submit"><Icon name="logout" className="ic" /> Sign out</button></form>
+          <ThemeToggle />
         </div>
       </aside>
       <main className="shell__main">
