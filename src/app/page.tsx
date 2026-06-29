@@ -8,10 +8,12 @@ import { ImgSlot } from '@/components/site/img-slot';
 import { ServicesTabs } from '@/components/home2/services-tabs';
 import { HomeEffects } from '@/components/home2/home-effects';
 import { MobileNav } from '@/components/home2/mobile-nav';
+import { BottomNav } from '@/components/home2/bottom-nav';
 import { minutesToLabel } from '@/lib/format';
 import { ratingLabel, stylistAvatarSrc } from '@/lib/stylist-card';
 import { getSiteContent } from '@/lib/content/get';
 import { getProfile } from '@/lib/supabase/auth';
+import { avatarSrc } from '@/lib/avatar';
 import { createClient } from '@/lib/supabase/server';
 import {
   getBookableServices,
@@ -102,6 +104,17 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
   const looks = gallery.slice(0, 5);
   const isCustomer = profile?.role !== 'admin' && profile?.role !== 'staff';
   const hoursByDow = new Map(hours.map((h) => [h.day_of_week, h]));
+
+  // Account tab for the mobile bottom bar — mirror NavAuth's routing/avatar.
+  const accountHref = !profile
+    ? '/login'
+    : profile.role === 'admin'
+      ? '/admin'
+      : profile.role === 'staff'
+        ? '/admin/schedule'
+        : '/account';
+  const accountLabel = profile?.role === 'staff' ? 'Schedule' : profile?.role === 'admin' ? 'Admin' : 'Account';
+  const accountAvatar = profile ? avatarSrc(userMetadata, profile.email ?? profile.fullName ?? 'guest') : null;
 
   return (
     <BookingProvider services={services} stylists={stylists} enabled={isCustomer}>
@@ -473,7 +486,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
           </div>
         </footer>
 
-        <BookButton variant="bar">Book appointment</BookButton>
+        <BottomNav
+          signedIn={!!profile}
+          accountHref={accountHref}
+          accountLabel={accountLabel}
+          avatarSrc={accountAvatar}
+        />
       </div>
     </BookingProvider>
   );
