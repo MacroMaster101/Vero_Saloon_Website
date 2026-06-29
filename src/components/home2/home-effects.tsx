@@ -23,6 +23,16 @@ export function HomeEffects() {
 
   useEffect(() => {
     setMounted(true);
+
+    // Always open at the very top on (re)load — stop the browser from
+    // restoring the previous scroll position, then pin to top.
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+    if (!window.location.hash) {
+      window.scrollTo(0, 0);
+    }
+
     // Simulating initial component mount loading for luxury splash screen
     const timer = setTimeout(() => {
       setLoading(false);
