@@ -1,6 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
+
+// Client-only mount flag without calling setState inside an effect: the store
+// never emits, so the value is simply the server snapshot (false) during SSR /
+// first paint and the client snapshot (true) once hydrated.
+const emptySubscribe = () => () => {};
+function useMounted() {
+  return useSyncExternalStore(emptySubscribe, () => true, () => false);
+}
 
 /* Must be in true DOM (top-to-bottom) order so the scroll-spy lights up the
    right link. These ids mirror NAV_LINKS in page.tsx (plus 'top' for the hero). */
@@ -19,11 +27,9 @@ const SECTIONS = [
 export function HomeEffects() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useMounted();
 
   useEffect(() => {
-    setMounted(true);
-
     // Always open at the very top on (re)load — stop the browser from
     // restoring the previous scroll position, then pin to top.
     if ('scrollRestoration' in window.history) {

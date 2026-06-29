@@ -1,3 +1,5 @@
+// Server (RSC / Server Action) Supabase client, wired to the request cookies.
+// Anon key + RLS. Cookie writes are no-ops in RSC (the proxy refreshes sessions).
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import type { Database } from './types';

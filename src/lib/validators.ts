@@ -1,3 +1,5 @@
+// Shared Zod schemas for user-facing input (booking details, Sri Lankan phone).
+// Reused by both client forms and server actions so validation stays in sync.
 import { z } from 'zod';
 
 // Sri Lankan mobile: local 0xxxxxxxxx (10 digits) or +94xxxxxxxxx. Spaces allowed.

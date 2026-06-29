@@ -1,3 +1,5 @@
+// Refreshes the Supabase auth session on every request (called from proxy.ts).
+// It does NOT gate routes — page/layout/action guards (requireRole) do that.
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { env } from '@/lib/env';

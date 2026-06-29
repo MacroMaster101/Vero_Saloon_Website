@@ -1,3 +1,5 @@
+// Shared types for the notify module: the BookingConfirmation payload and the
+// Notifier interface each channel (email, SMS) implements.
 export type BookingConfirmation = {
   reference: string;
   customerName: string;

@@ -7,7 +7,6 @@ import { LiveStatus } from '@/components/site/live-status';
 import { ImgSlot } from '@/components/site/img-slot';
 import { ServicesTabs } from '@/components/home2/services-tabs';
 import { HomeEffects } from '@/components/home2/home-effects';
-import { MobileNav } from '@/components/home2/mobile-nav';
 import { BottomNav } from '@/components/home2/bottom-nav';
 import { minutesToLabel } from '@/lib/format';
 import { ratingLabel, stylistAvatarSrc } from '@/lib/stylist-card';
@@ -151,7 +150,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
               <ThemeToggle />
               <NavAuth profile={profile} userMetadata={userMetadata} />
               <BookButton variant="primary" className="v2-header__book">Book now</BookButton>
-              <MobileNav showBook={isCustomer} />
             </div>
           </div>
         </header>

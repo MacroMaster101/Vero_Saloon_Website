@@ -1,3 +1,5 @@
+// App fonts (Poppins sans + Fraunces display), exposed as CSS variables that
+// globals.css consumes. Loaded via next/font for self-hosting + zero layout shift.
 import { Poppins, Fraunces } from 'next/font/google';
 
 export const poppins = Poppins({

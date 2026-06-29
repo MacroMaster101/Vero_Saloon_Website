@@ -1,3 +1,6 @@
+// Auth helpers: current user/profile lookups and the role guard (requireRole)
+// used by protected layouts and server actions. authDecision is the pure,
+// unit-tested core; requireRole enforces it with redirects.
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import type { Role } from '@/lib/auth/roles';

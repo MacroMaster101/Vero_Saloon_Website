@@ -1,3 +1,5 @@
+// Display formatters for money (LKR) and clock times. Pure and dependency-free.
+
 export function money(n: number): string {
   return 'LKR ' + n.toLocaleString('en-LK');
 }

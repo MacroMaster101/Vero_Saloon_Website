@@ -1,3 +1,6 @@
+// Schemas + typed defaults for every editable site-content block (hero, story,
+// stats, cta, contact, …). The single source of truth for content shape, shared
+// by the public site (merge over defaults) and the admin content editor.
 import { z } from 'zod';
 
 // ── Quote ──────────────────────────────────────────────

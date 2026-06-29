@@ -1,3 +1,6 @@
+// Pure slot-availability maths: given business hours, busy/blocked intervals and
+// a service duration, compute the open start times. No I/O, so it is fully
+// unit-tested (see tests/availability.test.ts) and reused by the booking flow.
 export type Interval = { startMin: number; endMin: number };
 
 export type ComputeArgs = {

@@ -1,3 +1,6 @@
+// Pure shaping/grouping of a staff member's bookings into the "today" and
+// "schedule" views (counts, grouping by day, completion stats). No I/O — the
+// route loads the rows, this arranges them. Unit-tested in staff-view.test.ts.
 export type StaffBooking = {
   id: string;
   reference: string;

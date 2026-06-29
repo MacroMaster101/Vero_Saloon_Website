@@ -1,3 +1,6 @@
+// Typed access to environment variables. Lazy getters validate only on use, so
+// an unconfigured optional service (e.g. email) doesn't crash unrelated code.
+// The service-role key is read only by the server-only admin client.
 function required(name: string, value: string | undefined): string {
   if (!value) throw new Error(`Missing environment variable: ${name}`);
   return value;

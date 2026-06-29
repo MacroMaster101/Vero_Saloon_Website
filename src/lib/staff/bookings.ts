@@ -1,3 +1,5 @@
+// Server-only loader for a staff member's own bookings (RLS limits rows to the
+// signed-in stylist). Pairs with staff/view.ts, which shapes the rows for display.
 import 'server-only';
 import { createClient } from '@/lib/supabase/server';
 import type { StaffBooking } from './view';

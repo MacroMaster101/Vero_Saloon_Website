@@ -1,3 +1,6 @@
+// Account-deletion routine (data-retention/GDPR): removes a user's auth record
+// and personal data via the service-role client. Server-only; the calling action
+// confirms identity + the typed "DELETE" before invoking. See data-retention test.
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
 

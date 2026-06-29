@@ -1,3 +1,5 @@
+// Resolves the image for a service: the uploaded photo if present, otherwise a
+// keyword match against the bundled service photos, else an icon fallback.
 import type { Service } from '@/lib/supabase/types';
 
 type PhotoInput = Pick<Service, 'image_url' | 'category' | 'slug' | 'name' | 'icon'>;

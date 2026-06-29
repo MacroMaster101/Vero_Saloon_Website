@@ -1,3 +1,5 @@
+// Admin image upload to Supabase Storage (gallery/service/stylist photos). Uses
+// the service-role client and self-guards with requireRole('admin').
 'use server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { requireRole } from '@/lib/supabase/auth';
