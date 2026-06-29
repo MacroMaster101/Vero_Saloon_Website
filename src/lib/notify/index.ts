@@ -1,3 +1,6 @@
+// Notification entry point: sends booking confirmations via the configured
+// channels (email through Resend, SMS stubbed). Server-only. Failures here must
+// never block a booking — callers treat notify as best-effort.
 import 'server-only';
 import type { BookingConfirmation } from './types';
 import { ResendNotifier } from './resend';

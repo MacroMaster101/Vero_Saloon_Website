@@ -1,3 +1,5 @@
+// Zod schema for the admin "stylist" create/edit form (reuses slugify from the
+// service schema). Server-side validation of admin input before persisting.
 import { z } from 'zod';
 import { slugify } from './service-schema';
 

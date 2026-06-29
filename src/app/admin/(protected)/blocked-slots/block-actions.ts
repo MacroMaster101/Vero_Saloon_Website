@@ -1,11 +1,14 @@
 'use server';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
+import { requireRole } from '@/lib/supabase/auth';
 import { toUtcInstant } from '@/lib/time';
 
 const TZ = 'Asia/Colombo';
+const PATH = '/admin/blocked-slots';
 
 export async function createBlock(formData: FormData): Promise<{ error: string } | { ok: true }> {
+  await requireRole(['admin'], PATH); // defense-in-depth; RLS also enforces admin
   const sb = await createClient();
   const date = String(formData.get('date') ?? '');
   const startMin = Number(formData.get('startMin'));
@@ -24,14 +27,15 @@ export async function createBlock(formData: FormData): Promise<{ error: string }
     reason,
   });
   if (error) return { error: error.message };
-  revalidatePath('/admin/blocked-slots');
+  revalidatePath(PATH);
   revalidatePath('/admin');
   return { ok: true };
 }
 
 export async function deleteBlock(formData: FormData): Promise<void> {
+  await requireRole(['admin'], PATH); // defense-in-depth; RLS also enforces admin
   const sb = await createClient();
   const id = String(formData.get('id') ?? '');
   if (id) await sb.from('blocked_slots').delete().eq('id', id);
-  revalidatePath('/admin/blocked-slots');
+  revalidatePath(PATH);
 }

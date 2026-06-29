@@ -1,3 +1,5 @@
+// Inline SVG icon set used across the booking flow and service rows, keyed by a
+// service's `icon`/category so each service renders a fitting glyph.
 import type { ReactNode } from 'react';
 
 // Service icons ported from the reference booking JS. Inline 24x24 SVGs that

@@ -1,3 +1,5 @@
+// Zod schema for the admin business-hours editor (per-day open/close, closed
+// flag). Validates admin input server-side before persisting.
 import { z } from 'zod';
 
 export const hoursDaySchema = z.object({

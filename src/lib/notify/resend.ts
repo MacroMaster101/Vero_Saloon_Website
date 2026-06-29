@@ -1,3 +1,5 @@
+// Email channel: sends the booking-confirmation email via Resend. Server-only
+// (uses the secret API key). Implements the Notifier interface from ./types.
 import 'server-only';
 import { Resend } from 'resend';
 import type { Notifier, BookingConfirmation } from './types';

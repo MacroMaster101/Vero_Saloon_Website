@@ -1,3 +1,5 @@
+// Zod schema + slug helper for the admin "service" create/edit form. Validates
+// admin input server-side before it reaches the DB.
 import { z } from 'zod';
 
 export function slugify(input: string): string {

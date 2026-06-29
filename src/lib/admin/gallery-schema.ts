@@ -1,3 +1,5 @@
+// Zod schema for the admin gallery (lookbook) item form. Server-side validation
+// of admin input before persisting.
 import { z } from 'zod';
 
 export const galleryInputSchema = z.object({

@@ -1,3 +1,5 @@
+// Renders the booking-confirmation email (subject + HTML/text bodies) from a
+// BookingConfirmation. Pure templating — no sending here (see ./resend).
 import type { BookingConfirmation } from './types';
 import { money } from '@/lib/format';
 

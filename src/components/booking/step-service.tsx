@@ -1,6 +1,5 @@
 'use client';
 import type { Service } from '@/lib/supabase/types';
-import { serviceIcon } from '@/lib/icons';
 import { money } from '@/lib/format';
 import { servicePhoto } from '@/lib/service-photo';
 

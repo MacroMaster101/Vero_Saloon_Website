@@ -1,3 +1,5 @@
+// Pure merge of a stored (possibly partial/invalid) content value over the
+// typed default for a block key. No server/Next deps, so it is unit-testable.
 import { blockSchemas, type BlockKey } from '@/lib/content/blocks';
 import type { z } from 'zod';
 

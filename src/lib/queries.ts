@@ -1,3 +1,5 @@
+// Public, read-only data fetchers for the marketing site (services, stylists,
+// gallery, reviews, business hours). Run with the anon client under RLS.
 import { createClient } from '@/lib/supabase/server';
 import type { Service, Stylist, GalleryItem, BusinessHour } from '@/lib/supabase/types';
 import type { Review } from '@/components/reviews/review-list';

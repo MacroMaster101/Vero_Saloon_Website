@@ -1,3 +1,5 @@
+// Pure password-strength rules + scoring used by the signup form's live meter.
+// No side effects, so it is unit-tested (tests/password.test.ts).
 export interface PasswordRule {
   id: 'len' | 'upper' | 'lower' | 'number' | 'symbol';
   label: string;

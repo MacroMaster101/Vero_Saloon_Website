@@ -1,3 +1,5 @@
+// Placeholder SMS channel: logs instead of sending, so the notify pipeline has a
+// second channel wired up. Swap for a real SMS provider when one is chosen.
 import type { Notifier, BookingConfirmation } from './types';
 
 // Placeholder until a real SMS provider (Notify.lk / Twilio) is wired.
