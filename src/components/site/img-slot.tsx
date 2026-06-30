@@ -50,14 +50,19 @@ export function ImgSlot({ src, alt, className, priority = false }: { src?: strin
     );
   }
 
+  // Priority images are the LCP candidate — they must paint immediately, so we
+  // skip the opacity-0 fade-in + skeleton (those hide the image until client JS
+  // runs, which defeats eager loading and trips Next's LCP warning).
+  const reveal = priority || isLoaded;
+
   return (
     <div className={`img-slot ${className ?? ''}`} style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden', backgroundColor: 'rgba(21, 13, 14, 0.3)' }}>
-      {/* Skeleton / Blur Loading Placeholder */}
-      {!isLoaded && (
-        <div 
-          style={{ 
-            position: 'absolute', 
-            inset: 0, 
+      {/* Skeleton / Blur Loading Placeholder (lazy images only) */}
+      {!reveal && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
             background: 'linear-gradient(90deg, rgba(212,176,94,0.05) 25%, rgba(212,176,94,0.12) 50%, rgba(212,176,94,0.05) 75%)',
             backgroundSize: '200% 100%',
             animation: 'shimmer 1.6s infinite linear',
@@ -65,22 +70,25 @@ export function ImgSlot({ src, alt, className, priority = false }: { src?: strin
           }}
         />
       )}
-      
+
       <Image
         src={imageSrc}
         alt={alt}
         fill
+        // Eager + high priority for the LCP (hero) image; lazy otherwise. We set
+        // loading/fetchPriority explicitly because `priority` alone wasn't always
+        // emitting the eager hint through this client wrapper.
         priority={priority}
         loading={priority ? 'eager' : 'lazy'}
         fetchPriority={priority ? 'high' : 'auto'}
         sizes="(max-width: 980px) 100vw, 33vw"
         onLoad={() => setIsLoaded(true)}
-        style={{ 
+        style={{
           objectFit: 'cover',
-          opacity: isLoaded ? 1 : 0,
-          transform: isLoaded ? 'scale(1)' : 'scale(1.03)',
+          opacity: reveal ? 1 : 0,
+          transform: reveal ? 'scale(1)' : 'scale(1.03)',
           transition: 'opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
-        }} 
+        }}
       />
     </div>
   );

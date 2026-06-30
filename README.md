@@ -38,7 +38,7 @@
 | 🔒 | **Race-proof slots** — a Postgres `EXCLUDE` constraint makes double-booking impossible |
 | 🔑 | **Accounts & auth** — split-screen **login** + **signup** (email/password with live password-strength rules, or Google OAuth), email-confirmation flow |
 | 👤 | **Customer account** — sidebar dashboard: profile, avatar upload (DiceBear fallback), bookings history, member-since/last-sign-in, account deletion |
-| ⭐ | **Ratings & reviews** — customers rate their own **completed** visits; the stylist's running average is recomputed app-side (shared with the mobile app), and admins moderate reviews |
+| ⭐ | **Ratings & reviews** — customers rate their own **completed** visits; the stylist's running average is recomputed app-side, and admins moderate reviews |
 | 🧑‍🤝‍🧑 | **Roles** — `user` / `staff` / `admin`, enforced by Supabase RLS; admins manage roles & stylist links in **People** |
 | 📧 | **Email confirmations** — via Resend, with a pluggable SMS stub for later |
 | ✍️ | **Editable site content** — homepage copy lives in a `site_content` table and is editable from the admin **Content** page (no redeploy needed) |
@@ -103,10 +103,37 @@ Apply the migrations with the Supabase CLI using a direct DB connection string (
 # 0003_auth_roles.sql     — `profiles` table (role + stylist link) and role RLS
 # 0004_data_retention.sql — anonymize_user_bookings() for privacy-safe deletion
 # 0005_site_content.sql   — `site_content` key/value table for editable copy
+# 0006_service_image.sql  — per-service `image_url` for photo-led service cards
+# 0007_reviews_ratings.sql— `stylist_reviews` table + `stylists.rating`/`rating_count`
 npx supabase db push --db-url "postgresql://postgres:<DB_PASSWORD>@db.<ref>.supabase.co:5432/postgres"
 ```
 
 Then seed the real Vero data (12 services · 4 stylists · business hours · gallery). `supabase/seed.sql` is the source of truth — run it via the Supabase SQL editor or any Postgres client.
+
+### 📦 Storage buckets (required)
+
+Image uploads need two **public** Storage buckets that the migrations don't create. In the Supabase SQL editor:
+
+```sql
+insert into storage.buckets (id, name, public) values
+  ('media',   'media',   true),   -- admin gallery / service / stylist images
+  ('avatars', 'avatars', true)    -- customer profile photos
+on conflict (id) do update set public = true;
+```
+
+Uploads run server-side with the service-role key, so no extra Storage RLS is needed.
+
+### 👑 First admin (bootstrap)
+
+The `profiles_protect_privileges` trigger (migration `0003`) blocks role changes unless the caller is already an admin — so a plain `UPDATE` from the SQL editor silently leaves `role = 'user'`. To create the very first admin, disable the trigger for that one statement:
+
+```sql
+alter table profiles disable trigger profiles_protect_privileges;
+update profiles set role = 'admin' where id = '<your-auth-user-id>';
+alter table profiles enable trigger profiles_protect_privileges;
+```
+
+Then log out and back in (the role is read into the session at login). After this, manage all other roles from **Admin → People**.
 
 ### 🧬 Generated types
 
@@ -131,14 +158,14 @@ In **Supabase → Authentication → URL Configuration**, set:
 
 In **Authentication → Providers**:
 
-- **Email** → keep **"Confirm email" ON** so the signup "check your email" flow is accurate (with it off, signup would create a live session silently).
-- **Google** → enable and add your OAuth client ID/secret if you want Google sign-in.
+- **Email** → this project runs with **"Confirm email" OFF**, so signup creates a live session immediately (no confirmation email needed — the app uses email + password, not OTP). Turn it **ON** only if you wire a real email sender (Resend SMTP) and want the "check your email" confirmation flow.
+- **Google** → optional. Leave disabled unless you create real OAuth credentials in Google Cloud Console (the **Client IDs** field needs a real `...apps.googleusercontent.com` ID + secret, not a project name) and add the Supabase callback URL as an authorized redirect URI.
 
 > 🔁 The code derives every redirect from `NEXT_PUBLIC_SITE_URL`, so that env var **must** match your deployed domain or OAuth/confirmation links will point at the wrong host.
 
 ### 👤 Roles (user / staff / admin)
 
-New sign-ups are `user` by default. To grant **staff** or **admin**: create/sign in the owner account, promote it to `admin` directly in the `profiles` table (Supabase SQL editor), then manage everyone else from the in-app **Admin → People** page (set role + linked stylist). Roles are enforced by RLS and by `requireRole(...)` route guards. `admin`/`staff` land on `/admin`; `user` lands on `/`.
+New sign-ups are `user` by default. To grant the **first admin**, follow the [First admin (bootstrap)](#-first-admin-bootstrap) steps above (a plain `UPDATE` is silently blocked by the privilege trigger). After that, manage everyone else from the in-app **Admin → People** page (set role + linked stylist). Roles are enforced by RLS and by `requireRole(...)` route guards. `admin`/`staff` land on `/admin`; `user` lands on `/`.
 
 ---
 
@@ -164,7 +191,7 @@ npm run e2e        # 🎭 Playwright e2e (run `npm run build` first)
 - 🔒 **Double-booking protection** — enforced in Postgres by a GiST `EXCLUDE` constraint, so two confirmed bookings for the same stylist can't overlap. `createBooking` catches the violation (`23P01`) and returns a graceful "slot just taken." Price & duration are always re-derived from the DB — never trusted from the client.
 - 📨 **Notifications** (`lib/notify/`) — go through a `Notifier` interface. Resend sends the email; an SMS stub logs a placeholder. Email no-ops safely when `RESEND_API_KEY` is unset, so bookings still succeed without it.
 - 🔑 **Auth & accounts** — `/login` and `/signup` (split-screen) use Supabase email/password or Google OAuth; both flow through `/auth/callback`. Signup enforces password rules (`lib/auth/password.ts`) on the client *and* server. `safeNext` sanitizes every post-login redirect; `roleDefaultPath` sends each role to its home. `/account` is a sidebar dashboard (profile, avatar upload, bookings, account deletion). Avatars resolve via `lib/avatar.ts` — an uploaded photo wins, otherwise a deterministic DiceBear fallback seeded by email/name.
-- ⭐ **Ratings & reviews** (`lib/reviews.ts`, `account/review-actions.ts`) — a customer may review only their **own completed** booking; ownership and state are re-verified server-side. The stylist's running average is recomputed app-side (`computeUpdatedRating` / `computeRemovedRating`) to match the mobile app that shares the same database, and the pure helpers are unit-tested.
+- ⭐ **Ratings & reviews** (`lib/reviews.ts`, `account/review-actions.ts`) — a customer may review only their **own completed** booking; ownership and state are re-verified server-side. The stylist's running average is recomputed app-side (`computeUpdatedRating` / `computeRemovedRating`) on insert/delete (no DB trigger), and the pure helpers are unit-tested. The `stylist_reviews` table and `stylists.rating`/`rating_count` columns are created by migration `0007`.
 - ✍️ **Editable content** (`lib/content/`) — homepage copy is stored per-block in the `site_content` table; `blocks.ts` defines each block's shape, `get.ts` fetches, and `merge.ts` overlays saved values onto defaults so the site renders even before anything is edited. Admins edit it from **Admin → Content**.
 - 🔏 **Privacy & deletion** — deleting an account calls the `anonymize_user_bookings()` `security definer` function (migration `0004`), which strips PII from past bookings while keeping the rows for business records.
 - 🛠️ **Admin & staff** (`/admin`) — guarded by `requireRole`; a sidebar shell with role-scoped nav. Admins see all bookings (live via Supabase Realtime) with status controls and a searchable/filterable table, plus full management of **Services**, **Stylists**, **Gallery**, **Content**, **Reviews**, **People** (role + stylist links), **Schedule** and **Blocked slots**. Staff see only **My schedule** — their own RLS-scoped bookings — with the same search/filter toolbar.
@@ -190,7 +217,7 @@ lib/                    # 🧰 availability, time, validators, queries, notify, 
 lib/auth/              # 🔐 password rules, redirect-safety (safeNext), roles
 lib/content/           # ✍️ editable site-content blocks (get / merge / shapes)
 lib/reviews.ts          # ⭐ pure rating-average helpers (unit-tested)
-supabase/migrations/    # 🗄️ schema + RLS + realtime + roles + retention + content (0001–0005)
+supabase/migrations/    # 🗄️ schema + RLS + realtime + roles + retention + content + service-image + reviews (0001–0007)
 supabase/seed.sql       # 🌱 real Vero data
 tests/                  # 🧪 vitest unit/integration; tests/e2e Playwright
 ```
