@@ -479,7 +479,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
             </div>
             <div className="home-foot__bottom">
               <span>© 2026 Vero Salon Unisex. All rights reserved.</span>
-              <span>{contact.address} · {contact.phonePrimary}</span>
+              <span className="home-foot__legal">
+                <a href="/privacy">Privacy</a>
+                <a href="/terms">Terms</a>
+              </span>
             </div>
           </div>
         </footer>
