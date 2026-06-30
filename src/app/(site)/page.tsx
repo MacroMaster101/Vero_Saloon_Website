@@ -1,13 +1,13 @@
 import { BookingProvider } from '@/components/booking/booking-provider';
 import { BookButton } from '@/components/site/book-button';
-import { Faq } from '@/components/home2/faq';
+import { Faq } from '@/components/home/faq';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { NavAuth } from '@/components/site/nav-auth';
 import { LiveStatus } from '@/components/site/live-status';
 import { ImgSlot } from '@/components/site/img-slot';
-import { ServicesTabs } from '@/components/home2/services-tabs';
-import { HomeEffects } from '@/components/home2/home-effects';
-import { BottomNav } from '@/components/home2/bottom-nav';
+import { ServicesTabs } from '@/components/home/services-tabs';
+import { HomeEffects } from '@/components/home/home-effects';
+import { BottomNav } from '@/components/home/bottom-nav';
 import { minutesToLabel } from '@/lib/format';
 import { ratingLabel, stylistAvatarSrc } from '@/lib/stylist-card';
 import { getSiteContent } from '@/lib/content/get';
@@ -117,7 +117,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
 
   return (
     <BookingProvider services={services} stylists={stylists} enabled={isCustomer}>
-      <div className="v2" id="top">
+      <div className="home" id="top">
         <HomeEffects />
 
         {deleted && (
@@ -130,47 +130,47 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
         )}
 
         {/* ── header ── */}
-        <header className="v2-header">
-          <div className="v2-wrap v2-header__inner">
-            <a className="v2-brand" href="#top" aria-label="Vero Salon home">
-              <span className="v2-brand__mark" aria-hidden="true">V</span>
-              <span className="v2-brand__name">
+        <header className="home-header">
+          <div className="home-wrap home-header__inner">
+            <a className="home-brand" href="#top" aria-label="Vero Salon home">
+              <span className="home-brand__mark" aria-hidden="true">V</span>
+              <span className="home-brand__name">
                 <b>Vero Salon</b>
                 <small>Unisex · Pasyala</small>
               </span>
             </a>
 
-            <nav className="v2-nav" aria-label="Primary">
+            <nav className="home-nav" aria-label="Primary">
               {NAV_LINKS.map((l) => (
                 <a key={l.href} href={l.href}>{l.label}</a>
               ))}
             </nav>
 
-            <div className="v2-header__actions">
+            <div className="home-header__actions">
               <ThemeToggle />
               <NavAuth profile={profile} userMetadata={userMetadata} />
-              <BookButton variant="primary" className="v2-header__book">Book now</BookButton>
+              <BookButton variant="primary" className="home-header__book">Book now</BookButton>
             </div>
           </div>
         </header>
 
         <main>
           {/* ── hero ── */}
-          <section className="v2-hero">
-            <div className="v2-wrap v2-hero__grid">
-              <div className="v2-reveal">
-                <span className="v2-eyebrow">{hero.eyebrow}</span>
-                <h1 className="v2-hero__display">
+          <section className="home-hero">
+            <div className="home-wrap home-hero__grid">
+              <div className="home-reveal">
+                <span className="home-eyebrow">{hero.eyebrow}</span>
+                <h1 className="home-hero__display">
                   <span className="ln">{hero.line1}</span>
                   <span className="ln"><em>{hero.line2Em}</em></span>
                   <span className="ln">{hero.line3}</span>
                 </h1>
-                <p className="v2-hero__lead">{hero.lead}</p>
-                <div className="v2-hero__actions">
+                <p className="home-hero__lead">{hero.lead}</p>
+                <div className="home-hero__actions">
                   <BookButton variant="primary">Book a visit</BookButton>
-                  <a className="v2-link" href="#services">See the menu <span aria-hidden="true">→</span></a>
+                  <a className="home-link" href="#services">See the menu <span aria-hidden="true">→</span></a>
                 </div>
-                <dl className="v2-hero__facts">
+                <dl className="home-hero__facts">
                   <div>
                     <dt>Google rating</dt>
                     <dd>4.9 ★ · 120+</dd>
@@ -186,13 +186,13 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
                 </dl>
               </div>
 
-              <div className="v2-hero__media v2-reveal">
-                <span className="v2-hero__pole" aria-hidden="true" />
-                <div className="v2-hero__frame">
+              <div className="home-hero__media home-reveal">
+                <span className="home-hero__pole" aria-hidden="true" />
+                <div className="home-hero__frame">
                   <ImgSlot src="/images/story/interior.png" alt="Vero Salon interior" priority={true} />
                 </div>
-                <div className="v2-hero__badge">
-                  <span className="v2-dot" aria-hidden="true" />
+                <div className="home-hero__badge">
+                  <span className="home-dot" aria-hidden="true" />
                   <span>
                     <b>Open until midnight</b>
                     <span style={{ display: 'block' }}>Walk-ins welcome</span>
@@ -203,24 +203,24 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
           </section>
 
           {/* ── trust strip ── */}
-          <div className="v2-strip" aria-hidden="true">
-            <div className="v2-strip__track">
+          <div className="home-strip" aria-hidden="true">
+            <div className="home-strip__track">
               <span>{STRIP.map((s) => <span key={s}>{s}</span>)}</span>
               <span>{STRIP.map((s) => <span key={`b-${s}`}>{s}</span>)}</span>
             </div>
           </div>
 
           {/* ── story / about ── */}
-          <section className="v2-section v2-story" id="about">
-            <div className="v2-wrap v2-story__grid">
-              <div className="v2-story__art v2-reveal">
+          <section className="home-section home-story" id="about">
+            <div className="home-wrap home-story__grid">
+              <div className="home-story__art home-reveal">
                 <ImgSlot src="/images/story/interior.png" alt="Inside Vero Salon" />
               </div>
-              <div className="v2-reveal">
-                <span className="v2-eyebrow">{story.eyebrow}</span>
-                <h2 className="v2-h">{story.heading}</h2>
+              <div className="home-reveal">
+                <span className="home-eyebrow">{story.eyebrow}</span>
+                <h2 className="home-h">{story.heading}</h2>
                 {story.paragraphs.map((p, i) => <p key={i}>{p}</p>)}
-                <div className="v2-story__stats">
+                <div className="home-story__stats">
                   {stats.cards.slice(0, 3).map((c, i) => (
                     <div key={i}>
                       <b>{c.value}</b>
@@ -228,37 +228,37 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
                     </div>
                   ))}
                 </div>
-                <p className="v2-story__sign">{story.sign}</p>
+                <p className="home-story__sign">{story.sign}</p>
               </div>
             </div>
           </section>
 
           {/* ── services / pricing ── */}
-          <section className="v2-section" id="services">
-            <div className="v2-wrap">
-              <div className="v2-head v2-reveal">
-                <span className="v2-eyebrow v2-eyebrow--center">The menu</span>
-                <h2 className="v2-h">Services &amp; <em>pricing</em></h2>
-                <p className="v2-lead">Hair, colour and beauty for everyone. Prices in LKR — final quote confirmed at your consultation.</p>
+          <section className="home-section" id="services">
+            <div className="home-wrap">
+              <div className="home-head home-reveal">
+                <span className="home-eyebrow home-eyebrow--center">The menu</span>
+                <h2 className="home-h">Services &amp; <em>pricing</em></h2>
+                <p className="home-lead">Hair, colour and beauty for everyone. Prices in LKR — final quote confirmed at your consultation.</p>
               </div>
-              <div className="v2-reveal">
+              <div className="home-reveal">
                 <ServicesTabs hair={hair} beauty={beauty} featured={featured} />
               </div>
             </div>
           </section>
 
           {/* ── how it works ── */}
-          <section className="v2-section v2-how" id="how">
-            <div className="v2-wrap">
-              <div className="v2-head v2-reveal">
-                <span className="v2-eyebrow v2-eyebrow--center">How it works</span>
-                <h2 className="v2-h">Your visit, <em>step by step</em></h2>
-                <p className="v2-lead">From booking to the final mirror check — here is exactly what to expect.</p>
+          <section className="home-section home-how" id="how">
+            <div className="home-wrap">
+              <div className="home-head home-reveal">
+                <span className="home-eyebrow home-eyebrow--center">How it works</span>
+                <h2 className="home-h">Your visit, <em>step by step</em></h2>
+                <p className="home-lead">From booking to the final mirror check — here is exactly what to expect.</p>
               </div>
-              <div className="v2-steps v2-car">
+              <div className="home-steps home-car">
                 {STEPS.map((s) => (
-                  <div className="v2-step v2-reveal" key={s.h}>
-                    <div className="v2-step__n" aria-hidden="true" />
+                  <div className="home-step home-reveal" key={s.h}>
+                    <div className="home-step__n" aria-hidden="true" />
                     <h3>{s.h}</h3>
                     <p>{s.p}</p>
                   </div>
@@ -269,20 +269,20 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
 
           {/* ── lookbook ── */}
           {looks.length > 0 && (
-            <section className="v2-section v2-story" id="looks" style={{ background: 'var(--bg-2)', borderTop: '1px solid var(--line)' }}>
-              <div className="v2-wrap">
-                <div className="v2-head v2-reveal">
-                  <span className="v2-eyebrow v2-eyebrow--center">Our work</span>
-                  <h2 className="v2-h">The <em>lookbook</em></h2>
-                  <p className="v2-lead">A glimpse of the cuts, colour and care that walk out our door.</p>
+            <section className="home-section home-story" id="looks" style={{ background: 'var(--bg-2)', borderTop: '1px solid var(--line)' }}>
+              <div className="home-wrap">
+                <div className="home-head home-reveal">
+                  <span className="home-eyebrow home-eyebrow--center">Our work</span>
+                  <h2 className="home-h">The <em>lookbook</em></h2>
+                  <p className="home-lead">A glimpse of the cuts, colour and care that walk out our door.</p>
                 </div>
-                <div className="v2-look v2-car">
+                <div className="home-look home-car">
                   {looks.map((item) => (
-                    <article className="v2-look__item v2-reveal" key={item.id}>
+                    <article className="home-look__item home-reveal" key={item.id}>
                       <ImgSlot src={item.image_url} alt={item.title} />
-                      <span className="v2-look__tag">{item.tag}</span>
-                      <div className="v2-look__grad" />
-                      <div className="v2-look__cap">
+                      <span className="home-look__tag">{item.tag}</span>
+                      <div className="home-look__grad" />
+                      <div className="home-look__cap">
                         <b>{item.title}</b>
                         <span>{item.category}</span>
                       </div>
@@ -295,27 +295,27 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
 
           {/* ── team / stylists ── */}
           {stylists.length > 0 && (
-            <section className="v2-section" id="team">
-              <div className="v2-wrap">
-                <div className="v2-head v2-reveal">
-                  <span className="v2-eyebrow v2-eyebrow--center">The artisans</span>
-                  <h2 className="v2-h">Meet our <em>stylists</em></h2>
-                  <p className="v2-lead">A friendly, trained team dedicated to hair craft, colour and beauty care.</p>
+            <section className="home-section" id="team">
+              <div className="home-wrap">
+                <div className="home-head home-reveal">
+                  <span className="home-eyebrow home-eyebrow--center">The artisans</span>
+                  <h2 className="home-h">Meet our <em>stylists</em></h2>
+                  <p className="home-lead">A friendly, trained team dedicated to hair craft, colour and beauty care.</p>
                 </div>
-                <div className="v2-team v2-car v2-car--narrow">
+                <div className="home-team home-car home-car--narrow">
                   {stylists.map((s) => {
                     const rating = ratingLabel(s.rating, s.rating_count);
                     return (
-                      <article className="v2-member v2-reveal" key={s.id}>
-                        <div className="v2-member__photo">
+                      <article className="home-member home-reveal" key={s.id}>
+                        <div className="home-member__photo">
                           <ImgSlot src={stylistAvatarSrc(s)} alt={s.name} />
                         </div>
                         <h3>{s.name}</h3>
-                        <div className="v2-member__role">{s.role}</div>
-                        <div className="v2-member__rating">{rating.stars}{rating.reviews ? ` ${rating.reviews}` : ''}</div>
+                        <div className="home-member__role">{s.role}</div>
+                        <div className="home-member__rating">{rating.stars}{rating.reviews ? ` ${rating.reviews}` : ''}</div>
                         {s.tags.length > 0 && (
-                          <div className="v2-member__tags">
-                            {s.tags.slice(0, 3).map((t) => <span className="v2-tag" key={t}>{t}</span>)}
+                          <div className="home-member__tags">
+                            {s.tags.slice(0, 3).map((t) => <span className="home-tag" key={t}>{t}</span>)}
                           </div>
                         )}
                       </article>
@@ -328,23 +328,23 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
 
           {/* ── reviews ── */}
           {reviews.length > 0 && (
-            <section className="v2-section v2-story" id="reviews" style={{ background: 'var(--bg-2)', borderTop: '1px solid var(--line)' }}>
-              <div className="v2-wrap">
-                <div className="v2-head v2-reveal">
-                  <span className="v2-eyebrow v2-eyebrow--center">Client voices</span>
-                  <h2 className="v2-h">What guests <em>say</em></h2>
+            <section className="home-section home-story" id="reviews" style={{ background: 'var(--bg-2)', borderTop: '1px solid var(--line)' }}>
+              <div className="home-wrap">
+                <div className="home-head home-reveal">
+                  <span className="home-eyebrow home-eyebrow--center">Client voices</span>
+                  <h2 className="home-h">What guests <em>say</em></h2>
                 </div>
-                <div className="v2-reviews__grid v2-car">
+                <div className="home-reviews__grid home-car">
                   {reviews.slice(0, 6).map((r) => (
-                    <article className="v2-card v2-review v2-reveal" key={r.id}>
-                      <div className="v2-review__stars" aria-label={`${r.rating} out of 5`}>{'★'.repeat(r.rating)}</div>
+                    <article className="home-card home-review home-reveal" key={r.id}>
+                      <div className="home-review__stars" aria-label={`${r.rating} out of 5`}>{'★'.repeat(r.rating)}</div>
                       {r.comment && <p>&ldquo;{r.comment}&rdquo;</p>}
-                      <div className="v2-review__foot">
-                        <div className="v2-review__by">
+                      <div className="home-review__foot">
+                        <div className="home-review__by">
                           <b>{r.customer_name}</b>
                           {r.stylist_name && <span>with {r.stylist_name}</span>}
                         </div>
-                        <span className="v2-review__date">{reviewDate.format(new Date(r.created_at))}</span>
+                        <span className="home-review__date">{reviewDate.format(new Date(r.created_at))}</span>
                       </div>
                     </article>
                   ))}
@@ -354,32 +354,32 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
           )}
 
           {/* ── faq ── */}
-          <section className="v2-section" id="faq">
-            <div className="v2-wrap">
-              <div className="v2-head v2-reveal">
-                <span className="v2-eyebrow v2-eyebrow--center">Good to know</span>
-                <h2 className="v2-h">Frequently asked <em>questions</em></h2>
+          <section className="home-section" id="faq">
+            <div className="home-wrap">
+              <div className="home-head home-reveal">
+                <span className="home-eyebrow home-eyebrow--center">Good to know</span>
+                <h2 className="home-h">Frequently asked <em>questions</em></h2>
               </div>
-              <div className="v2-reveal">
+              <div className="home-reveal">
                 <Faq items={FAQS} />
               </div>
             </div>
           </section>
 
           {/* ── visit ── */}
-          <section className="v2-section v2-visit" id="visit">
-            <div className="v2-wrap">
-              <div className="v2-visit__grid">
-                <div className="v2-reveal">
+          <section className="home-section home-visit" id="visit">
+            <div className="home-wrap">
+              <div className="home-visit__grid">
+                <div className="home-reveal">
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
                     <div>
-                      <span className="v2-eyebrow">Find us</span>
-                      <h2 className="v2-h">Location &amp; <em>hours</em></h2>
+                      <span className="home-eyebrow">Find us</span>
+                      <h2 className="home-h">Location &amp; <em>hours</em></h2>
                     </div>
                     <LiveStatus hours={hours} />
                   </div>
 
-                  <ul className="v2-hours v2-card" style={{ padding: '8px 22px', marginTop: 22 }}>
+                  <ul className="home-hours home-card" style={{ padding: '8px 22px', marginTop: 22 }}>
                     {DAYS.map(({ dow, label }) => {
                       const h = hoursByDow.get(dow);
                       const closed = !h || h.is_closed;
@@ -394,32 +394,32 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
                     })}
                   </ul>
 
-                  <div className="v2-info">
-                    <div className="v2-card v2-info__card">
+                  <div className="home-info">
+                    <div className="home-card home-info__card">
                       <div className="k">Address</div>
                       <div className="v">{contact.address}</div>
                     </div>
-                    <div className="v2-card v2-info__card">
+                    <div className="home-card home-info__card">
                       <div className="k">Plus code</div>
                       <div className="v">{contact.plusCode}</div>
                     </div>
-                    <div className="v2-card v2-info__card">
+                    <div className="home-card home-info__card">
                       <div className="k">Call / WhatsApp</div>
                       <div className="v">{contact.phonePrimary}</div>
                     </div>
-                    <div className="v2-card v2-info__card">
+                    <div className="home-card home-info__card">
                       <div className="k">Also</div>
                       <div className="v">{contact.phoneOther}</div>
                     </div>
                   </div>
 
-                  <div className="v2-visit__actions">
+                  <div className="home-visit__actions">
                     <BookButton variant="primary">Book a visit</BookButton>
-                    <a href={contact.facebookUrl} target="_blank" rel="noopener" className="v2-btn v2-btn--ghost">Facebook</a>
+                    <a href={contact.facebookUrl} target="_blank" rel="noopener" className="home-btn home-btn--ghost">Facebook</a>
                   </div>
                 </div>
 
-                <div className="v2-visit__map v2-reveal">
+                <div className="home-visit__map home-reveal">
                   <ImgSlot src="/images/visit/map.png" alt={`Map showing ${contact.address}`} />
                 </div>
               </div>
@@ -427,27 +427,27 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
           </section>
 
           {/* ── CTA ── */}
-          <section className="v2-section v2-cta">
-            <span className="v2-cta__glow" aria-hidden="true" />
-            <div className="v2-wrap v2-cta__inner v2-reveal">
+          <section className="home-section home-cta">
+            <span className="home-cta__glow" aria-hidden="true" />
+            <div className="home-wrap home-cta__inner home-reveal">
               <h2>{cta.title}</h2>
               <p>{cta.sub}</p>
-              <div className="v2-cta__actions">
+              <div className="home-cta__actions">
                 <BookButton variant="light">Book a visit</BookButton>
-                <a href={cta.phoneHref} className="v2-btn v2-btn--light">{cta.phoneLabel}</a>
+                <a href={cta.phoneHref} className="home-btn home-btn--light">{cta.phoneLabel}</a>
               </div>
             </div>
           </section>
         </main>
 
         {/* ── footer ── */}
-        <footer className="v2-foot">
-          <div className="v2-wrap">
-            <div className="v2-foot__grid">
-              <div className="v2-foot__brand">
-                <a className="v2-brand" href="#top" aria-label="Vero Salon home">
-                  <span className="v2-brand__mark" aria-hidden="true">V</span>
-                  <span className="v2-brand__name">
+        <footer className="home-foot">
+          <div className="home-wrap">
+            <div className="home-foot__grid">
+              <div className="home-foot__brand">
+                <a className="home-brand" href="#top" aria-label="Vero Salon home">
+                  <span className="home-brand__mark" aria-hidden="true">V</span>
+                  <span className="home-brand__name">
                     <b>Vero Salon</b>
                     <small>Unisex · Pasyala</small>
                   </span>
@@ -477,7 +477,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
                 </ul>
               </div>
             </div>
-            <div className="v2-foot__bottom">
+            <div className="home-foot__bottom">
               <span>© 2026 Vero Salon Unisex. All rights reserved.</span>
               <span>{contact.address} · {contact.phonePrimary}</span>
             </div>

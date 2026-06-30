@@ -96,15 +96,15 @@ export function BottomNav({ signedIn, accountHref, accountLabel, avatarSrc }: {
   const moreActive = MORE_LINKS.some((l) => l.id === active);
 
   return (
-    <div className="v2-dock" ref={moreRef}>
+    <div className="home-dock" ref={moreRef}>
       {/* ── "More" sheet ── */}
-      <div className={`v2-dock__sheet${moreOpen ? ' is-open' : ''}`} role="menu">
+      <div className={`home-dock__sheet${moreOpen ? ' is-open' : ''}`} role="menu">
         {MORE_LINKS.map((l) => (
           <a
             key={l.id}
             href={`#${l.id}`}
             role="menuitem"
-            className={`v2-dock__sheet-item${active === l.id ? ' is-active' : ''}`}
+            className={`home-dock__sheet-item${active === l.id ? ' is-active' : ''}`}
             onClick={() => setMoreOpen(false)}
           >
             {l.label}
@@ -112,12 +112,12 @@ export function BottomNav({ signedIn, accountHref, accountLabel, avatarSrc }: {
         ))}
       </div>
 
-      <nav className="v2-bottomnav" aria-label="Quick navigation">
+      <nav className="home-bottomnav" aria-label="Quick navigation">
         {LEFT.map((t) => (
           <a
             key={t.id}
             href={`#${t.id}`}
-            className={`v2-bottomnav__tab${active === t.id ? ' is-active' : ''}`}
+            className={`home-bottomnav__tab${active === t.id ? ' is-active' : ''}`}
             aria-current={active === t.id ? 'page' : undefined}
             onClick={() => setMoreOpen(false)}
           >
@@ -128,12 +128,12 @@ export function BottomNav({ signedIn, accountHref, accountLabel, avatarSrc }: {
 
         {/* ── raised centre action ── */}
         {enabled ? (
-          <button type="button" className="v2-bottomnav__center" onClick={() => { setMoreOpen(false); openBooking(); }} aria-label="Book a visit">
+          <button type="button" className="home-bottomnav__center" onClick={() => { setMoreOpen(false); openBooking(); }} aria-label="Book a visit">
             <Icon name="book" />
             <span>Book</span>
           </button>
         ) : (
-          <a href="#top" className="v2-bottomnav__center" onClick={() => setMoreOpen(false)} aria-label="Back to top">
+          <a href="#top" className="home-bottomnav__center" onClick={() => setMoreOpen(false)} aria-label="Back to top">
             <Icon name="home" />
             <span>Top</span>
           </a>
@@ -141,7 +141,7 @@ export function BottomNav({ signedIn, accountHref, accountLabel, avatarSrc }: {
 
         <button
           type="button"
-          className={`v2-bottomnav__tab${moreActive || moreOpen ? ' is-active' : ''}`}
+          className={`home-bottomnav__tab${moreActive || moreOpen ? ' is-active' : ''}`}
           aria-haspopup="menu"
           aria-expanded={moreOpen}
           onClick={() => setMoreOpen((v) => !v)}
@@ -150,10 +150,10 @@ export function BottomNav({ signedIn, accountHref, accountLabel, avatarSrc }: {
           <span>More</span>
         </button>
 
-        <a href={accountHref} className="v2-bottomnav__tab" onClick={() => setMoreOpen(false)}>
+        <a href={accountHref} className="home-bottomnav__tab" onClick={() => setMoreOpen(false)}>
           {signedIn && avatarSrc ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={avatarSrc} alt="" className="v2-bottomnav__avatar" />
+            <img src={avatarSrc} alt="" className="home-bottomnav__avatar" />
           ) : (
             <Icon name="user" />
           )}

@@ -45,8 +45,10 @@ next-env.d.ts
 .superpowers/
 
 # Supabase CLI scratch
-# supabase kept local only (shared DB; app repo owns migration history)
-/supabase/
+# Migrations + seed ARE committed: this is now a website-only standalone DB,
+# so this repo is the sole source of truth for the schema. (No secrets live
+# in supabase/ — keys/passwords stay in the gitignored .env.)
+.supabase/
 .supabase-*.url
 
 # Playwright

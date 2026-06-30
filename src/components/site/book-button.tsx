@@ -3,10 +3,10 @@
 import { useBooking } from '@/components/booking/booking-provider';
 
 const VARIANT_CLASS: Record<string, string> = {
-  primary: 'v2-btn v2-btn--primary',
-  ghost: 'v2-btn v2-btn--ghost',
-  light: 'v2-btn v2-btn--light',
-  bar: 'v2-btn v2-btn--primary v2-mobile-book',
+  primary: 'home-btn home-btn--primary',
+  ghost: 'home-btn home-btn--ghost',
+  light: 'home-btn home-btn--light',
+  bar: 'home-btn home-btn--primary home-mobile-book',
 };
 
 export function BookButton({

@@ -34,21 +34,21 @@ export function BookingModal({
   if (!open) return null;
 
   return (
-    <div className="v2-modal" role="presentation">
-      <div className="v2-modal__backdrop" data-testid="booking-backdrop" onClick={onClose} />
+    <div className="home-modal" role="presentation">
+      <div className="home-modal__backdrop" data-testid="booking-backdrop" onClick={onClose} />
       <div
-        className="v2-modal__panel"
+        className="home-modal__panel"
         role="dialog"
         aria-modal="true"
         aria-labelledby="booking-modal-title"
         tabIndex={-1}
         ref={panelRef}
       >
-        <div className="v2-modal__head">
-          <h2 id="booking-modal-title" className="v2-modal__title">Book your visit</h2>
-          <button type="button" className="v2-modal__close" aria-label="Close booking" onClick={onClose}>×</button>
+        <div className="home-modal__head">
+          <h2 id="booking-modal-title" className="home-modal__title">Book your visit</h2>
+          <button type="button" className="home-modal__close" aria-label="Close booking" onClick={onClose}>×</button>
         </div>
-        <div className="v2-modal__body">
+        <div className="home-modal__body">
           <BookingWizard services={services} stylists={stylists} />
         </div>
       </div>

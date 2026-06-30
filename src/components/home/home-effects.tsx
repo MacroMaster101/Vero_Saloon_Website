@@ -39,15 +39,16 @@ export function HomeEffects() {
       window.scrollTo(0, 0);
     }
 
-    // Simulating initial component mount loading for luxury splash screen
+    // Hold the splash long enough for its CSS intro + fade-out to play, then
+    // unmount it (the .home-page-loader fade-out animation runs ~0.85s + 0.55s).
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 600);
+    }, 1500);
     return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    const header = document.querySelector('.v2-header');
+    const header = document.querySelector('.home-header');
     
     const onScroll = () => {
       // 1. Toggle scrolled header background
@@ -75,7 +76,7 @@ export function HomeEffects() {
       }
 
       // Apply active class directly — robust against nav re-renders.
-      const navLinks = document.querySelectorAll('.v2-nav a');
+      const navLinks = document.querySelectorAll('.home-nav a');
       navLinks.forEach((link) => {
         const href = link.getAttribute('href');
         link.classList.toggle('is-active', href === `#${current}`);
@@ -109,7 +110,7 @@ export function HomeEffects() {
 
     // 4. Reveal elements in viewport
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const items = Array.from(document.querySelectorAll<HTMLElement>('.v2-reveal'));
+    const items = Array.from(document.querySelectorAll<HTMLElement>('.home-reveal'));
     
     let io: IntersectionObserver | null = null;
     if (reduce) {
@@ -142,17 +143,23 @@ export function HomeEffects() {
     <>
       {/* ── Top Scroll Progress Bar ── */}
       <div
-        className="v2-scroll-progress"
+        className="home-scroll-progress"
         style={{ width: `${scrollProgress}%` }}
       />
 
       {/* ── Luxury Load Splash Screen ── */}
       {loading && (
-        <div className="v2-page-loader">
-          <div className="v2-loader-content">
-            <span className="v2-loader-logo">V</span>
-            <div className="v2-loader-ring" />
-            <span className="v2-loader-text">Vero Salon</span>
+        <div className="home-page-loader">
+          <span className="home-loader-glow" aria-hidden="true" />
+          <div className="home-loader-content">
+            <div className="home-loader-badge">
+              <span className="home-loader-ring home-loader-ring--outer" />
+              <span className="home-loader-ring home-loader-ring--inner" />
+              <span className="home-loader-mark">V</span>
+            </div>
+            <span className="home-loader-text">Vero Salon</span>
+            <span className="home-loader-sub">Hair · Colour · Beauty</span>
+            <span className="home-loader-bar" aria-hidden="true"><i /></span>
           </div>
         </div>
       )}
