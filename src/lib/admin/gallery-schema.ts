@@ -10,5 +10,3 @@ export const galleryInputSchema = z.object({
   sort_order: z.coerce.number().int().default(0),
   is_active: z.coerce.boolean().default(true),
 });
-
-export type GalleryInput = z.infer<typeof galleryInputSchema>;

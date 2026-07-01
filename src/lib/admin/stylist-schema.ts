@@ -22,5 +22,3 @@ export const stylistInputSchema = z
     sort_order: v.sort_order,
     is_active: v.is_active,
   }));
-
-export type StylistInput = z.infer<typeof stylistInputSchema>;

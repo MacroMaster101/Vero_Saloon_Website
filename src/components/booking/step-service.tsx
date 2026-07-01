@@ -39,11 +39,14 @@ export function StepService({
               <img
                 className="choice__photo"
                 src={photo.type === 'img' ? photo.src : ''}
+                data-fb={photo.type === 'img' ? (photo.fallbackSrc ?? '') : ''}
                 alt=""
                 onError={(e) => {
-                  // graceful fallback: swap a broken photo for the neutral default tile
+                  // graceful fallback: a broken photo degrades to the service's
+                  // category default (not a generic one), then stops retrying.
                   const el = e.currentTarget;
-                  if (!el.dataset.fallback) { el.dataset.fallback = '1'; el.src = '/images/services/hair.png'; }
+                  const fb = el.dataset.fb || '/images/services/hair.png';
+                  if (!el.dataset.fallback && el.src !== fb) { el.dataset.fallback = '1'; el.src = fb; }
                 }}
               />
               <span className="choice__txt">

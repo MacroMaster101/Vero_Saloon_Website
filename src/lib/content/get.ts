@@ -5,8 +5,6 @@ import { createClient } from '@/lib/supabase/server';
 import { type BlockKey } from '@/lib/content/blocks';
 import { mergeContent, type BlockOut } from '@/lib/content/merge';
 
-export { mergeContent } from '@/lib/content/merge';
-
 export async function getSiteContent<K extends BlockKey>(key: K): Promise<BlockOut<K>> {
   try {
     const sb = await createClient();
