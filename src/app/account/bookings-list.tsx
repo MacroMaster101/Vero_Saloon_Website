@@ -11,6 +11,7 @@ export type AccountBooking = {
   starts_at: string;
   status: string;
   service_id: string;
+  service_ids: string[] | null;
   stylist_id: string | null;
 };
 
@@ -140,7 +141,8 @@ function ReschedulePanel({
 
   function loadSlots(d: string) {
     startLoad(async () => {
-      const res = await getAvailability({ serviceId: booking.service_id, stylistId: booking.stylist_id, date: d });
+      const serviceIds = booking.service_ids?.length ? booking.service_ids : [booking.service_id];
+      const res = await getAvailability({ serviceIds, stylistId: booking.stylist_id, date: d });
       setSlots(res.slots);
     });
   }

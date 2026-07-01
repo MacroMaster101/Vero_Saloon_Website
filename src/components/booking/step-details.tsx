@@ -44,10 +44,10 @@ export const StepDetails = forwardRef<
   return (
     <div className="step active" data-step="3">
       <h3 className="step__title">Almost done — your details</h3>
-      <p className="step__hint">We&apos;ll text you a confirmation and a reminder the morning of.</p>
+      <p className="step__hint">We&apos;ll email your confirmation so you can find this booking anytime — and remind you the morning of.</p>
       <div className="fields-2">
         <div className={`field${errors.name ? ' invalid' : ''}`} id="f-name">
-          <label htmlFor="i-name">Full name</label>
+          <label htmlFor="i-name">Full name <span className="req" aria-hidden="true">*</span></label>
           <input
             id="i-name"
             type="text"
@@ -60,7 +60,7 @@ export const StepDetails = forwardRef<
           <div className="msg">{errors.name?.message ?? 'Please enter your name.'}</div>
         </div>
         <div className={`field${errors.phone ? ' invalid' : ''}`} id="f-phone">
-          <label htmlFor="i-phone">Mobile number</label>
+          <label htmlFor="i-phone">Mobile number <span className="req" aria-hidden="true">*</span></label>
           <input
             id="i-phone"
             type="tel"
@@ -74,12 +74,7 @@ export const StepDetails = forwardRef<
         </div>
       </div>
       <div className={`field${errors.email ? ' invalid' : ''}`} id="f-email">
-        <label htmlFor="i-email">
-          Email{' '}
-          <span style={{ textTransform: 'none', letterSpacing: 0, color: 'var(--fg-muted)', fontWeight: 500 }}>
-            (optional)
-          </span>
-        </label>
+        <label htmlFor="i-email">Email <span className="req" aria-hidden="true">*</span></label>
         <input
           id="i-email"
           type="email"

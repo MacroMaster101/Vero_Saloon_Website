@@ -15,6 +15,7 @@ const ADMIN_NAV: { href: string; label: string; icon: IconName }[] = [
   { href: '/admin/reviews', label: 'Reviews', icon: 'user' },
   { href: '/admin/content', label: 'Content', icon: 'cog' },
   { href: '/admin/schedule', label: 'Schedule', icon: 'calendar' },
+  { href: '/admin/holidays', label: 'Holidays', icon: 'calendar' },
 ];
 // Mobile bottom-nav split: up to 5 primary tabs in the bar, the rest go to "More".
 const ADMIN_PRIMARY: AdminNavItem[] = [
@@ -28,6 +29,7 @@ const ADMIN_OVERFLOW: AdminNavItem[] = [
   { href: '/admin/gallery', label: 'Gallery', icon: 'grid' },
   { href: '/admin/reviews', label: 'Reviews', icon: 'user' },
   { href: '/admin/content', label: 'Content', icon: 'cog' },
+  { href: '/admin/holidays', label: 'Holidays', icon: 'calendar' },
 ];
 
 export default async function ProtectedAdminLayout({ children }: { children: React.ReactNode }) {

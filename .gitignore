@@ -50,6 +50,7 @@ next-env.d.ts
 # in supabase/ — keys/passwords stay in the gitignored .env.)
 .supabase/
 .supabase-*.url
+supabase/.temp/
 
 # Playwright
 test-results/

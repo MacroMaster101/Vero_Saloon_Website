@@ -2,7 +2,16 @@
 // gallery, reviews, business hours). Run with the anon client under RLS.
 import { createClient } from '@/lib/supabase/server';
 import type { Service, Stylist, GalleryItem, BusinessHour } from '@/lib/supabase/types';
-import type { Review } from '@/components/reviews/review-list';
+
+// A single review row as shown on the homepage testimonials.
+export type Review = {
+  id: string;
+  customer_name: string;
+  rating: number;
+  comment: string;
+  likes_count: number;
+  created_at: string;
+};
 
 // Robust local fallback datasets for unseeded database setups
 const FALLBACK_SERVICES: Service[] = [
@@ -97,7 +106,7 @@ export async function getMyBookings(userId: string, email: string | null) {
   const sb = await createClient();
   const { data } = await sb
     .from('bookings')
-    .select('id, reference, starts_at, ends_at, status, customer_name, service_id, stylist_id')
+    .select('id, reference, starts_at, ends_at, status, customer_name, service_id, service_ids, stylist_id')
     .or(historyOrFilter(userId, email))
     .order('starts_at', { ascending: false });
   return data ?? [];

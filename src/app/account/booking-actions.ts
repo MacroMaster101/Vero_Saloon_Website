@@ -14,7 +14,7 @@ type Err = { ok: false; message: string };
 // Load a booking the caller is allowed to modify, or an error. Ownership and
 // state are verified in code because booking RLS has no user-update policy.
 async function loadModifiable(bookingId: string): Promise<
-  | { ok: true; userId: string; booking: { id: string; user_id: string | null; status: string; starts_at: string; service_id: string; stylist_id: string | null } }
+  | { ok: true; userId: string; booking: { id: string; user_id: string | null; status: string; starts_at: string; service_id: string; service_ids: string[] | null; stylist_id: string | null } }
   | Err
 > {
   const user = await getUser();
@@ -22,7 +22,7 @@ async function loadModifiable(bookingId: string): Promise<
   const admin = createAdminClient();
   const { data: booking } = await admin
     .from('bookings')
-    .select('id, user_id, status, starts_at, service_id, stylist_id')
+    .select('id, user_id, status, starts_at, service_id, service_ids, stylist_id')
     .eq('id', bookingId)
     .single();
   if (!booking) return { ok: false, message: 'Booking not found.' };
@@ -59,15 +59,17 @@ export async function rescheduleMyBooking(
   const { booking } = loaded;
   const admin = createAdminClient();
 
-  // Service duration (re-derive from DB; never trust the client).
-  const { data: service } = await admin.from('services').select('duration_min')
-    .eq('id', booking.service_id).single();
-  if (!service) return { ok: false, message: 'That service is unavailable.' };
+  // Combined-visit duration: re-derive from DB for every service on the booking
+  // (old single-service rows have service_ids = null → fall back to service_id).
+  const serviceIds = booking.service_ids?.length ? booking.service_ids : [booking.service_id];
+  const { data: rows } = await admin.from('services').select('duration_min').in('id', serviceIds);
+  if (!rows || rows.length === 0) return { ok: false, message: 'That service is unavailable.' };
+  const durationMin = rows.reduce((sum, r) => sum + r.duration_min, 0);
 
   // The new time must be a currently-open slot for the same stylist — this
   // reuses all of getAvailability's guards (business hours, busy intervals,
   // past-time filtering). The DB EXCLUDE constraint is the final race guard.
-  const { slots } = await getAvailability({ serviceId: booking.service_id, stylistId: booking.stylist_id, date });
+  const { slots } = await getAvailability({ serviceIds, stylistId: booking.stylist_id, date });
   if (!slots.includes(time)) {
     return { ok: false, message: 'That time isn’t available — pick another slot.' };
   }
@@ -75,7 +77,7 @@ export async function rescheduleMyBooking(
   const [h, mi] = time.split(':').map(Number);
   const startMin = h! * 60 + mi!;
   const startsAt = toUtcInstant(date, startMin, TZ);
-  const endsAt = toUtcInstant(date, startMin + service.duration_min, TZ);
+  const endsAt = toUtcInstant(date, startMin + durationMin, TZ);
 
   const { error } = await admin.from('bookings')
     .update({ starts_at: startsAt, ends_at: endsAt }).eq('id', bookingId);

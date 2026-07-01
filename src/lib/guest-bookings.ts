@@ -65,13 +65,3 @@ export function saveGuestBooking(booking: GuestBooking): void {
     /* quota / private mode — ignore, this store is best-effort */
   }
 }
-
-export function updateGuestBookingStatus(reference: string, status: GuestBooking['status']): void {
-  if (typeof window === 'undefined') return;
-  const next = readGuestBookings().map((b) => (b.reference === reference ? { ...b, status } : b));
-  try {
-    window.localStorage.setItem(KEY, JSON.stringify(next));
-  } catch {
-    /* ignore */
-  }
-}

@@ -25,7 +25,7 @@ export default async function AccountPage() {
 
   const bookingRows: AccountBooking[] = bookings.map((b) => ({
     id: b.id, reference: b.reference, starts_at: b.starts_at, status: b.status,
-    service_id: b.service_id, stylist_id: b.stylist_id,
+    service_id: b.service_id, service_ids: b.service_ids, stylist_id: b.stylist_id,
   }));
   const bookingsView = <BookingsList bookings={bookingRows} />;
 

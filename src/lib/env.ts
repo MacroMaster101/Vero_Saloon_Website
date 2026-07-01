@@ -13,4 +13,6 @@ export const env = {
   get resendApiKey() { return required('RESEND_API_KEY', process.env.RESEND_API_KEY); },
   get resendFrom() { return process.env.RESEND_FROM_EMAIL || 'Vero Salon <onboarding@resend.dev>'; },
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+  // Optional: SL holiday sync. Empty string when unset (holiday features no-op).
+  get googleCalendarKey() { return process.env.GOOGLE_CALENDAR_API_KEY || ''; },
 };

@@ -13,10 +13,22 @@ export const bookingDetailsSchema = z.object({
 });
 export type BookingDetails = z.infer<typeof bookingDetailsSchema>;
 
+// Accepts multi-service `serviceIds[]` (preferred) OR a single legacy
+// `serviceId` (older clients). At least one service id is required. `normalizeServiceIds`
+// collapses either form to a deduped array.
 export const createBookingSchema = bookingDetailsSchema.extend({
-  serviceId: z.string().uuid(),
+  serviceIds: z.array(z.string().uuid()).min(1).max(10).optional(),
+  serviceId: z.string().uuid().optional(),
   stylistId: z.string().uuid().nullable(), // null = no preference
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   time: z.string().regex(/^\d{2}:\d{2}$/),
+}).refine((v) => (v.serviceIds && v.serviceIds.length > 0) || v.serviceId, {
+  message: 'Pick at least one service',
+  path: ['serviceIds'],
 });
 export type CreateBookingInput = z.infer<typeof createBookingSchema>;
+
+export function normalizeServiceIds(input: { serviceIds?: string[]; serviceId?: string }): string[] {
+  const ids = input.serviceIds && input.serviceIds.length > 0 ? input.serviceIds : (input.serviceId ? [input.serviceId] : []);
+  return Array.from(new Set(ids));
+}

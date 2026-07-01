@@ -26,9 +26,16 @@ async function busyIntervals(stylistId: string | null, date: string): Promise<In
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
-  const { serviceId, stylistId, date } = await req.json();
-  const { data: service } = await admin.from('services').select('duration_min').eq('id', serviceId).single();
-  if (!service) return Response.json({ slots: [] }, { headers: cors });
+  // Accept multi-service `serviceIds[]` (preferred) or a single legacy `serviceId`.
+  const body = await req.json();
+  const serviceIds: string[] = Array.isArray(body.serviceIds) && body.serviceIds.length > 0
+    ? body.serviceIds : (body.serviceId ? [body.serviceId] : []);
+  const { stylistId, date } = body;
+  if (serviceIds.length === 0) return Response.json({ slots: [] }, { headers: cors });
+  // Combined visit: availability must fit the summed duration of all services.
+  const { data: rows } = await admin.from('services').select('duration_min').in('id', serviceIds);
+  if (!rows || rows.length === 0) return Response.json({ slots: [] }, { headers: cors });
+  const durationMin = rows.reduce((sum, r) => sum + r.duration_min, 0);
   const [y, m, d] = date.split('-').map(Number);
   const dow = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
   const { data: hours } = await admin.from('business_hours').select('*').eq('day_of_week', dow).single();
@@ -37,9 +44,9 @@ Deno.serve(async (req) => {
   if (!stylistId) {
     const { data: stylists } = await admin.from('stylists').select('id').eq('is_active', true);
     const sets = await Promise.all((stylists ?? []).map(async (s) =>
-      computeOpenSlots({ date, hours, durationMin: service.duration_min, stepMin: STEP_MIN, busy: await busyIntervals(s.id, date), tz: TZ })));
+      computeOpenSlots({ date, hours, durationMin, stepMin: STEP_MIN, busy: await busyIntervals(s.id, date), tz: TZ })));
     return Response.json({ slots: Array.from(new Set(sets.flat())).sort() }, { headers: cors });
   }
   const busy = await busyIntervals(stylistId, date);
-  return Response.json({ slots: computeOpenSlots({ date, hours, durationMin: service.duration_min, stepMin: STEP_MIN, busy, tz: TZ }) }, { headers: cors });
+  return Response.json({ slots: computeOpenSlots({ date, hours, durationMin, stepMin: STEP_MIN, busy, tz: TZ }) }, { headers: cors });
 });

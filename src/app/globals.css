@@ -663,6 +663,8 @@ body, .nav, .barber, .info-card, .book__card, .book__main,
 .slot.disabled { opacity:.35; cursor:not-allowed; text-decoration:line-through; }
 .field { margin-bottom:16px; }
 .field label { display:block; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--fg-2); margin-bottom:7px; }
+/* red asterisk marking a required field */
+.field label .req { color:var(--error); font-weight:700; }
 .field input, .field textarea { width:100%; font-family:inherit; font-size:15px; color:var(--fg); background:var(--bg-2); border:1.5px solid transparent; border-radius:var(--radius-sm); padding:13px 14px; transition:border-color .15s, background .15s; }
 .field input:focus, .field textarea:focus { outline:none; border-color:var(--accent); background:var(--surface); }
 .field input.err, .field textarea.err { border-color:var(--error); background:color-mix(in srgb, var(--error) 8%, transparent); }
@@ -685,7 +687,14 @@ body, .nav, .barber, .info-card, .book__card, .book__main,
 .confirm__check { width:72px; height:72px; border-radius:50%; background:var(--accent-dark); color:var(--fg); display:grid; place-items:center; margin:0 auto 22px; box-shadow:0 0 0 8px color-mix(in srgb, var(--accent) 16%, transparent); }
 .confirm h3 { font-size:26px; font-weight:700; margin:0 0 8px; color:var(--fg); }
 .confirm p { font-size:15px; color:var(--fg-2); margin:0 auto 26px; max-width:42ch; line-height:1.6; }
-.confirm p.confirm__hint { font-size:13.5px; color:var(--fg-muted); background:var(--bg-2); border:1px solid var(--line); border-radius:var(--radius-md); padding:10px 14px; margin:-12px auto 24px; max-width:42ch; }
+/* Clean "keep it safe" card: an inline icon + title on one row, full-width text
+   and button below. No separate icon circle — the icon reads as part of the
+   heading, which sidesteps the awkward circle-centring entirely. */
+.confirm__claim { text-align:left; background:var(--accent-tint); border:1px solid color-mix(in srgb, var(--accent) 35%, var(--line)); border-radius:var(--radius-lg); padding:18px; margin:-4px auto 24px; max-width:42ch; display:flex; flex-direction:column; gap:12px; }
+.confirm__claim-title { display:flex; align-items:center; gap:9px; font-size:15px; font-weight:700; color:var(--fg); }
+.confirm__claim-ic { flex:none; color:var(--accent-text); }
+.confirm__claim-text { font-size:13px; color:var(--fg-2); line-height:1.55; }
+.confirm__claim .btn { width:100%; margin-top:4px; }
 .confirm__ticket { text-align:left; background:var(--bg-2); border:1px dashed var(--line); border-radius:var(--radius-lg); padding:22px; max-width:420px; margin:0 auto 26px; }
 .guest-recent { margin-top:28px; }
 
@@ -2855,19 +2864,36 @@ section.mhome { display:none; }
 .home-route-loader .home-loader-sub { margin-top: 0; }
 
 /* ── Booking popup ───────────────────────────────────────── */
-.home-modal { position:fixed; inset:0; z-index:200; display:grid; place-items:center; padding:24px; }
+.home-modal { position:fixed; inset:0; z-index:200; display:grid; place-items:center; padding:24px;
+  grid-template-rows:minmax(0, 1fr); }
 .home-modal__backdrop { position:absolute; inset:0; background:rgba(20,14,8,.55); backdrop-filter:blur(3px); }
-.home-modal__panel { position:relative; width:100%; max-width:820px; max-height:90vh; display:flex; flex-direction:column;
+.home-modal__panel { position:relative; width:100%; max-width:820px; height:88vh; max-height:88vh; display:flex; flex-direction:column;
   background:var(--bg); color:var(--fg); border:1px solid var(--line); border-radius:var(--radius-lg);
   box-shadow:var(--shadow-card); overflow:hidden; outline:none; }
 .home-modal__head { display:flex; align-items:center; justify-content:space-between; gap:16px;
   padding:18px 22px; border-bottom:1px solid var(--line); }
+.home-modal__head-left { display:flex; align-items:center; gap:12px; min-width:0; }
 .home-modal__title { margin:0; font-size:18px; font-weight:700; color:var(--fg); }
+.home-modal__back { width:34px; height:34px; flex:none; display:grid; place-items:center;
+  border-radius:var(--radius-pill); border:1px solid var(--line); background:transparent;
+  color:var(--accent-text); cursor:pointer; transition:border-color .16s, background .16s, color .16s; }
+.home-modal__back:hover { border-color:var(--accent); background:var(--surface); color:var(--accent-dark); }
 .home-modal__close { width:36px; height:36px; border-radius:var(--radius-pill); border:1px solid var(--line);
   background:transparent; color:var(--fg); font-size:20px; line-height:1; cursor:pointer; flex:none; }
 .home-modal__close:hover { border-color:var(--accent); color:var(--accent-dark); }
-.home-modal__body { padding:20px 22px; overflow-y:auto; }
-@media (max-width:640px) {
+.home-modal__body { padding:20px 22px; overflow-y:auto; flex:1; min-height:0; display:flex; flex-direction:column; }
+/* Confirmation: the content is a slim column, so on desktop shrink the whole
+   panel to a compact success card (narrower + auto height) instead of a tall
+   empty box. Mobile keeps its full-screen layout (see the ≤768px block). */
+@media (min-width:769px) {
+  .home-modal__panel:has(.home-modal__body--done) { max-width:560px; height:auto; max-height:90vh; }
+}
+.home-modal__body--done { padding:6px 26px 28px; }
+/* Full-screen, single-column modal for phones AND small tablets. Below 768px
+   the desktop 2-column card (with the side aside) gets too cramped and overflows
+   its frame, so we give everything up to a small tablet the clean full-bleed
+   layout instead. */
+@media (max-width:768px) {
   .home-modal { padding:0; place-items:stretch; }
   .home-modal__panel { max-width:none; max-height:none; height:100dvh; border:0; border-radius:0; }
 }
@@ -2899,7 +2925,10 @@ section.mhome { display:none; }
 }
 
 /* ── Booking wizard inside the popup ─────────────────────── */
-.home-modal .book__card { display:grid; grid-template-columns:1.6fr 1fr; gap:0; border:0; box-shadow:none; background:transparent; }
+.home-modal .book__card { display:grid; grid-template-columns:1.6fr 1fr; gap:0; border:0; box-shadow:none; background:transparent; overflow:visible; align-items:start; }
+/* Confirmation screen: no aside, so collapse to one centred column. */
+.home-modal .book__card--done { display:block; }
+.home-modal .book__card--done .book__main { max-width:520px; margin:0 auto; padding:4px; }
 .home-modal .book__main { padding:4px 22px 4px 4px; }
 .home-modal .book__aside { background:var(--bg-2); border:1px solid var(--line); border-left:0; border-radius:var(--radius-lg); padding:22px; }
 .home-modal .step__title { font-size:21px; font-weight:800; color:var(--fg); margin:0 0 4px; }
@@ -2930,20 +2959,223 @@ section.mhome { display:none; }
 .home-modal .choice__tags { display:flex; flex-wrap:wrap; gap:5px; margin-top:5px; }
 .home-modal .choice__tag { font-size:10.5px; color:var(--fg-2); background:var(--bg-2);
   border:1px solid var(--line); border-radius:999px; padding:1px 8px; }
+
+/* ── stylist cards (clean & minimal) ───────────────────────
+   Big round avatar, name + role, a rating only when it's real (no "New"
+   clutter). Whole card is the tap target, with a checkmark badge + accent ring
+   on select. "Any stylist" leads the grid as a first-class option. */
+.home-modal .stylist-card { position:relative; align-items:center; gap:13px; padding:14px 16px 14px 14px; }
+.home-modal .stylist-card__av { width:52px; height:52px; flex:none; border-radius:50%;
+  object-fit:cover; background:var(--bg-2); }
+.home-modal .stylist-card .choice__txt b { font-size:15.5px; }
+.home-modal .stylist-card .choice__txt small { margin-top:2px; color:var(--fg-muted); }
+.home-modal .stylist-card .choice__rating { margin-top:6px; }
+.home-modal .stylist-card:hover { border-color:var(--accent); }
+.home-modal .stylist-card.sel { border-color:var(--accent); background:var(--accent-tint);
+  box-shadow:0 0 0 2px var(--accent), 0 0 0 5px color-mix(in srgb, var(--accent) 15%, transparent); }
+/* checkmark badge, top-right, fills in when selected */
+.home-modal .stylist-card__check { position:absolute; top:12px; right:12px; width:22px; height:22px;
+  border-radius:50%; display:grid; place-items:center; background:var(--surface);
+  border:1.5px solid var(--line); color:transparent; transition:background .16s, border-color .16s, color .16s; }
+.home-modal .stylist-card.sel .stylist-card__check { background:var(--accent); border-color:var(--accent); color:#fff; }
+.home-modal .stylist-card__check svg { display:none; }
+.home-modal .stylist-card.sel .stylist-card__check svg { display:block; }
+/* "Any stylist" avatar circle uses an icon instead of a photo */
+.home-modal .stylist-card__av--any { display:grid; place-items:center; font-size:22px;
+  color:var(--accent-text); background:color-mix(in srgb, var(--accent) 12%, var(--bg-2)); }
+.home-modal .stylist-card--any.sel .stylist-card__av--any { background:var(--accent-dark); color:#fff; }
+
+/* ── rich (detailed) stylist card ──────────────────────────
+   Avatar + name/role/rating on top, a specialty-tag row across the bottom with
+   a hairline divider. Every card is the SAME height: the grid stretches cells,
+   each card fills its cell, and the tag row is pinned to the bottom so the
+   dividers and card edges line up across the whole grid. */
+.home-modal .stylist-grid { align-items:stretch; }
+.home-modal .stylist-card--rich { height:100%; flex-direction:column; align-items:stretch; gap:0; padding:0; overflow:hidden; }
+.home-modal .stylist-card__top { flex:1; min-height:84px; display:flex; align-items:center; gap:13px; padding:15px 16px 13px; }
+.home-modal .stylist-card--rich .stylist-card__av { width:56px; height:56px; flex:none; }
+.home-modal .stylist-card__head { min-width:0; display:flex; flex-direction:column; }
+.home-modal .stylist-card__head b { font-size:15.5px; font-weight:700; color:var(--fg);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.home-modal .stylist-card__head small { font-size:12.5px; color:var(--fg-muted); margin-top:1px; }
+.home-modal .stylist-card__rating { display:flex; align-items:center; gap:6px; margin-top:5px; font-size:12px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.home-modal .stylist-card__stars { font-weight:700; color:var(--accent-text); }
+.home-modal .stylist-card__reviews { color:var(--fg-muted); font-size:11.5px; }
+.home-modal .stylist-card__rating.is-new { color:var(--fg-muted); font-weight:600; font-size:11.5px; }
+/* specialty tags row — pinned to the bottom so every card lines up */
+.home-modal .stylist-card__tags { margin-top:auto; display:flex; flex-wrap:wrap; gap:6px;
+  padding:11px 16px; border-top:1px solid var(--line); background:color-mix(in srgb, var(--bg-2) 55%, transparent); }
+/* the "Any stylist" bottom row reads as a highlight, not a specialty */
+.home-modal .stylist-card__tags--any .stylist-card__tag { color:var(--accent-text);
+  background:color-mix(in srgb, var(--accent) 10%, var(--surface)); border-color:color-mix(in srgb, var(--accent) 30%, var(--line)); }
+.home-modal .stylist-card__tag { font-size:11px; font-weight:600; color:var(--fg-2);
+  background:var(--surface); border:1px solid var(--line); border-radius:999px; padding:2px 10px; }
+.home-modal .stylist-card--rich.sel .stylist-card__tags { background:color-mix(in srgb, var(--accent) 8%, transparent);
+  border-top-color:color-mix(in srgb, var(--accent) 30%, var(--line)); }
+.home-modal .stylist-card--rich.sel .stylist-card__tag { border-color:color-mix(in srgb, var(--accent) 35%, var(--line)); }
+/* keep the check badge clear of the tag row */
+.home-modal .stylist-card--rich .stylist-card__check { top:14px; right:14px; }
+
+/* ── month calendar (Date step) ────────────────────────────
+   A proper month grid with prev/next paging. Past + out-of-horizon + holiday
+   days are disabled; holidays carry a dot and are not bookable. */
+.home-modal .cal { max-width:420px; }
+.home-modal .cal__head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.home-modal .cal__title { font-size:15.5px; font-weight:800; color:var(--fg); }
+.home-modal .cal__nav { width:36px; height:36px; flex:none; display:grid; place-items:center;
+  border-radius:var(--radius-pill); border:1px solid var(--line); background:var(--surface);
+  color:var(--fg); cursor:pointer; transition:border-color .16s, color .16s, background .16s; }
+.home-modal .cal__nav:hover:not(:disabled) { border-color:var(--accent); color:var(--accent-dark); }
+.home-modal .cal__nav:disabled { opacity:.35; cursor:not-allowed; }
+.home-modal .cal__grid { display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; }
+.home-modal .cal__grid--dow { margin-bottom:4px; }
+.home-modal .cal__dow { text-align:center; font-size:10.5px; font-weight:700; letter-spacing:.04em;
+  text-transform:uppercase; color:var(--fg-muted); padding:2px 0; }
+.home-modal .cal__cell--empty { aspect-ratio:1; }
+.home-modal .cal__day { position:relative; aspect-ratio:1; display:flex; align-items:center; justify-content:center;
+  border-radius:var(--radius-md); border:1.5px solid transparent; background:var(--surface);
+  font-family:inherit; font-size:14.5px; font-weight:600; color:var(--fg); cursor:pointer;
+  transition:border-color .14s, background .14s, color .14s; }
+.home-modal .cal__day:hover:not(:disabled) { border-color:var(--accent); }
+.home-modal .cal__day.today { border-color:color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.home-modal .cal__day.sel { background:var(--accent); border-color:var(--accent); color:#fff; }
+.home-modal .cal__day:disabled { cursor:not-allowed; color:var(--fg-muted); opacity:.45; background:transparent; }
+.home-modal .cal__day.holiday { color:var(--error); opacity:.6; background:color-mix(in srgb, var(--error) 7%, transparent); }
+.home-modal .cal__day.holiday:disabled { opacity:.6; }
+.home-modal .cal__dot { position:absolute; bottom:5px; left:50%; transform:translateX(-50%);
+  width:4px; height:4px; border-radius:50%; background:var(--error); }
+.home-modal .cal__legend { display:flex; align-items:center; gap:7px; margin:14px 0 0; font-size:12px; color:var(--fg-muted); }
+.home-modal .cal__legend-dot { width:8px; height:8px; border-radius:50%; background:var(--error); flex:none; }
+
+/* ── multi-select service grid ─────────────────────────────
+   Responsive auto-fit: 1 col on narrow, 2–3 as width allows. Cards stack the
+   photo on top so text isn't cramped in a narrow column, and carry a checkmark
+   badge that fills in when the service is part of the combined booking. */
+.home-modal .choices--grid { grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; }
+.home-modal .choice--card { position:relative; flex-direction:column; align-items:stretch;
+  gap:10px; padding:12px 12px 14px; }
+.home-modal .choice--card .choice__photo { width:100%; height:120px; border-radius:12px; }
+.home-modal .choice--card .choice__txt { flex:0 1 auto; }
+.home-modal .choice--card .choice__txt small { white-space:normal; }
+.home-modal .choice--card .choice__price { margin-left:0; font-size:16px; }
+/* selection checkmark badge (top-right) */
+.home-modal .choice__check { position:absolute; top:10px; right:10px; width:22px; height:22px;
+  border-radius:50%; display:grid; place-items:center; background:var(--surface);
+  border:1.5px solid var(--line); color:transparent; transition:background .16s, border-color .16s, color .16s; }
+.home-modal .choice--card.sel .choice__check { background:var(--accent); border-color:var(--accent); color:#fff; }
+.home-modal .choice--card.sel .choice__check svg { display:block; }
+.home-modal .choice--card .choice__check svg { display:none; }
+
+/* ── fixed panel footer: total + Continue always reachable ──
+   The footer is a sibling of the scrolling body (a direct child of the flex
+   panel), so it's genuinely pinned to the bottom of the popup window — it never
+   scrolls with the service list, on desktop or mobile. */
+/* Centred action block: the running total on a small line, Continue centred
+   below it. Back now lives in the modal header (see .home-modal__back), so the
+   footer holds just these two — clean and balanced on every screen. */
+.home-modal .book__foot { flex:none; display:flex; flex-direction:column; align-items:center; gap:8px;
+  padding:14px 22px; border-top:1px solid var(--line); background:var(--bg); }
+.home-modal .book__nav-total { display:flex; align-items:baseline; gap:10px; white-space:nowrap; }
+/* validation hint wraps (it's a full sentence, not a total) */
+.home-modal .book__nav-msg { color:var(--error); font-size:12.5px; line-height:1.35; text-align:center; }
+.home-modal .book__nav-count { font-size:12.5px; color:var(--fg-muted); font-weight:600; }
+.home-modal .book__nav-total b { font-size:18px; font-weight:800; color:var(--accent-text); }
+.home-modal .book__foot #nextBtn { min-width:200px; }
+/* Continue when the step is incomplete: looks disabled but stays clickable so a
+   tap can explain what's still needed. */
+.home-modal .book__foot #nextBtn.is-blocked { opacity:.5; }
+.home-modal .book__foot #nextBtn.is-blocked:hover { transform:none; }
+
+/* one-shot shake to draw the eye to the incomplete step content */
+.home-modal .book__main.shake { animation:book-shake .42s var(--ease); }
+@keyframes book-shake {
+  0%, 100% { transform:translateX(0); }
+  20% { transform:translateX(-7px); }
+  40% { transform:translateX(6px); }
+  60% { transform:translateX(-4px); }
+  80% { transform:translateX(2px); }
+}
+@media (prefers-reduced-motion: reduce) { .home-modal .book__main.shake { animation:none; } }
+
+/* ── sticky appointment summary on desktop ────────────────
+   Keep "Your appointment" in view while the service grid scrolls. */
+.home-modal .book__aside { position:sticky; top:0; align-self:start; }
+
+/* ── removable selected-service chips ─────────────────────── */
+.sum-chips { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 4px; }
+.sum-chip { display:inline-flex; align-items:center; gap:6px; max-width:100%;
+  font-size:12px; font-weight:600; color:var(--fg); background:var(--accent-tint);
+  border:1px solid color-mix(in srgb, var(--accent) 40%, var(--line));
+  border-radius:999px; padding:4px 6px 4px 10px; }
+.sum-chip__name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.sum-chip__x { flex:none; width:18px; height:18px; display:grid; place-items:center;
+  border:0; border-radius:50%; background:color-mix(in srgb, var(--accent) 22%, transparent);
+  color:var(--accent-text); font-size:15px; line-height:1; cursor:pointer; padding:0; }
+.sum-chip__x:hover { background:var(--accent); color:#fff; }
+
 /* mobile sticky summary bar (hidden on desktop) */
 .home-modal .book__bar { display:none; }
-@media (max-width:640px) {
+@media (max-width:768px) {
   .home-modal .book__card { grid-template-columns:1fr; }
   .home-modal .book__aside { display:none; }            /* full summary hidden on mobile */
   .home-modal .book__main { padding:0; }
   .home-modal .choices--2 { grid-template-columns:1fr; }
-  .home-modal .book__bar { position:sticky; top:0; z-index:3; display:flex; align-items:center;
-    justify-content:space-between; gap:12px; padding:11px 14px; margin:0 0 14px;
-    background:var(--bg-2); border:1px solid var(--line); border-radius:var(--radius-md); }
-  .home-modal .book__bar-info { min-width:0; }
-  .home-modal .book__bar-info b { display:block; font-size:13px; color:var(--fg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .home-modal .book__bar-info small { font-size:11px; color:var(--fg-muted); }
-  .home-modal .book__bar-total { font-size:18px; font-weight:800; color:var(--accent-text); white-space:nowrap; }
+  /* Summary stays PINNED at the top while the list scrolls. It stays short
+     because the chips sit in a single horizontal side-scroller (below) instead
+     of wrapping into a tall stack — so it never covers much of the list. */
+  .home-modal .book__card, .home-modal .book__main, .home-modal .book__bar { min-width:0; }
+  /* Polished stacked summary: an eyebrow + label on the left, big total on the
+     right, then the chips as a swipeable row. Reads like a compact appointment
+     card, matching the tone of the desktop aside. */
+  .home-modal .book__bar { position:sticky; top:0; z-index:3; display:flex; flex-direction:column;
+    gap:10px; padding:13px 15px; margin:0 0 14px; max-width:100%;
+    background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 6%, var(--bg-2)), var(--bg-2));
+    border:1px solid color-mix(in srgb, var(--accent) 22%, var(--line)); border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-sm); transition:transform .28s var(--ease), opacity .2s, gap .2s; }
+  /* auto-hide: slide up out of view when scrolling down into the content */
+  .home-modal .book__bar--hidden { transform:translateY(-115%); opacity:0; pointer-events:none; }
+  /* manual collapse: hide the detail rows, leaving just the total line */
+  .home-modal .book__bar--collapsed { gap:0; }
+  .home-modal .book__bar-body { display:flex; flex-direction:column; gap:10px; overflow:hidden;
+    max-height:200px; opacity:1; transition:max-height .28s var(--ease), opacity .18s, margin .2s; }
+  .home-modal .book__bar--collapsed .book__bar-body { max-height:0; opacity:0; }
+  /* chevron toggle */
+  .home-modal .book__bar-toggle { flex:none; width:28px; height:28px; display:grid; place-items:center;
+    border:0; border-radius:50%; background:transparent; color:var(--accent-text); cursor:pointer;
+    transition:transform .2s var(--ease), background .16s; }
+  .home-modal .book__bar-toggle:hover { background:color-mix(in srgb, var(--accent) 12%, transparent); }
+  .home-modal .book__bar--collapsed .book__bar-toggle { transform:rotate(-90deg); }
+  .home-modal .book__bar-head { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .home-modal .book__bar-label { min-width:0; flex:1; display:flex; flex-direction:column; gap:2px; }
+  .home-modal .book__bar-label .eyebrow-sm { font-size:9.5px; font-weight:700; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--accent-text); }
+  .home-modal .book__bar-label .count { font-size:13.5px; font-weight:700; color:var(--fg);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .home-modal .book__bar-total { flex:none; font-size:21px; font-weight:800; color:var(--accent-text); white-space:nowrap; }
+  /* stylist + when rows — mirror the desktop aside, shown once chosen */
+  .home-modal .book__bar-meta { display:flex; flex-direction:column; gap:6px;
+    padding-top:9px; border-top:1px solid color-mix(in srgb, var(--accent) 16%, var(--line)); }
+  .home-modal .book__bar-metaitem { display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+  .home-modal .book__bar-metaitem .k { font-size:10.5px; font-weight:700; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--fg-muted); }
+  .home-modal .book__bar-metaitem .v { min-width:0; font-size:13px; font-weight:600; color:var(--fg);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:right; }
+  .home-modal .book__bar-metaitem .v.empty { font-weight:400; font-style:italic; color:var(--fg-muted); }
+  /* chips in ONE horizontal row that scrolls sideways (swipe to see them all),
+     so the summary height stays fixed no matter how many services are picked */
+  .home-modal .book__bar .sum-chips { flex-wrap:nowrap; overflow-x:auto; margin:0;
+    width:100%; max-width:100%; padding-bottom:2px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  .home-modal .book__bar .sum-chips::-webkit-scrollbar { display:none; }
+  .home-modal .book__bar .sum-chip { flex:none; max-width:none; font-size:11.5px; padding:4px 6px 4px 11px; }
+  .home-modal .book__bar .sum-chip__name { overflow:visible; text-overflow:clip; }
+  /* tighter step tabs so "DATE & TIME" fits on narrow phones */
+  .home-modal .steps { gap:5px; margin-bottom:20px; }
+  .home-modal .steps__label { font-size:9px; letter-spacing:.02em; }
+
+  /* mobile: total centred on top, wide full-width Continue below (thumb-friendly) */
+  .home-modal .book__foot { padding:12px 16px calc(12px + env(safe-area-inset-bottom)); }
+  .home-modal .book__foot #nextBtn { width:100%; min-width:0; padding:14px 18px; font-size:15px; }
 }
 
 
