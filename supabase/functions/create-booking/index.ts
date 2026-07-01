@@ -2,7 +2,7 @@ import { createClient } from 'jsr:@supabase/supabase-js@2';
 import { type Interval } from '../_shared/availability.ts';
 import { toUtcInstant, minutesOfDayInTz } from '../_shared/time.ts';
 import { makeReference } from '../_shared/reference.ts';
-import { createBookingSchema } from '../_shared/validators.ts';
+import { createBookingSchema, normalizeServiceIds } from '../_shared/validators.ts';
 
 const TZ = 'Asia/Colombo';
 const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, content-type, apikey' };
@@ -31,13 +31,22 @@ Deno.serve(async (req) => {
   const userClient = createClient(url, Deno.env.get('SUPABASE_ANON_KEY')!, { global: { headers: { Authorization: authHeader } } });
   const { data: { user } } = await userClient.auth.getUser();
 
-  const { data: service } = await admin.from('services').select('id,name,duration_min,price_lkr').eq('id', input.serviceId).eq('is_active', true).single();
-  if (!service) return Response.json({ ok: false, error: 'invalid', message: 'That service is unavailable.' }, { headers: cors });
+  // Re-derive price + duration for every chosen service (never trust the client).
+  // Preserve the client's order so the first pick is the "primary" service_id.
+  const serviceIds = normalizeServiceIds(input);
+  const { data: rows } = await admin.from('services').select('id,name,duration_min,price_lkr').in('id', serviceIds).eq('is_active', true);
+  if (!rows || rows.length !== serviceIds.length) return Response.json({ ok: false, error: 'invalid', message: 'One of those services is unavailable.' }, { headers: cors });
+  const services = serviceIds.map((id) => rows.find((r) => r.id === id)!);
+  const primary = services[0]!;
+  const totalDuration = services.reduce((sum, s) => sum + s.duration_min, 0);
+  const totalPrice = services.reduce((sum, s) => sum + s.price_lkr, 0);
+  const serviceNames = services.map((s) => s.name);
+  const combinedName = serviceNames.length === 1 ? serviceNames[0]! : `${serviceNames[0]} + ${serviceNames.length - 1} more`;
 
   const [hh, mm] = input.time.split(':').map(Number);
   const startMin = hh * 60 + mm;
   const startsAt = toUtcInstant(input.date, startMin, TZ);
-  const endsAt = toUtcInstant(input.date, startMin + service.duration_min, TZ);
+  const endsAt = toUtcInstant(input.date, startMin + totalDuration, TZ);
 
   let stylistId: string | null = input.stylistId;
   let stylistName = 'Next available stylist';
@@ -50,7 +59,7 @@ Deno.serve(async (req) => {
     let chosen = false;
     for (const s of stylists ?? []) {
       const busy = await busyIntervals(s.id, input.date);
-      if (!busy.some((b) => startMin < b.endMin && b.startMin < startMin + service.duration_min)) { stylistId = s.id; stylistName = s.name; chosen = true; break; }
+      if (!busy.some((b) => startMin < b.endMin && b.startMin < startMin + totalDuration)) { stylistId = s.id; stylistName = s.name; chosen = true; break; }
     }
     if (!chosen) return Response.json({ ok: false, error: 'slot_taken', message: 'That time was just taken — pick another.' }, { headers: cors });
   }
@@ -58,13 +67,13 @@ Deno.serve(async (req) => {
   for (let attempt = 0; attempt < 3; attempt++) {
     const reference = makeReference();
     const { error } = await admin.from('bookings').insert({
-      reference, service_id: service.id, stylist_id: stylistId,
+      reference, service_id: primary.id, service_ids: serviceIds, stylist_id: stylistId,
       customer_name: input.name, customer_phone: input.phone, customer_email: input.email || null,
       notes: input.notes, starts_at: startsAt, ends_at: endsAt, status: 'confirmed', user_id: user?.id ?? null,
     });
     if (!error) {
       const whenLabel = new Intl.DateTimeFormat('en-LK', { timeZone: TZ, weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true }).format(new Date(startsAt));
-      return Response.json({ ok: true, reference, whenLabel, stylistName, serviceName: service.name, priceLkr: service.price_lkr, durationMin: service.duration_min }, { headers: cors });
+      return Response.json({ ok: true, reference, whenLabel, stylistName, serviceName: combinedName, serviceNames, priceLkr: totalPrice, durationMin: totalDuration }, { headers: cors });
     }
     if (error.code === '23505') continue;
     if (error.code === '23P01') return Response.json({ ok: false, error: 'slot_taken', message: 'That time was just taken — pick another.' }, { headers: cors });

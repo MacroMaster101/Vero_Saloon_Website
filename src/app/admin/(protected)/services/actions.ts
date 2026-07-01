@@ -79,13 +79,3 @@ export async function deleteService(formData: FormData): Promise<void> {
   await sb.from('services').delete().eq('id', id);
   revalidate();
 }
-
-export async function reorderService(formData: FormData): Promise<void> {
-  await requireRole(['admin'], PATH);
-  const id = String(formData.get('id') ?? '');
-  const sort_order = Number(formData.get('sort_order') ?? 0);
-  if (!id || Number.isNaN(sort_order)) return;
-  const sb = await createClient();
-  await sb.from('services').update({ sort_order }).eq('id', id);
-  revalidate();
-}

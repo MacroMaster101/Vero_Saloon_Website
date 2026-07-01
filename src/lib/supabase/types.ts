@@ -147,6 +147,7 @@ export interface Database {
           id: string;
           reference: string;
           service_id: string;
+          service_ids: string[] | null;
           stylist_id: string | null;
           customer_name: string;
           customer_phone: string;
@@ -162,6 +163,7 @@ export interface Database {
           id?: string;
           reference: string;
           service_id: string;
+          service_ids?: string[] | null;
           stylist_id?: string | null;
           customer_name: string;
           customer_phone: string;
@@ -250,6 +252,26 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['site_content']['Insert']>;
         Relationships: [];
       };
+      holidays: {
+        Row: {
+          date: string;
+          name: string;
+          source: 'google' | 'manual';
+          is_closed: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          date: string;
+          name: string;
+          source?: 'google' | 'manual';
+          is_closed?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['holidays']['Insert']>;
+        Relationships: [];
+      };
     };
     Views: Record<never, never>;
     Functions: {
@@ -272,3 +294,4 @@ export type BlockedSlot = Database['public']['Tables']['blocked_slots']['Row'];
 export type Booking = Database['public']['Tables']['bookings']['Row'];
 export type GalleryItem = Database['public']['Tables']['gallery']['Row'];
 export type Profile = Database['public']['Tables']['profiles']['Row'];
+export type Holiday = Database['public']['Tables']['holidays']['Row'];

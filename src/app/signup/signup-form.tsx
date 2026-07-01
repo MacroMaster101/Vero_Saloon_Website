@@ -17,7 +17,7 @@ function GoogleMark() {
   );
 }
 
-export function SignupForm({ next }: { next: string }) {
+export function SignupForm({ next, prefillEmail = '' }: { next: string; prefillEmail?: string }) {
   const [state, action] = useActionState(signUpWithPassword, undefined);
   const [pw, setPw] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -70,7 +70,7 @@ export function SignupForm({ next }: { next: string }) {
         <form action={action}>
           <input type="hidden" name="next" value={next} />
           <div className="field"><label htmlFor="su-name">Full name</label><input id="su-name" name="full_name" required /></div>
-          <div className="field"><label htmlFor="su-email">Email</label><input id="su-email" name="email" type="email" required /></div>
+          <div className="field"><label htmlFor="su-email">Email</label><input id="su-email" name="email" type="email" defaultValue={prefillEmail} required /></div>
 
           <div className="field">
             <label htmlFor="su-pw">Password</label>

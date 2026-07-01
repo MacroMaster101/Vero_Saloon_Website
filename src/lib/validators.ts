@@ -10,13 +10,16 @@ export const slLankaPhone = z.string().transform((s) => s.replace(/[\s-]/g, ''))
 export const bookingDetailsSchema = z.object({
   name: z.string().trim().min(2, 'Please enter your name'),
   phone: slLankaPhone,
-  email: z.union([z.literal(''), z.string().email('That email doesn’t look right')]),
+  email: z.string().trim().min(1, 'Please enter your email').email('That email doesn’t look right'),
   notes: z.string().max(500).default(''),
 });
 export type BookingDetails = z.infer<typeof bookingDetailsSchema>;
 
 export const createBookingSchema = bookingDetailsSchema.extend({
-  serviceId: z.string().uuid(),
+  // One or more services booked as a single combined visit. The first entry is
+  // the "primary" service (stored in bookings.service_id); the full list goes to
+  // bookings.service_ids. Deduped + capped to keep the combined block sane.
+  serviceIds: z.array(z.string().uuid()).min(1, 'Pick at least one service').max(10),
   stylistId: z.string().uuid().nullable(), // null = no preference
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   time: z.string().regex(/^\d{2}:\d{2}$/),

@@ -4,7 +4,7 @@
 
 ### Hair & Beauty Unisex Salon · Pasyala, Sri Lanka 🇱🇰
 
-**A production salon website + booking platform** — polished marketing site, a four-step booking flow with race-proof availability, customer accounts (email/password + Google), and a role-based admin & staff dashboard.
+**A production salon website + booking platform** — polished marketing site, a five-step multi-service booking flow with a month calendar, race-proof availability, customer accounts (email/password + Google), and a role-based admin & staff dashboard.
 
 <br/>
 
@@ -34,7 +34,9 @@
 |---|---|
 | 🎨 | **Warm Modern design system** — gold + warm-neutral palette, light/dark themes with no flash, Poppins |
 | 🌀 | **Rich motion** — parallax hero, 3D coverflow lookbook, pinned step-through (all reduced-motion aware) |
-| 📅 | **4-step booking** — service → stylist → date & time → details, with real server-side availability |
+| 📅 | **5-step booking** — service → stylist → date → time → details, with real server-side availability |
+| ➕ | **Multi-service booking** — bundle several services into one visit; combined duration + price reserve a single continuous slot |
+| 🗓️ | **Month calendar + SL holidays** — pick a date from a month grid; Sri Lankan public & poya holidays (synced from Google Calendar into a `holidays` table) are blocked as closed days |
 | 🔒 | **Race-proof slots** — a Postgres `EXCLUDE` constraint makes double-booking impossible |
 | 🔑 | **Accounts & auth** — split-screen **login** + **signup** (email/password with live password-strength rules, or Google OAuth), email-confirmation flow |
 | 👤 | **Customer account** — sidebar dashboard: profile, avatar upload (DiceBear fallback), bookings history, member-since/last-sign-in, account deletion |
@@ -42,7 +44,7 @@
 | 🧑‍🤝‍🧑 | **Roles** — `user` / `staff` / `admin`, enforced by Supabase RLS; admins manage roles & stylist links in **People** |
 | 📧 | **Email confirmations** — via Resend, with a pluggable SMS stub for later |
 | ✍️ | **Editable site content** — homepage copy lives in a `site_content` table and is editable from the admin **Content** page (no redeploy needed) |
-| 🛠️ | **Admin dashboard** — sidebar shell with live bookings (Realtime), status controls, searchable/filterable lists, and full CRUD for **Services**, **Stylists**, **Gallery**, **Content**, **Reviews**, **People**, **Schedule** & **Blocked slots** |
+| 🛠️ | **Admin dashboard** — sidebar shell with live bookings (Realtime), status controls, searchable/filterable lists, and full CRUD for **Services**, **Stylists**, **Gallery**, **Content**, **Reviews**, **People**, **Schedule**, **Blocked slots** & **Holidays** (sync from Google or add manual closures) |
 | 🧑‍🔧 | **Staff dashboard** — staff see only their own RLS-scoped **My schedule** and today's bookings, with the same search/filter toolbar |
 | 🔏 | **Privacy-aware deletion** — account deletion anonymizes past bookings (strips PII, keeps business records) via a `security definer` DB function |
 | ✅ | **Tested** — Vitest unit + integration (availability, schemas, roles, reviews, …) and a Playwright end-to-end booking flow |
@@ -83,6 +85,7 @@ Copy `.env.example` → `.env` (or `.env.local`) and fill in:
 | `SUPABASE_DB_PASSWORD` | Supabase → Settings → Database → password | migrations/types |
 | `RESEND_API_KEY` | Resend dashboard | optional |
 | `RESEND_FROM_EMAIL` | A verified Resend sender, e.g. `Vero Salon <bookings@yourdomain>` | optional |
+| `GOOGLE_CALENDAR_API_KEY` | Google Cloud → enable **Google Calendar API** → API key (restriction **None** — used server-side) | optional |
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` in dev; your domain in prod | ✅ |
 
 > ⚠️ `.env` / `.env.local` are gitignored — **never commit real keys.** The `service_role` key bypasses RLS and stays server-only (read only in `lib/supabase/admin.ts`, never shipped to the browser).
@@ -105,6 +108,8 @@ Apply the migrations with the Supabase CLI using a direct DB connection string (
 # 0005_site_content.sql   — `site_content` key/value table for editable copy
 # 0006_service_image.sql  — per-service `image_url` for photo-led service cards
 # 0007_reviews_ratings.sql— `stylist_reviews` table + `stylists.rating`/`rating_count`
+# 0008_booking_multi_service.sql — `bookings.service_ids[]` for multi-service visits
+# 0009_holidays.sql        — `holidays` table (SL public/poya days + manual closures)
 npx supabase db push --db-url "postgresql://postgres:<DB_PASSWORD>@db.<ref>.supabase.co:5432/postgres"
 ```
 
@@ -122,6 +127,15 @@ on conflict (id) do update set public = true;
 ```
 
 Uploads run server-side with the service-role key, so no extra Storage RLS is needed.
+
+### 🗓️ Sri Lankan holidays (optional)
+
+The booking calendar can block SL public & poya holidays. It reads them from the `holidays` table (migration `0009`) — never from Google at request time — so heavy traffic never hits an API limit.
+
+1. In **Google Cloud Console**, enable **Google Calendar API** and create an **API key**. Set its application restriction to **None** (the key is used server-side, so a "Websites"/referer restriction would block it). Put it in `.env` as `GOOGLE_CALENDAR_API_KEY`.
+2. In the app, go to **Admin → Holidays → Sync** and pick a year — this pulls that year's holidays from Google's public SL calendar into the DB. You can also **add manual closures** by hand (e.g. staff-training days).
+
+If the key is unset, the calendar still works — no dates get blocked as holidays.
 
 ### 👑 First admin (bootstrap)
 
@@ -187,7 +201,8 @@ npm run e2e        # 🎭 Playwright e2e (run `npm run build` first)
 
 ## ⚙️ How it works
 
-- 🧮 **Availability** (`lib/availability.ts`) — a pure, unit-tested function: given business hours, a service duration, and busy intervals (confirmed bookings + blocked slots), it returns open start times. The `getAvailability` server action feeds it real data; "any stylist" unions every stylist's openings.
+- 🧮 **Availability** (`lib/availability.ts`) — a pure, unit-tested function: given business hours, a service duration, and busy intervals (confirmed bookings + blocked slots), it returns open start times. The `getAvailability` server action feeds it real data; for a multi-service booking it uses the **summed** duration, and "any stylist" unions every stylist's openings.
+- 🗓️ **Calendar & holidays** (`lib/lk-holidays.ts`, `components/booking/step-date.tsx`) — the Date step is a month calendar; the Time step lists that day's slots. Sri Lankan holidays live in a `holidays` DB table and are **blocked** as closed days. The public calendar reads holidays **only from the DB** (never Google at request time, so no rate limits); an admin **syncs** them once per year from Google's public SL holiday calendar via **Admin → Holidays**. Degrades gracefully to no blocking when `GOOGLE_CALENDAR_API_KEY` / the table are absent.
 - 🔒 **Double-booking protection** — enforced in Postgres by a GiST `EXCLUDE` constraint, so two confirmed bookings for the same stylist can't overlap. `createBooking` catches the violation (`23P01`) and returns a graceful "slot just taken." Price & duration are always re-derived from the DB — never trusted from the client.
 - 📨 **Notifications** (`lib/notify/`) — go through a `Notifier` interface. Resend sends the email; an SMS stub logs a placeholder. Email no-ops safely when `RESEND_API_KEY` is unset, so bookings still succeed without it.
 - 🔑 **Auth & accounts** — `/login` and `/signup` (split-screen) use Supabase email/password or Google OAuth; both flow through `/auth/callback`. Signup enforces password rules (`lib/auth/password.ts`) on the client *and* server. `safeNext` sanitizes every post-login redirect; `roleDefaultPath` sends each role to its home. `/account` is a sidebar dashboard (profile, avatar upload, bookings, account deletion). Avatars resolve via `lib/avatar.ts` — an uploaded photo wins, otherwise a deterministic DiceBear fallback seeded by email/name.
@@ -205,11 +220,11 @@ app/                   # 🧭 routes: public page, /book actions
   login/ · signup/     # 🔑 split-screen auth (email/password + Google)
   account/             # 👤 customer dashboard (profile, avatar, bookings, reviews, delete)
   admin/(protected)/   # 🛠️ role-guarded shell: dashboard, services, stylists, gallery,
-                       #     content, reviews, people, schedule, blocked-slots
+                       #     content, reviews, people, schedule, blocked-slots, holidays
   staff/               # 🧑‍🔧 staff "my schedule" + today view
   auth/callback/       # 🔁 OAuth + email-confirmation handler
 components/site/        # 🎨 marketing sections (hero, lookbook, services, …)
-components/booking/     # 📅 4-step wizard
+components/booking/     # 📅 5-step wizard (service · stylist · date · time · details)
 components/admin/       # 🛠️ bookings table, list-toolbar (search/filter), block/image forms
 components/reviews/     # ⭐ star row + review list
 components/ui/          # 🧩 shared primitives (size-constrained Icon, …)
@@ -217,7 +232,7 @@ lib/                    # 🧰 availability, time, validators, queries, notify, 
 lib/auth/              # 🔐 password rules, redirect-safety (safeNext), roles
 lib/content/           # ✍️ editable site-content blocks (get / merge / shapes)
 lib/reviews.ts          # ⭐ pure rating-average helpers (unit-tested)
-supabase/migrations/    # 🗄️ schema + RLS + realtime + roles + retention + content + service-image + reviews (0001–0007)
+supabase/migrations/    # 🗄️ schema + RLS + realtime + roles + retention + content + service-image + reviews + multi-service + holidays (0001–0009)
 supabase/seed.sql       # 🌱 real Vero data
 tests/                  # 🧪 vitest unit/integration; tests/e2e Playwright
 ```
