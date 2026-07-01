@@ -21,7 +21,6 @@ import {
   getRecentReviews,
   getBusinessHours,
 } from '@/lib/queries';
-import type { Service } from '@/lib/supabase/types';
 
 // One link per on-page section, in DOM (top→bottom) order so the scroll-spy
 // highlight moves left → right as you scroll. Keep these ids in sync with the
@@ -66,13 +65,6 @@ const DAYS = [
 
 const reviewDate = new Intl.DateTimeFormat('en-LK', { day: 'numeric', month: 'short', year: 'numeric' });
 
-function featuredOf(services: Service[]): Service | null {
-  return (
-    services.find((s) => s.is_featured) ??
-    [...services].sort((a, b) => b.price_lkr - a.price_lkr)[0] ??
-    null
-  );
-}
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ deleted?: string }> }) {
   const sp = await searchParams;
@@ -97,9 +89,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
   const { data: { user } } = await sb.auth.getUser();
   const userMetadata = user?.user_metadata ?? null;
 
-  const hair = services.filter((s) => s.category === 'hair');
-  const beauty = services.filter((s) => s.category === 'beauty');
-  const featured = featuredOf(services);
   const looks = gallery.slice(0, 5);
   const isCustomer = profile?.role !== 'admin' && profile?.role !== 'staff';
   const hoursByDow = new Map(hours.map((h) => [h.day_of_week, h]));
@@ -214,7 +203,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
           <section className="home-section home-story" id="about">
             <div className="home-wrap home-story__grid">
               <div className="home-story__art home-reveal">
-                <ImgSlot src="/images/story/interior.png" alt="Inside Vero Salon" />
+                {/* Same asset as the hero image (already preloaded), so eager-load it too —
+    a lazy second instance trips Next's LCP warning when it paints first. */}
+                <ImgSlot src="/images/story/interior.png" alt="Inside Vero Salon" priority={true} />
               </div>
               <div className="home-reveal">
                 <span className="home-eyebrow">{story.eyebrow}</span>
@@ -239,10 +230,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
               <div className="home-head home-reveal">
                 <span className="home-eyebrow home-eyebrow--center">The menu</span>
                 <h2 className="home-h">Services &amp; <em>pricing</em></h2>
-                <p className="home-lead">Hair, colour and beauty for everyone. Prices in LKR — final quote confirmed at your consultation.</p>
+                <p className="home-lead">Hair, colour and beauty for him &amp; her. Prices in LKR — final quote confirmed at your consultation.</p>
               </div>
               <div className="home-reveal">
-                <ServicesTabs hair={hair} beauty={beauty} featured={featured} />
+                <ServicesTabs services={services} />
               </div>
             </div>
           </section>
@@ -254,6 +245,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
                 <span className="home-eyebrow home-eyebrow--center">How it works</span>
                 <h2 className="home-h">Your visit, <em>step by step</em></h2>
                 <p className="home-lead">From booking to the final mirror check — here is exactly what to expect.</p>
+                <span className="home-swipe" aria-hidden="true">swipe</span>
               </div>
               <div className="home-steps home-car">
                 {STEPS.map((s) => (
@@ -275,6 +267,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
                   <span className="home-eyebrow home-eyebrow--center">Our work</span>
                   <h2 className="home-h">The <em>lookbook</em></h2>
                   <p className="home-lead">A glimpse of the cuts, colour and care that walk out our door.</p>
+                  <span className="home-swipe" aria-hidden="true">swipe</span>
                 </div>
                 <div className="home-look home-car">
                   {looks.map((item) => (
@@ -301,6 +294,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
                   <span className="home-eyebrow home-eyebrow--center">The artisans</span>
                   <h2 className="home-h">Meet our <em>stylists</em></h2>
                   <p className="home-lead">A friendly, trained team dedicated to hair craft, colour and beauty care.</p>
+                  <span className="home-swipe" aria-hidden="true">swipe</span>
                 </div>
                 <div className="home-team home-car home-car--narrow">
                   {stylists.map((s) => {
@@ -333,6 +327,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
                 <div className="home-head home-reveal">
                   <span className="home-eyebrow home-eyebrow--center">Client voices</span>
                   <h2 className="home-h">What guests <em>say</em></h2>
+                  <span className="home-swipe" aria-hidden="true">swipe</span>
                 </div>
                 <div className="home-reviews__grid home-car">
                   {reviews.slice(0, 6).map((r) => (
@@ -433,7 +428,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
               <h2>{cta.title}</h2>
               <p>{cta.sub}</p>
               <div className="home-cta__actions">
-                <BookButton variant="light">Book a visit</BookButton>
+                <BookButton variant="primary">Book a visit</BookButton>
                 <a href={cta.phoneHref} className="home-btn home-btn--light">{cta.phoneLabel}</a>
               </div>
             </div>

@@ -1,14 +1,5 @@
 import type { ReactNode } from 'react';
 
-export function FormCard({ title, children, ...rest }: { title: string; children: ReactNode } & React.FormHTMLAttributes<HTMLFormElement>) {
-  return (
-    <form className="acard" {...rest}>
-      <div className="acard__title">{title}</div>
-      {children}
-    </form>
-  );
-}
-
 export function Field({ label, children }: { label: string; children: ReactNode }) {
   return <label className="afield"><span className="alabel">{label}</span>{children}</label>;
 }

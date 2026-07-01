@@ -27,5 +27,3 @@ export const serviceInputSchema = z
     sort_order: numberFromForm.int().default(0),
   })
   .transform((v) => ({ ...v, slug: v.slug ? slugify(v.slug) : slugify(v.name) }));
-
-export type ServiceInput = z.infer<typeof serviceInputSchema>;

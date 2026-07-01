@@ -11,7 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
-    "db:types": "supabase gen types typescript --linked > lib/supabase/types.ts"
+    "db:types": "supabase gen types typescript --linked > src/lib/supabase/types.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
