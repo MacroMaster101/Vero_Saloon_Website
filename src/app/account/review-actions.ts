@@ -1,5 +1,4 @@
 'use server';
-import { revalidatePath } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getUser } from '@/lib/supabase/auth';
 import { clampStars, computeUpdatedRating } from '@/lib/reviews';
@@ -54,6 +53,5 @@ export async function submitReview(input: {
       .eq('id', booking.stylist_id);
   }
 
-  revalidatePath('/account');
   return { ok: true };
 }

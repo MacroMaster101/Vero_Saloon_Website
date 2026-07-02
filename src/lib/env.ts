@@ -12,7 +12,14 @@ export const env = {
   get serviceRoleKey() { return required('SUPABASE_SERVICE_ROLE_KEY', process.env.SUPABASE_SERVICE_ROLE_KEY); },
   get resendApiKey() { return required('RESEND_API_KEY', process.env.RESEND_API_KEY); },
   get resendFrom() { return process.env.RESEND_FROM_EMAIL || 'Vero Salon <onboarding@resend.dev>'; },
+  // Optional: salon inbox for cancel/reschedule alerts. Empty string → no salon email.
+  get salonNotifyEmail() { return process.env.SALON_NOTIFY_EMAIL || ''; },
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
   // Optional: SL holiday sync. Empty string when unset (holiday features no-op).
   get googleCalendarKey() { return process.env.GOOGLE_CALENDAR_API_KEY || ''; },
+  // Optional: WhatsApp staff alert via Meta Cloud API. All three must be set
+  // for the channel to send; otherwise it no-ops (see notify/whatsapp.ts).
+  get whatsappAccessToken() { return process.env.WHATSAPP_ACCESS_TOKEN || ''; },
+  get whatsappPhoneNumberId() { return process.env.WHATSAPP_PHONE_NUMBER_ID || ''; },
+  get whatsappSalonNumber() { return process.env.WHATSAPP_SALON_NUMBER || ''; },
 };

@@ -28,7 +28,7 @@ export default async function StaffAccountPage() {
       <ProfileForm
         fullName={profile?.fullName ?? ''}
         email={profile?.email ?? ''}
-        role={profile?.role ?? 'staff'}
+        phone={profile?.phone ?? ''}
         userMetadata={userMetadata}
         seed={profile?.email ?? profile?.fullName ?? 'staff'}
       />

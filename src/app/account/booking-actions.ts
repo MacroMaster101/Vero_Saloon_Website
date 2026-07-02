@@ -1,20 +1,56 @@
 'use server';
-import { revalidatePath } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getUser } from '@/lib/supabase/auth';
+import { getMyBookings } from '@/lib/queries';
 import { toUtcInstant } from '@/lib/time';
 import { canModifyBooking } from '@/lib/account/booking-rules';
 import { getAvailability } from '@/app/book/actions';
+import { notifyBookingCancelled, notifyBookingRescheduled } from '@/lib/notify';
+import type { BookingChange } from '@/lib/notify/types';
 
 const TZ = 'Asia/Colombo';
+const whenFmt = new Intl.DateTimeFormat('en-LK', {
+  timeZone: TZ, weekday: 'short', day: 'numeric', month: 'short',
+  hour: 'numeric', minute: '2-digit', hour12: true,
+});
 
 type Ok = { ok: true };
 type Err = { ok: false; message: string };
 
+export type MyBookingRow = {
+  id: string;
+  reference: string;
+  starts_at: string;
+  status: string;
+  service_id: string;
+  service_ids: string[] | null;
+  stylist_id: string | null;
+};
+
+// The signed-in caller's booking history, for the bookings popup.
+export async function listMyBookings(): Promise<{ ok: true; bookings: MyBookingRow[] } | Err> {
+  const user = await getUser();
+  if (!user) return { ok: false, message: 'Please sign in.' };
+  const bookings = await getMyBookings(user.id, user.email ?? null);
+  return {
+    ok: true,
+    bookings: bookings.map((b) => ({
+      id: b.id, reference: b.reference, starts_at: b.starts_at, status: b.status,
+      service_id: b.service_id, service_ids: b.service_ids, stylist_id: b.stylist_id,
+    })),
+  };
+}
+
+type ModifiableBooking = {
+  id: string; user_id: string | null; status: string; starts_at: string;
+  service_id: string; service_ids: string[] | null; stylist_id: string | null;
+  reference: string; customer_name: string; customer_phone: string; customer_email: string | null;
+};
+
 // Load a booking the caller is allowed to modify, or an error. Ownership and
 // state are verified in code because booking RLS has no user-update policy.
 async function loadModifiable(bookingId: string): Promise<
-  | { ok: true; userId: string; booking: { id: string; user_id: string | null; status: string; starts_at: string; service_id: string; service_ids: string[] | null; stylist_id: string | null } }
+  | { ok: true; userId: string; booking: ModifiableBooking }
   | Err
 > {
   const user = await getUser();
@@ -22,7 +58,7 @@ async function loadModifiable(bookingId: string): Promise<
   const admin = createAdminClient();
   const { data: booking } = await admin
     .from('bookings')
-    .select('id, user_id, status, starts_at, service_id, service_ids, stylist_id')
+    .select('id, user_id, status, starts_at, service_id, service_ids, stylist_id, reference, customer_name, customer_phone, customer_email')
     .eq('id', bookingId)
     .single();
   if (!booking) return { ok: false, message: 'Booking not found.' };
@@ -36,13 +72,40 @@ async function loadModifiable(bookingId: string): Promise<
   return { ok: true, userId: user.id, booking };
 }
 
+// Resolve display names + labels for a change notification. Best-effort:
+// notifications never block the change itself.
+async function changePayload(booking: ModifiableBooking, newStartsAt?: string): Promise<BookingChange> {
+  const admin = createAdminClient();
+  const serviceIds = booking.service_ids?.length ? booking.service_ids : [booking.service_id];
+  const [{ data: services }, { data: stylist }] = await Promise.all([
+    admin.from('services').select('name').in('id', serviceIds),
+    booking.stylist_id
+      ? admin.from('stylists').select('name').eq('id', booking.stylist_id).single()
+      : Promise.resolve({ data: null }),
+  ]);
+  return {
+    reference: booking.reference,
+    customerName: booking.customer_name,
+    customerEmail: booking.customer_email,
+    customerPhone: booking.customer_phone,
+    serviceName: (services ?? []).map((s) => s.name).join(', ') || 'Service',
+    stylistName: stylist?.name ?? 'Any stylist',
+    whenLabel: whenFmt.format(new Date(booking.starts_at)),
+    newWhenLabel: newStartsAt ? whenFmt.format(new Date(newStartsAt)) : undefined,
+  };
+}
+
 export async function cancelMyBooking(bookingId: string): Promise<Ok | Err> {
   const loaded = await loadModifiable(bookingId);
   if (!loaded.ok) return loaded;
   const admin = createAdminClient();
   const { error } = await admin.from('bookings').update({ status: 'cancelled' }).eq('id', bookingId);
   if (error) return { ok: false, message: 'Could not cancel. Please try again.' };
-  revalidatePath('/account');
+  try {
+    await notifyBookingCancelled(await changePayload(loaded.booking));
+  } catch (err) {
+    console.error('[notify] cancel notification failed:', err);
+  }
   return { ok: true };
 }
 
@@ -85,6 +148,10 @@ export async function rescheduleMyBooking(
     if (error.code === '23P01') return { ok: false, message: 'That time was just taken — pick another.' };
     return { ok: false, message: 'Could not reschedule. Please try again.' };
   }
-  revalidatePath('/account');
+  try {
+    await notifyBookingRescheduled(await changePayload(booking, startsAt));
+  } catch (err) {
+    console.error('[notify] reschedule notification failed:', err);
+  }
   return { ok: true };
 }

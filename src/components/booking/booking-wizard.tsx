@@ -7,6 +7,7 @@ import { StepStylist } from './step-stylist';
 import { StepDate } from './step-date';
 import { StepTime } from './step-time';
 import { StepDetails, type StepDetailsHandle } from './step-details';
+import type { BookingPrefill } from './booking-provider';
 import { SummaryAside } from './summary-aside';
 import { Confirmation } from './confirmation';
 import { GuestRecentBookings } from './guest-recent';
@@ -25,10 +26,13 @@ function localYmd(d: Date): string {
 export function BookingWizard({
   services,
   stylists,
+  prefill,
   onBackChange,
 }: {
   services: Service[];
   stylists: Stylist[];
+  /** Signed-in user's details, used to prefill the details step. */
+  prefill?: BookingPrefill | null;
   /** Reports the header "Back" handler (null when Back isn't available). */
   onBackChange?: (back: (() => void) | null) => void;
 }) {
@@ -350,7 +354,7 @@ export function BookingWizard({
         {/* Keep details mounted from the Details step onward so RHF state
             survives a slot_taken bounce back to Time and forward again. */}
         <div style={{ display: step === 4 ? 'block' : 'none' }}>
-          <StepDetails ref={detailsRef} onValidityChange={setDetailsValid} active={step === 4} />
+          <StepDetails ref={detailsRef} prefill={prefill} onValidityChange={setDetailsValid} active={step === 4} />
         </div>
         {step === LAST_STEP + 1 && result && (
           <Confirmation result={result} customerName={customerName} onRestart={restart} />

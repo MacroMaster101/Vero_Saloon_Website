@@ -64,9 +64,19 @@ export const statsSchema = z.object({
 export type StatsContent = z.infer<typeof statsSchema>;
 
 // ── Contact ────────────────────────────────────────────
+// Official Google Maps embed for the "Vero Salon" place listing (share →
+// embed a map). Blank it in admin to fall back to a plus-code search embed.
+const DEFAULT_MAP_EMBED =
+  'https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d349.9044652500775!2d80.12807213664436!3d7.158666803980439!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ae30300051ad999%3A0x9b88b0702b423a7a!2sVero%20Salon!5e0!3m2!1sen!2sus!4v1782989017848!5m2!1sen!2sus';
+
 export const contactSchema = z.object({
   address: z.string().trim().default('Attanagalla Road, Pasyala'),
   plusCode: z.string().trim().default('545H+F6 Pasyala'),
+  mapEmbedUrl: z.string().trim()
+    .refine((v) => v === '' || v.startsWith('https://www.google.com/maps/embed'), {
+      message: 'Use a Google Maps embed URL (share → embed a map)',
+    })
+    .default(DEFAULT_MAP_EMBED),
   phonePrimary: z.string().trim().default('077 369 9620'),
   phoneOther: z.string().trim().default('071 094 4410 · 075 095 3004'),
   facebookUrl: z.string().trim().default('https://www.facebook.com/SaloonRV/'),

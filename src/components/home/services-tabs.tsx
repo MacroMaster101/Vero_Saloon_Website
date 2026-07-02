@@ -9,10 +9,12 @@ type Audience = 'him' | 'her' | 'both';
 
 // Infer who a service is aimed at from its name/slug (no gender column exists).
 // Explicitly-gendered names win; everything else is unisex → shown in both.
-function audienceOf(s: Service): Audience {
+// Plurals/possessives matter: "Gents Cut" must hit the him branch, so the
+// patterns allow s / 's endings ("gent" alone never matched "gents").
+export function audienceOf(s: Service): Audience {
   const hay = `${s.slug} ${s.name}`.toLowerCase();
-  const him = /\b(gent|men|man|male|beard|shave|moustache|barber)\b/.test(hay);
-  const her = /\b(ladies|lady|women|woman|female|bridal|wedding|mani|pedi|manicure|pedicure|makeup|make-up)\b/.test(hay);
+  const him = /\b(gents?|men'?s?|man|male|boys?|beard|shave|moustache|barber)\b/.test(hay);
+  const her = /\b(ladies|lady|women'?s?|woman|female|girls?|bridal|bride|wedding|mani|pedi|manicure|pedicure|makeup|make-up)\b/.test(hay);
   if (him && !her) return 'him';
   if (her && !him) return 'her';
   return 'both';

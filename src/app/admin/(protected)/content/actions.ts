@@ -39,6 +39,7 @@ function readBlock(key: BlockKey, fd: FormData): Record<string, unknown> {
     return {
       address: fd.get('address'),
       plusCode: fd.get('plusCode'),
+      mapEmbedUrl: fd.get('mapEmbedUrl') ?? undefined,
       phonePrimary: fd.get('phonePrimary'),
       phoneOther: fd.get('phoneOther'),
       facebookUrl: fd.get('facebookUrl'),

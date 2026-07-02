@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getUser } from '@/lib/supabase/auth';
+import { slLankaPhone } from '@/lib/validators';
 
 const ALLOWED = ['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif'];
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
@@ -49,7 +50,6 @@ export async function uploadAvatar(formData: FormData): Promise<Result> {
   });
   if (metaErr) return { error: metaErr.message };
 
-  revalidatePath('/account');
   revalidatePath('/', 'layout');
   return { url };
 }
@@ -67,7 +67,6 @@ export async function removeAvatar(): Promise<Result> {
     },
   });
   if (error) return { error: error.message };
-  revalidatePath('/account');
   revalidatePath('/', 'layout');
   return { url: '' };
 }
@@ -94,20 +93,27 @@ export async function updateAvatarChoice(choice: 'custom' | 'dicebear' | 'email'
   });
   if (error) return { error: error.message };
 
-  revalidatePath('/account');
   revalidatePath('/', 'layout');
   return { url: avatarUrl || '' };
 }
 
-/** Update the user's display name (kept here so the modal needs one import). */
-export async function updateName(fullName: string): Promise<Result> {
+/** Update the user's display name + contact number (one import for the modal).
+ *  Phone is optional: blank clears it; otherwise it must be a valid SL mobile. */
+export async function updateProfileDetails(fullName: string, phone: string): Promise<Result> {
   const user = await getUser();
   if (!user) return { error: 'Not signed in.' };
   const name = fullName.trim().slice(0, 120);
+
+  let phoneValue: string | null = null;
+  if (phone.trim() !== '') {
+    const parsed = slLankaPhone.safeParse(phone);
+    if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Enter a valid phone number' };
+    phoneValue = parsed.data;
+  }
+
   const sb = await createClient();
-  const { error } = await sb.from('profiles').update({ full_name: name }).eq('id', user.id);
+  const { error } = await sb.from('profiles').update({ full_name: name, phone: phoneValue }).eq('id', user.id);
   if (error) return { error: error.message };
-  revalidatePath('/account');
   revalidatePath('/', 'layout');
   return { url: '' };
 }

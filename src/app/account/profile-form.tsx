@@ -1,22 +1,23 @@
 'use client';
 import { useRef, useState, useTransition } from 'react';
-import { uploadAvatar, removeAvatar, updateName, updateAvatarChoice } from '@/app/account/avatar-actions';
+import { uploadAvatar, removeAvatar, updateProfileDetails, updateAvatarChoice } from '@/app/account/avatar-actions';
 import { getAvatarInfo, dicebearUrl, type UserMetadata } from '@/lib/avatar';
 
 export function ProfileForm({
   fullName,
   email,
-  role,
+  phone: initialPhone,
   userMetadata,
   seed,
 }: {
   fullName: string;
   email: string;
-  role: string;
+  phone: string;
   userMetadata: UserMetadata | null | undefined;
   seed: string;
 }) {
   const [name, setName] = useState(fullName);
+  const [phone, setPhone] = useState(initialPhone);
   const info = getAvatarInfo(userMetadata, seed);
   const [activeChoice, setActiveChoice] = useState<'custom' | 'dicebear' | 'email'>(info.choice);
   
@@ -83,7 +84,7 @@ export function ProfileForm({
     setError(null);
     setOk(false);
     start(async () => {
-      const res = await updateName(name);
+      const res = await updateProfileDetails(name, phone);
       if ('error' in res) {
         setError(res.error);
       } else {
@@ -104,7 +105,7 @@ export function ProfileForm({
     <form onSubmit={handleSave} className="panel account-panel">
       <h2>Profile</h2>
 
-      <div className="pm__avatar-row" style={{ borderBottom: '1px solid var(--line)', marginBottom: 20, paddingBottom: 20 }}>
+      <div className="pm__avatar-row">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={shown} alt="Your avatar" className="pm__avatar" />
         <div className="pm__avatar-actions">
@@ -158,32 +159,39 @@ export function ProfileForm({
         </div>
       </div>
 
-      <div className="field">
-        <label htmlFor="acct-name">Full name</label>
+      <label className="pm__field">
+        <span>Full name</span>
         <input
-          id="acct-name"
           name="full_name"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          placeholder="Your name"
         />
-      </div>
-      <div className="field">
-        <label htmlFor="acct-email">Email</label>
-        <input id="acct-email" value={email} disabled />
-      </div>
-      <div className="field">
-        <label htmlFor="acct-role">Role</label>
-        <input id="acct-role" value={role} disabled />
-      </div>
+      </label>
+      <label className="pm__field">
+        <span>Mobile number</span>
+        <input
+          type="tel"
+          inputMode="tel"
+          name="phone"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          placeholder="07X XXX XXXX"
+        />
+      </label>
+      <label className="pm__field">
+        <span>Email</span>
+        <input value={email} disabled />
+      </label>
 
-      <div style={{ minHeight: 24, marginBottom: 12 }}>
-        {error && <p className="astatus astatus--err">{error}</p>}
-        {ok && !error && <p className="astatus astatus--ok">Saved.</p>}
-      </div>
+      {error && <p className="astatus astatus--err">{error}</p>}
+      {ok && !error && <p className="astatus astatus--ok">Saved.</p>}
 
-      <button className="btn btn--primary" type="submit" disabled={pending}>
-        {pending ? 'Saving…' : 'Save changes'}
-      </button>
+      <div className="pm__foot">
+        <button className="btn btn--primary" type="submit" disabled={pending}>
+          {pending ? 'Saving…' : 'Save changes'}
+        </button>
+      </div>
     </form>
   );
 }

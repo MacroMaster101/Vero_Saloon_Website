@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { z } from 'zod';
 import { bookingDetailsSchema, type BookingDetails } from '@/lib/validators';
+import type { BookingPrefill } from './booking-provider';
 
 // Form-input shape: `notes` is optional at input (zod `.default('')`).
 type DetailsInput = z.input<typeof bookingDetailsSchema>;
@@ -15,8 +16,8 @@ export interface StepDetailsHandle {
 
 export const StepDetails = forwardRef<
   StepDetailsHandle,
-  { onValidityChange?: (valid: boolean) => void; active?: boolean }
->(function StepDetails({ onValidityChange, active = true }, ref) {
+  { prefill?: BookingPrefill | null; onValidityChange?: (valid: boolean) => void; active?: boolean }
+>(function StepDetails({ prefill, onValidityChange, active = true }, ref) {
   const {
     register,
     trigger,
@@ -25,7 +26,13 @@ export const StepDetails = forwardRef<
   } = useForm<DetailsInput>({
     resolver: zodResolver(bookingDetailsSchema),
     mode: 'onChange',
-    defaultValues: { name: '', phone: '', email: '', notes: '' },
+    // Signed-in users start with their saved details; everything stays editable.
+    defaultValues: {
+      name: prefill?.name ?? '',
+      phone: prefill?.phone ?? '',
+      email: prefill?.email ?? '',
+      notes: '',
+    },
   });
 
   useEffect(() => {
