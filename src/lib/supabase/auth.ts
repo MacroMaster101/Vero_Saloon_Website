@@ -11,17 +11,18 @@ export async function getUser() {
   return user;
 }
 
-export type Profile = { userId: string; email: string | null; fullName: string | null; role: Role; stylistId: string | null };
+export type Profile = { userId: string; email: string | null; fullName: string | null; phone: string | null; role: Role; stylistId: string | null };
 
 export async function getProfile(): Promise<Profile | null> {
   const sb = await createClient();
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return null;
-  const { data } = await sb.from('profiles').select('role, stylist_id, full_name, email').eq('id', user.id).single();
+  const { data } = await sb.from('profiles').select('role, stylist_id, full_name, email, phone').eq('id', user.id).single();
   return {
     userId: user.id,
     email: data?.email ?? user.email ?? null,
     fullName: data?.full_name ?? null,
+    phone: data?.phone ?? null,
     role: (data?.role ?? 'user') as Role,
     stylistId: data?.stylist_id ?? null,
   };
@@ -40,6 +41,6 @@ export async function requireRole(allowed: Role[], currentPath: string): Promise
   const profile = await getProfile();
   const decision = authDecision(profile?.role ?? null, allowed, currentPath);
   if (decision.kind === 'login') redirect(`/login?next=${encodeURIComponent(decision.next)}`);
-  if (decision.kind === 'deny') redirect('/account');
+  if (decision.kind === 'deny') redirect('/');
   return profile!;
 }

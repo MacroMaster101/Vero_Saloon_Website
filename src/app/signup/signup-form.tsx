@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { signInWithGoogle } from '../login/actions';
 import { signUpWithPassword } from './actions';
 import { checkPassword } from '@/lib/auth/password';
+import { AuthShell } from '@/components/auth/auth-shell';
 import { Icon } from '@/components/ui/icon';
 
 function GoogleMark() {
@@ -31,34 +32,20 @@ export function SignupForm({ next, prefillEmail = '' }: { next: string; prefillE
 
   if (state && 'ok' in state) {
     return (
-      <div className="auth">
-        <aside className="auth__panel">
-          <div className="auth__orb" />
-          <div className="auth__brand"><span className="pole" style={{ height: 30 }} /> Vero Salon</div>
-          <div className="auth__tag"><h2>Almost there.</h2><p>We just need to confirm it&apos;s you.</p></div>
-        </aside>
-        <div className="auth__form">
+      <AuthShell back={{ href: '/', label: 'Back to home' }}>
           <span className="eyebrow">Check your email</span>
-          <h1 className="h-section" style={{ fontSize: 30, margin: '12px 0 14px' }}>Confirm your account</h1>
-          <p className="lead">We sent a confirmation link to <b>{state.email}</b>. Click it to activate your account, then sign in.</p>
-          <p className="auth__alt" style={{ textAlign: 'left', marginTop: 24 }}><Link href={loginHref}>← Back to sign in</Link></p>
-        </div>
-      </div>
+          <h1 className="h-section auth__title">Confirm your <em>account</em></h1>
+          <p className="auth__lead">We sent a confirmation link to <b>{state.email}</b>. Click it to activate your account, then sign in.</p>
+          <p className="auth__alt" style={{ textAlign: 'left' }}><Link href={loginHref}>← Back to sign in</Link></p>
+      </AuthShell>
     );
   }
 
   return (
-    <div className="auth">
-      <aside className="auth__panel">
-        <div className="auth__orb" />
-        <div className="auth__brand"><span className="pole" style={{ height: 30 }} /> Vero Salon</div>
-        <div className="auth__tag"><h2>Join Vero.</h2><p>Create an account to book faster and track your visits.</p></div>
-      </aside>
-
-      <div className="auth__form">
-        <Link href="/" className="auth__back"><Icon name="arrowLeft" className="ic" /> Back to home</Link>
-        <span className="eyebrow">Get started</span>
-        <h1 className="h-section" style={{ fontSize: 32, margin: '12px 0 20px' }}>Create account</h1>
+    <AuthShell back={{ href: '/', label: 'Back to home' }}>
+        <span className="eyebrow">New here</span>
+        <h1 className="h-section auth__title">Join <em>Vero</em></h1>
+        <p className="auth__lead">Book faster and keep every visit in one place.</p>
 
         <form action={signInWithGoogle}>
           <input type="hidden" name="next" value={next} />
@@ -69,13 +56,13 @@ export function SignupForm({ next, prefillEmail = '' }: { next: string; prefillE
 
         <form action={action}>
           <input type="hidden" name="next" value={next} />
-          <div className="field"><label htmlFor="su-name">Full name</label><input id="su-name" name="full_name" required /></div>
-          <div className="field"><label htmlFor="su-email">Email</label><input id="su-email" name="email" type="email" defaultValue={prefillEmail} required /></div>
+          <div className="field"><label htmlFor="su-name">Full name</label><input id="su-name" name="full_name" placeholder="e.g. Nimal Perera" autoComplete="name" required /></div>
+          <div className="field"><label htmlFor="su-email">Email</label><input id="su-email" name="email" type="email" placeholder="verosalon@gmail.com" autoComplete="email" defaultValue={prefillEmail} required /></div>
 
           <div className="field">
             <label htmlFor="su-pw">Password</label>
             <div className="pw">
-              <input id="su-pw" name="password" type={showPw ? 'text' : 'password'} required value={pw} onChange={(e) => setPw(e.target.value)} />
+              <input id="su-pw" name="password" type={showPw ? 'text' : 'password'} placeholder="••••••••" autoComplete="new-password" required value={pw} onChange={(e) => setPw(e.target.value)} />
               <button type="button" className="pw__eye" onClick={() => setShowPw((s) => !s)} aria-label={showPw ? 'Hide password' : 'Show password'}>
                 <Icon name={showPw ? 'eyeOff' : 'eye'} className="ic" size={18} />
               </button>
@@ -95,7 +82,7 @@ export function SignupForm({ next, prefillEmail = '' }: { next: string; prefillE
           <div className="field">
             <label htmlFor="su-cf">Confirm password</label>
             <div className="pw">
-              <input id="su-cf" name="confirm" type={showCf ? 'text' : 'password'} required value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+              <input id="su-cf" name="confirm" type={showCf ? 'text' : 'password'} placeholder="••••••••" autoComplete="new-password" required value={confirm} onChange={(e) => setConfirm(e.target.value)} />
               <button type="button" className="pw__eye" onClick={() => setShowCf((s) => !s)} aria-label={showCf ? 'Hide password' : 'Show password'}>
                 <Icon name={showCf ? 'eyeOff' : 'eye'} className="ic" size={18} />
               </button>
@@ -110,7 +97,6 @@ export function SignupForm({ next, prefillEmail = '' }: { next: string; prefillE
         </form>
 
         <p className="auth__alt">Already have an account? <Link href={loginHref}>Sign in →</Link></p>
-      </div>
-    </div>
+    </AuthShell>
   );
 }

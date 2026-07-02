@@ -42,7 +42,7 @@ export function Confirmation({
             </span>
             <Link
               className="btn btn--primary"
-              href={`/signup?email=${encodeURIComponent(result.email)}&next=${encodeURIComponent('/account')}`}
+              href={`/signup?email=${encodeURIComponent(result.email)}&next=${encodeURIComponent('/')}`}
             >
               Create my account
             </Link>

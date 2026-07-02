@@ -38,12 +38,13 @@
 | ➕ | **Multi-service booking** — bundle several services into one visit; combined duration + price reserve a single continuous slot |
 | 🗓️ | **Month calendar + SL holidays** — pick a date from a month grid; Sri Lankan public & poya holidays (synced from Google Calendar into a `holidays` table) are blocked as closed days |
 | 🔒 | **Race-proof slots** — a Postgres `EXCLUDE` constraint makes double-booking impossible |
-| 🔑 | **Accounts & auth** — split-screen **login** + **signup** (email/password with live password-strength rules, or Google OAuth), email-confirmation flow |
-| 👤 | **Customer account** — sidebar dashboard: profile, avatar upload (DiceBear fallback), bookings history, member-since/last-sign-in, account deletion |
+| 🔑 | **Accounts & auth** — salon-mirror **login** + **signup** (email/password with live password-strength rules, or Google OAuth), email-confirmation flow, **forgot/reset password**, in-app change password |
+| 👤 | **Customer account — all in popups** — Edit profile (name, SL mobile number, avatar with DiceBear fallback), My bookings (reschedule · cancel · rate), Settings (change password, account deletion) — opened from the nav avatar menu or the mobile dock; no separate account page |
+| 📝 | **Booking prefill** — signed-in customers get name/phone/email pre-filled in the booking form from their profile |
 | ⭐ | **Ratings & reviews** — customers rate their own **completed** visits; the stylist's running average is recomputed app-side, and admins moderate reviews |
 | 🧑‍🤝‍🧑 | **Roles** — `user` / `staff` / `admin`, enforced by Supabase RLS; admins manage roles & stylist links in **People** |
-| 📧 | **Email confirmations** — via Resend, with a pluggable SMS stub for later |
-| ✍️ | **Editable site content** — homepage copy lives in a `site_content` table and is editable from the admin **Content** page (no redeploy needed) |
+| 📧 | **Notifications** — booking confirmations + cancel/reschedule notices via Resend (customer **and** salon inbox), WhatsApp staff alerts via the Meta Cloud API, and a pluggable SMS stub |
+| ✍️ | **Editable site content** — homepage copy (and the **Google Maps embed** in the Visit section) lives in a `site_content` table, editable from the admin **Content** page (no redeploy needed) |
 | 🛠️ | **Admin dashboard** — sidebar shell with live bookings (Realtime), status controls, searchable/filterable lists, and full CRUD for **Services**, **Stylists**, **Gallery**, **Content**, **Reviews**, **People**, **Schedule**, **Blocked slots** & **Holidays** (sync from Google or add manual closures) |
 | 🧑‍🔧 | **Staff dashboard** — staff see only their own RLS-scoped **My schedule** and today's bookings, with the same search/filter toolbar |
 | 🔏 | **Privacy-aware deletion** — account deletion anonymizes past bookings (strips PII, keeps business records) via a `security definer` DB function |
@@ -85,6 +86,10 @@ Copy `.env.example` → `.env` (or `.env.local`) and fill in:
 | `SUPABASE_DB_PASSWORD` | Supabase → Settings → Database → password | migrations/types |
 | `RESEND_API_KEY` | Resend dashboard | optional |
 | `RESEND_FROM_EMAIL` | A verified Resend sender, e.g. `Vero Salon <bookings@yourdomain>` | optional |
+| `SALON_NOTIFY_EMAIL` | Salon inbox for cancel/reschedule alerts | optional |
+| `WHATSAPP_ACCESS_TOKEN` | Meta app (WhatsApp product) → permanent System User token | optional |
+| `WHATSAPP_PHONE_NUMBER_ID` | Meta → WhatsApp → API Setup (numeric sender ID) | optional |
+| `WHATSAPP_SALON_NUMBER` | Salon WhatsApp number, digits only, e.g. `9477XXXXXXX` | optional |
 | `GOOGLE_CALENDAR_API_KEY` | Google Cloud → enable **Google Calendar API** → API key (restriction **None** — used server-side) | optional |
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` in dev; your domain in prod | ✅ |
 
@@ -110,6 +115,7 @@ Apply the migrations with the Supabase CLI using a direct DB connection string (
 # 0007_reviews_ratings.sql— `stylist_reviews` table + `stylists.rating`/`rating_count`
 # 0008_booking_multi_service.sql — `bookings.service_ids[]` for multi-service visits
 # 0009_holidays.sql        — `holidays` table (SL public/poya days + manual closures)
+# 0010_profile_phone.sql   — `profiles.phone` (self-editable contact number)
 npx supabase db push --db-url "postgresql://postgres:<DB_PASSWORD>@db.<ref>.supabase.co:5432/postgres"
 ```
 
@@ -204,8 +210,8 @@ npm run e2e        # 🎭 Playwright e2e (run `npm run build` first)
 - 🧮 **Availability** (`lib/availability.ts`) — a pure, unit-tested function: given business hours, a service duration, and busy intervals (confirmed bookings + blocked slots), it returns open start times. The `getAvailability` server action feeds it real data; for a multi-service booking it uses the **summed** duration, and "any stylist" unions every stylist's openings.
 - 🗓️ **Calendar & holidays** (`lib/lk-holidays.ts`, `components/booking/step-date.tsx`) — the Date step is a month calendar; the Time step lists that day's slots. Sri Lankan holidays live in a `holidays` DB table and are **blocked** as closed days. The public calendar reads holidays **only from the DB** (never Google at request time, so no rate limits); an admin **syncs** them once per year from Google's public SL holiday calendar via **Admin → Holidays**. Degrades gracefully to no blocking when `GOOGLE_CALENDAR_API_KEY` / the table are absent.
 - 🔒 **Double-booking protection** — enforced in Postgres by a GiST `EXCLUDE` constraint, so two confirmed bookings for the same stylist can't overlap. `createBooking` catches the violation (`23P01`) and returns a graceful "slot just taken." Price & duration are always re-derived from the DB — never trusted from the client.
-- 📨 **Notifications** (`lib/notify/`) — go through a `Notifier` interface. Resend sends the email; an SMS stub logs a placeholder. Email no-ops safely when `RESEND_API_KEY` is unset, so bookings still succeed without it.
-- 🔑 **Auth & accounts** — `/login` and `/signup` (split-screen) use Supabase email/password or Google OAuth; both flow through `/auth/callback`. Signup enforces password rules (`lib/auth/password.ts`) on the client *and* server. `safeNext` sanitizes every post-login redirect; `roleDefaultPath` sends each role to its home. `/account` is a sidebar dashboard (profile, avatar upload, bookings, account deletion). Avatars resolve via `lib/avatar.ts` — an uploaded photo wins, otherwise a deterministic DiceBear fallback seeded by email/name.
+- 📨 **Notifications** (`lib/notify/`) — go through a `Notifier` interface with three events (confirmed / cancelled / rescheduled) across three channels: Resend email (confirmation to the customer; change notices to the customer **and** the `SALON_NOTIFY_EMAIL` inbox), a WhatsApp staff alert via the Meta Cloud API (pre-approved templates; see `lib/notify/whatsapp.ts` for the template contracts), and an SMS stub. Every channel no-ops safely when unconfigured, so bookings always succeed.
+- 🔑 **Auth & accounts** — `/login` and `/signup` use Supabase email/password or Google OAuth; both flow through `/auth/callback`. `/forgot-password` emails a recovery link and `/reset-password` sets the new password (the same action powers "Change password" in Settings). Signup enforces password rules (`lib/auth/password.ts`) on the client *and* server. `safeNext` sanitizes every post-login redirect; `roleDefaultPath` sends each role to its home. Account management happens in **popups** hosted on the home page (`components/account/account-modals.tsx`): Edit profile (name, phone, avatar), My bookings (reschedule/cancel/rate), Settings (change password, delete account). Avatars resolve via `lib/avatar.ts` — an uploaded photo wins, otherwise a deterministic DiceBear fallback seeded by email/name.
 - ⭐ **Ratings & reviews** (`lib/reviews.ts`, `account/review-actions.ts`) — a customer may review only their **own completed** booking; ownership and state are re-verified server-side. The stylist's running average is recomputed app-side (`computeUpdatedRating` / `computeRemovedRating`) on insert/delete (no DB trigger), and the pure helpers are unit-tested. The `stylist_reviews` table and `stylists.rating`/`rating_count` columns are created by migration `0007`.
 - ✍️ **Editable content** (`lib/content/`) — homepage copy is stored per-block in the `site_content` table; `blocks.ts` defines each block's shape, `get.ts` fetches, and `merge.ts` overlays saved values onto defaults so the site renders even before anything is edited. Admins edit it from **Admin → Content**.
 - 🔏 **Privacy & deletion** — deleting an account calls the `anonymize_user_bookings()` `security definer` function (migration `0004`), which strips PII from past bookings while keeping the rows for business records.
@@ -217,22 +223,25 @@ npm run e2e        # 🎭 Playwright e2e (run `npm run build` first)
 
 ```
 app/                   # 🧭 routes: public page, /book actions
-  login/ · signup/     # 🔑 split-screen auth (email/password + Google)
-  account/             # 👤 customer dashboard (profile, avatar, bookings, reviews, delete)
+  login/ · signup/     # 🔑 auth pages (email/password + Google)
+  forgot-password/ · reset-password/  # 🔑 password recovery flow
+  account/             # 👤 account server actions + popup content (profile, bookings, delete)
   admin/(protected)/   # 🛠️ role-guarded shell: dashboard, services, stylists, gallery,
                        #     content, reviews, people, schedule, blocked-slots, holidays
   staff/               # 🧑‍🔧 staff "my schedule" + today view
-  auth/callback/       # 🔁 OAuth + email-confirmation handler
+  auth/callback/       # 🔁 OAuth + email-confirmation + password-recovery handler
 components/site/        # 🎨 marketing sections (hero, lookbook, services, …)
 components/booking/     # 📅 5-step wizard (service · stylist · date · time · details)
+components/account/     # 👤 account popups (profile / bookings / settings) + provider
+components/auth/        # 🔑 shared auth-page shell (salon-mirror arch)
 components/admin/       # 🛠️ bookings table, list-toolbar (search/filter), block/image forms
 components/reviews/     # ⭐ star row + review list
-components/ui/          # 🧩 shared primitives (size-constrained Icon, …)
+components/ui/          # 🧩 shared primitives (size-constrained Icon, Modal, …)
 lib/                    # 🧰 availability, time, validators, queries, notify, supabase clients
 lib/auth/              # 🔐 password rules, redirect-safety (safeNext), roles
 lib/content/           # ✍️ editable site-content blocks (get / merge / shapes)
 lib/reviews.ts          # ⭐ pure rating-average helpers (unit-tested)
-supabase/migrations/    # 🗄️ schema + RLS + realtime + roles + retention + content + service-image + reviews + multi-service + holidays (0001–0009)
+supabase/migrations/    # 🗄️ schema + RLS + realtime + roles + retention + content + service-image + reviews + multi-service + holidays + profile-phone (0001–0010)
 supabase/seed.sql       # 🌱 real Vero data
 tests/                  # 🧪 vitest unit/integration; tests/e2e Playwright
 ```

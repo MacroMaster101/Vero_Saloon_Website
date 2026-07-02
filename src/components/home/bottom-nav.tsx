@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useBooking } from '@/components/booking/booking-provider';
+import { useAccountModals, type AccountModal } from '@/components/account/account-modals';
+import { signOut } from '@/app/admin/actions';
 
 /* Floating mobile/tablet bottom dock — the single nav surface on small screens
    (the top bar carries the brand only there). Five slots with the Book action
@@ -51,13 +53,15 @@ function Icon({ name }: { name: string }) {
 
 export function BottomNav({ signedIn, accountHref, accountLabel, avatarSrc }: {
   signedIn: boolean;
-  accountHref: string;
+  accountHref: string | null;   // null → account tab opens the popup menu instead of navigating
   accountLabel: string;
   avatarSrc?: string | null;
 }) {
   const { openBooking, enabled } = useBooking();
+  const { openModal } = useAccountModals();
   const [active, setActive] = useState<string>('top');
   const [moreOpen, setMoreOpen] = useState(false);
+  const [acctOpen, setAcctOpen] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -78,20 +82,26 @@ export function BottomNav({ signedIn, accountHref, accountLabel, avatarSrc }: {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Close the More sheet on outside-click / Escape.
+  // Close the More/Account sheets on outside-click / Escape.
   useEffect(() => {
-    if (!moreOpen) return;
+    if (!moreOpen && !acctOpen) return;
+    const closeAll = () => { setMoreOpen(false); setAcctOpen(false); };
     const onDown = (e: MouseEvent) => {
-      if (moreRef.current && !moreRef.current.contains(e.target as Node)) setMoreOpen(false);
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) closeAll();
     };
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMoreOpen(false); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeAll(); };
     document.addEventListener('mousedown', onDown);
     document.addEventListener('keydown', onKey);
     return () => {
       document.removeEventListener('mousedown', onDown);
       document.removeEventListener('keydown', onKey);
     };
-  }, [moreOpen]);
+  }, [moreOpen, acctOpen]);
+
+  function pickAccount(modal: AccountModal) {
+    setAcctOpen(false);
+    openModal(modal);
+  }
 
   const moreActive = MORE_LINKS.some((l) => l.id === active);
 
@@ -105,11 +115,29 @@ export function BottomNav({ signedIn, accountHref, accountLabel, avatarSrc }: {
             href={`#${l.id}`}
             role="menuitem"
             className={`home-dock__sheet-item${active === l.id ? ' is-active' : ''}`}
-            onClick={() => setMoreOpen(false)}
+            onClick={() => { setMoreOpen(false); setAcctOpen(false); }}
           >
             {l.label}
           </a>
         ))}
+      </div>
+
+      {/* ── "Account" sheet (signed-in customers) ── */}
+      <div className={`home-dock__sheet${acctOpen ? ' is-open' : ''}`} role="menu">
+        <button type="button" role="menuitem" className="home-dock__sheet-item" onClick={() => pickAccount('profile')}>
+          Edit profile
+        </button>
+        <button type="button" role="menuitem" className="home-dock__sheet-item" onClick={() => pickAccount('bookings')}>
+          My bookings
+        </button>
+        <button type="button" role="menuitem" className="home-dock__sheet-item" onClick={() => pickAccount('settings')}>
+          Settings
+        </button>
+        <form action={signOut}>
+          <button type="submit" role="menuitem" className="home-dock__sheet-item home-dock__sheet-item--danger">
+            Sign out
+          </button>
+        </form>
       </div>
 
       <nav className="home-bottomnav" aria-label="Quick navigation">
@@ -119,7 +147,7 @@ export function BottomNav({ signedIn, accountHref, accountLabel, avatarSrc }: {
             href={`#${t.id}`}
             className={`home-bottomnav__tab${active === t.id ? ' is-active' : ''}`}
             aria-current={active === t.id ? 'page' : undefined}
-            onClick={() => setMoreOpen(false)}
+            onClick={() => { setMoreOpen(false); setAcctOpen(false); }}
           >
             <Icon name={t.icon} />
             <span>{t.label}</span>
@@ -128,12 +156,12 @@ export function BottomNav({ signedIn, accountHref, accountLabel, avatarSrc }: {
 
         {/* ── raised centre action ── */}
         {enabled ? (
-          <button type="button" className="home-bottomnav__center" onClick={() => { setMoreOpen(false); openBooking(); }} aria-label="Book a visit">
+          <button type="button" className="home-bottomnav__center" onClick={() => { setMoreOpen(false); setAcctOpen(false); openBooking(); }} aria-label="Book a visit">
             <Icon name="book" />
             <span>Book</span>
           </button>
         ) : (
-          <a href="#top" className="home-bottomnav__center" onClick={() => setMoreOpen(false)} aria-label="Back to top">
+          <a href="#top" className="home-bottomnav__center" onClick={() => { setMoreOpen(false); setAcctOpen(false); }} aria-label="Back to top">
             <Icon name="home" />
             <span>Top</span>
           </a>
@@ -144,21 +172,39 @@ export function BottomNav({ signedIn, accountHref, accountLabel, avatarSrc }: {
           className={`home-bottomnav__tab${moreActive || moreOpen ? ' is-active' : ''}`}
           aria-haspopup="menu"
           aria-expanded={moreOpen}
-          onClick={() => setMoreOpen((v) => !v)}
+          onClick={() => { setAcctOpen(false); setMoreOpen((v) => !v); }}
         >
           <Icon name="more" />
           <span>More</span>
         </button>
 
-        <a href={accountHref} className="home-bottomnav__tab" onClick={() => setMoreOpen(false)}>
-          {signedIn && avatarSrc ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={avatarSrc} alt="" className="home-bottomnav__avatar" />
-          ) : (
-            <Icon name="user" />
-          )}
-          <span>{signedIn ? accountLabel : 'Sign in'}</span>
-        </a>
+        {accountHref ? (
+          <a href={accountHref} className="home-bottomnav__tab" onClick={() => { setMoreOpen(false); setAcctOpen(false); }}>
+            {signedIn && avatarSrc ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatarSrc} alt="" className="home-bottomnav__avatar" />
+            ) : (
+              <Icon name="user" />
+            )}
+            <span>{signedIn ? accountLabel : 'Sign in'}</span>
+          </a>
+        ) : (
+          <button
+            type="button"
+            className={`home-bottomnav__tab${acctOpen ? ' is-active' : ''}`}
+            aria-haspopup="menu"
+            aria-expanded={acctOpen}
+            onClick={() => { setMoreOpen(false); setAcctOpen((v) => !v); }}
+          >
+            {avatarSrc ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatarSrc} alt="" className="home-bottomnav__avatar" />
+            ) : (
+              <Icon name="user" />
+            )}
+            <span>{accountLabel}</span>
+          </button>
+        )}
       </nav>
     </div>
   );

@@ -220,6 +220,7 @@ export interface Database {
           stylist_id: string | null;
           full_name: string | null;
           email: string | null;
+          phone: string | null;
           created_at: string;
         };
         Insert: {
@@ -228,6 +229,7 @@ export interface Database {
           stylist_id?: string | null;
           full_name?: string | null;
           email?: string | null;
+          phone?: string | null;
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['profiles']['Insert']>;

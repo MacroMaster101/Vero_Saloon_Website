@@ -1,6 +1,7 @@
 'use client';
-import { useEffect, useRef, useState, useTransition } from 'react';
-import { uploadAvatar, removeAvatar, updateName, updateAvatarChoice } from '@/app/account/avatar-actions';
+import { useRef, useState, useTransition } from 'react';
+import { Modal } from '@/components/ui/modal';
+import { uploadAvatar, removeAvatar, updateProfileDetails, updateAvatarChoice } from '@/app/account/avatar-actions';
 import { getAvatarInfo, dicebearUrl, type UserMetadata } from '@/lib/avatar';
 
 export function ProfileModal({
@@ -8,6 +9,7 @@ export function ProfileModal({
   onClose,
   seed,
   initialName,
+  initialPhone,
   userMetadata,
   email,
 }: {
@@ -15,19 +17,27 @@ export function ProfileModal({
   onClose: () => void;
   seed: string;            // email/name used for the DiceBear fallback
   initialName: string;
+  initialPhone: string;
   userMetadata: UserMetadata | null | undefined;
   email: string | null;
 }) {
   const [name, setName] = useState(initialName);
+  const [phone, setPhone] = useState(initialPhone);
   const info = getAvatarInfo(userMetadata, seed);
   const [activeChoice, setActiveChoice] = useState<'custom' | 'dicebear' | 'email'>(info.choice);
   
   const [prevInitialName, setPrevInitialName] = useState<string>(initialName);
+  const [prevInitialPhone, setPrevInitialPhone] = useState<string>(initialPhone);
   const [prevUserMetadata, setPrevUserMetadata] = useState<UserMetadata | null | undefined>(userMetadata);
 
   if (initialName !== prevInitialName) {
     setPrevInitialName(initialName);
     setName(initialName);
+  }
+
+  if (initialPhone !== prevInitialPhone) {
+    setPrevInitialPhone(initialPhone);
+    setPhone(initialPhone);
   }
 
   if (userMetadata !== prevUserMetadata) {
@@ -39,16 +49,6 @@ export function ProfileModal({
   const [ok, setOk] = useState(false);
   const [pending, start] = useTransition();
   const fileRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose(); }
-    document.addEventListener('keydown', onKey);
-    document.body.style.overflow = 'hidden';
-    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = ''; };
-  }, [open, onClose]);
-
-  if (!open) return null;
 
   function pickFile() {
     const file = fileRef.current?.files?.[0];
@@ -90,10 +90,10 @@ export function ProfileModal({
     });
   }
 
-  function saveName() {
+  function saveDetails() {
     setError(null); setOk(false);
     start(async () => {
-      const res = await updateName(name);
+      const res = await updateProfileDetails(name, phone);
       if ('error' in res) setError(res.error);
       else setOk(true);
     });
@@ -108,11 +108,7 @@ export function ProfileModal({
   }
 
   return (
-    <div className="pm__overlay" onMouseDown={onClose}>
-      <div className="pm" role="dialog" aria-modal="true" aria-label="Edit profile" onMouseDown={(e) => e.stopPropagation()}>
-        <button type="button" className="pm__x" aria-label="Close" onClick={onClose}>×</button>
-        <h2 className="pm__title">Edit profile</h2>
-
+    <Modal open={open} onClose={onClose} title="Edit profile">
         <div className="pm__avatar-row">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={shown} alt="Your avatar" className="pm__avatar" />
@@ -155,6 +151,16 @@ export function ProfileModal({
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" />
         </label>
         <label className="pm__field">
+          <span>Mobile number</span>
+          <input
+            type="tel"
+            inputMode="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="07X XXX XXXX"
+          />
+        </label>
+        <label className="pm__field">
           <span>Email</span>
           <input value={email ?? ''} disabled />
         </label>
@@ -163,12 +169,11 @@ export function ProfileModal({
         {ok && !error && <p className="astatus astatus--ok">Saved.</p>}
 
         <div className="pm__foot">
-          <button type="button" className="btn btn--primary" disabled={pending} onClick={saveName}>
+          <button type="button" className="btn btn--primary" disabled={pending} onClick={saveDetails}>
             {pending ? 'Saving…' : 'Save changes'}
           </button>
           <button type="button" className="btn btn--ghost" onClick={onClose}>Done</button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

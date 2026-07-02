@@ -105,6 +105,7 @@ export function ContactForm({ content }: { content: ContactContent }) {
       <div className="acard__title">Contact &amp; footer</div>
       <Field label="Address"><TextInput name="address" defaultValue={content.address} /></Field>
       <Field label="Plus code"><TextInput name="plusCode" defaultValue={content.plusCode} /></Field>
+      <Field label="Map embed URL (Google Maps → share → embed a map)"><TextInput name="mapEmbedUrl" defaultValue={content.mapEmbedUrl} /></Field>
       <Field label="Primary phone"><TextInput name="phonePrimary" defaultValue={content.phonePrimary} /></Field>
       <Field label="Other phones"><TextInput name="phoneOther" defaultValue={content.phoneOther} /></Field>
       <Field label="Facebook URL"><TextInput name="facebookUrl" defaultValue={content.facebookUrl} /></Field>

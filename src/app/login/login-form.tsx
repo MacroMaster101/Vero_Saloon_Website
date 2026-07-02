@@ -2,6 +2,7 @@
 import { useActionState, useState } from 'react';
 import Link from 'next/link';
 import { signInWithGoogle, signInWithPassword } from './actions';
+import { AuthShell } from '@/components/auth/auth-shell';
 import { Icon } from '@/components/ui/icon';
 
 function GoogleMark() {
@@ -21,17 +22,10 @@ export function LoginForm({ next, oauthError }: { next: string; oauthError?: str
   const signupHref = next ? `/signup?next=${encodeURIComponent(next)}` : '/signup';
 
   return (
-    <div className="auth">
-      <aside className="auth__panel">
-        <div className="auth__orb" />
-        <div className="auth__brand"><span className="pole" style={{ height: 30 }} /> Vero Salon</div>
-        <div className="auth__tag"><h2>Welcome back.</h2><p>Your chair is waiting. Sign in to manage your bookings.</p></div>
-      </aside>
-
-      <div className="auth__form">
-        <Link href="/" className="auth__back"><Icon name="arrowLeft" className="ic" /> Back to home</Link>
-        <span className="eyebrow">Welcome back</span>
-        <h1 className="h-section" style={{ fontSize: 34, margin: '12px 0 22px' }}>Sign in</h1>
+    <AuthShell back={{ href: '/', label: 'Back to home' }}>
+        <span className="eyebrow">Your account</span>
+        <h1 className="h-section auth__title">Welcome <em>back</em></h1>
+        <p className="auth__lead">Your chair is waiting — sign in to manage your bookings.</p>
 
         {oauthError && <p style={{ color: 'var(--error)', marginBottom: 16 }}>{oauthError}</p>}
 
@@ -44,22 +38,24 @@ export function LoginForm({ next, oauthError }: { next: string; oauthError?: str
 
         <form action={action}>
           <input type="hidden" name="next" value={next} />
-          <div className="field"><label htmlFor="login-email">Email</label><input id="login-email" name="email" type="email" required /></div>
+          <div className="field"><label htmlFor="login-email">Email</label><input id="login-email" name="email" type="email" placeholder="verosalon@gmail.com" autoComplete="email" required /></div>
           <div className="field">
             <label htmlFor="login-password">Password</label>
             <div className="pw">
-              <input id="login-password" name="password" type={show ? 'text' : 'password'} required />
+              <input id="login-password" name="password" type={show ? 'text' : 'password'} placeholder="••••••••" autoComplete="current-password" required />
               <button type="button" className="pw__eye" onClick={() => setShow((s) => !s)} aria-label={show ? 'Hide password' : 'Show password'}>
                 <Icon name={show ? 'eyeOff' : 'eye'} className="ic" size={18} />
               </button>
             </div>
           </div>
+          <p style={{ textAlign: 'right', margin: '-6px 0 14px', fontSize: 13 }}>
+            <Link href="/forgot-password">Forgot password?</Link>
+          </p>
           {state?.error && <p style={{ color: 'var(--error)', margin: '0 0 12px' }}>{state.error}</p>}
           <button className="btn btn--primary btn--lg" style={{ width: '100%' }} type="submit">Sign in</button>
         </form>
 
         <p className="auth__alt">New here? <Link href={signupHref}>Create an account →</Link></p>
-      </div>
-    </div>
+    </AuthShell>
   );
 }

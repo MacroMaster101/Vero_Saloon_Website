@@ -19,15 +19,19 @@ export function useBooking(): BookingCtx {
   return ctx;
 }
 
+export type BookingPrefill = { name: string; phone: string; email: string };
+
 export function BookingProvider({
   services,
   stylists,
   enabled,
+  prefill,
   children,
 }: {
   services: Service[];
   stylists: Stylist[];
   enabled: boolean;
+  prefill?: BookingPrefill | null;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -46,7 +50,7 @@ export function BookingProvider({
     <Ctx.Provider value={value}>
       {children}
       {enabled && (
-        <BookingModal open={open} onClose={closeBooking} services={services} stylists={stylists} />
+        <BookingModal open={open} onClose={closeBooking} services={services} stylists={stylists} prefill={prefill} />
       )}
     </Ctx.Provider>
   );

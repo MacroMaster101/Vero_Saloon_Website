@@ -3,11 +3,11 @@ import { useEffect, useRef, useState } from 'react';
 import { signOut } from '@/app/admin/actions';
 import type { Profile } from '@/lib/supabase/auth';
 import { avatarSrc, type UserMetadata } from '@/lib/avatar';
-import { ProfileModal } from '@/components/site/profile-modal';
+import { useAccountModals } from '@/components/account/account-modals';
 
 export function NavAuth({ profile, userMetadata }: { profile: Profile | null; userMetadata?: UserMetadata | null }) {
   const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState(false);
+  const { openModal } = useAccountModals();
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -26,10 +26,16 @@ export function NavAuth({ profile, userMetadata }: { profile: Profile | null; us
 
   if (!profile) return <a href="/login" className="nav__cta">Sign in</a>;
 
-  const dash = profile.role === 'admin' ? '/admin' : profile.role === 'staff' ? '/admin/schedule' : '/account';
-  const dashLabel = profile.role === 'user' ? 'Account' : profile.role === 'staff' ? 'My schedule' : 'Admin';
+  const isUser = profile.role === 'user';
+  const dash = profile.role === 'admin' ? '/admin' : '/admin/schedule';
+  const dashLabel = profile.role === 'staff' ? 'My schedule' : 'Admin';
   const seed = profile.email ?? profile.fullName ?? 'guest';
   const src = avatarSrc(userMetadata, seed);
+
+  function pick(modal: 'profile' | 'bookings' | 'settings') {
+    setOpen(false);
+    openModal(modal);
+  }
 
   return (
     <div className={`nav-profile${open ? ' open' : ''}`} ref={ref}>
@@ -54,28 +60,29 @@ export function NavAuth({ profile, userMetadata }: { profile: Profile | null; us
             {profile.email && <span>{profile.email}</span>}
           </div>
         </div>
-        <button type="button" role="menuitem" className="nav-profile__item"
-          onClick={() => { setOpen(false); setEditing(true); }}>
+        <button type="button" role="menuitem" className="nav-profile__item" onClick={() => pick('profile')}>
           Edit profile
         </button>
-        <a href={dash} role="menuitem" className="nav-profile__item" onClick={() => setOpen(false)}>
-          {dashLabel}
-        </a>
+        {isUser ? (
+          <>
+            <button type="button" role="menuitem" className="nav-profile__item" onClick={() => pick('bookings')}>
+              My bookings
+            </button>
+            <button type="button" role="menuitem" className="nav-profile__item" onClick={() => pick('settings')}>
+              Settings
+            </button>
+          </>
+        ) : (
+          <a href={dash} role="menuitem" className="nav-profile__item" onClick={() => setOpen(false)}>
+            {dashLabel}
+          </a>
+        )}
         <form action={signOut}>
           <button type="submit" role="menuitem" className="nav-profile__item nav-profile__item--danger">
             Sign out
           </button>
         </form>
       </div>
-
-      <ProfileModal
-        open={editing}
-        onClose={() => setEditing(false)}
-        seed={seed}
-        initialName={profile.fullName ?? ''}
-        userMetadata={userMetadata}
-        email={profile.email}
-      />
     </div>
   );
 }

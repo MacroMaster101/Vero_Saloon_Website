@@ -1,4 +1,5 @@
 import { BookingProvider } from '@/components/booking/booking-provider';
+import { AccountModalsProvider } from '@/components/account/account-modals';
 import { BookButton } from '@/components/site/book-button';
 import { Faq } from '@/components/home/faq';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
@@ -94,18 +95,25 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
   const hoursByDow = new Map(hours.map((h) => [h.day_of_week, h]));
 
   // Account tab for the mobile bottom bar — mirror NavAuth's routing/avatar.
+  // Signed-in customers get null: their tab opens the account popup menu.
   const accountHref = !profile
     ? '/login'
     : profile.role === 'admin'
       ? '/admin'
       : profile.role === 'staff'
         ? '/admin/schedule'
-        : '/account';
+        : null;
   const accountLabel = profile?.role === 'staff' ? 'Schedule' : profile?.role === 'admin' ? 'Admin' : 'Account';
   const accountAvatar = profile ? avatarSrc(userMetadata, profile.email ?? profile.fullName ?? 'guest') : null;
 
   return (
-    <BookingProvider services={services} stylists={stylists} enabled={isCustomer}>
+    <BookingProvider
+      services={services}
+      stylists={stylists}
+      enabled={isCustomer}
+      prefill={profile ? { name: profile.fullName ?? '', phone: profile.phone ?? '', email: profile.email ?? '' } : null}
+    >
+      <AccountModalsProvider profile={profile} userMetadata={userMetadata}>
       <div className="home" id="top">
         <HomeEffects />
 
@@ -410,12 +418,27 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
 
                   <div className="home-visit__actions">
                     <BookButton variant="primary">Book a visit</BookButton>
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(contact.plusCode || contact.address)}`}
+                      target="_blank" rel="noopener" className="home-btn home-btn--ghost"
+                    >
+                      Get directions
+                    </a>
                     <a href={contact.facebookUrl} target="_blank" rel="noopener" className="home-btn home-btn--ghost">Facebook</a>
                   </div>
                 </div>
 
                 <div className="home-visit__map home-reveal">
-                  <ImgSlot src="/images/visit/map.png" alt={`Map showing ${contact.address}`} />
+                  {/* Official Google Maps place embed (admin-editable); if blanked,
+                      falls back to a keyless plus-code search embed. */}
+                  <iframe
+                    src={contact.mapEmbedUrl || `https://www.google.com/maps?q=${encodeURIComponent(contact.plusCode || contact.address)}&z=16&output=embed`}
+                    title={`Map showing ${contact.address}`}
+                    loading="lazy"
+                    allowFullScreen
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
+                  />
                 </div>
               </div>
             </div>
@@ -489,6 +512,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
           avatarSrc={accountAvatar}
         />
       </div>
+      </AccountModalsProvider>
     </BookingProvider>
   );
 }

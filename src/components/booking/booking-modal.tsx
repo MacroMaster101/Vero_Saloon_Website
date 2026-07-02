@@ -3,17 +3,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Service, Stylist } from '@/lib/supabase/types';
 import { BookingWizard } from './booking-wizard';
+import type { BookingPrefill } from './booking-provider';
 
 export function BookingModal({
   open,
   onClose,
   services,
   stylists,
+  prefill,
 }: {
   open: boolean;
   onClose: () => void;
   services: Service[];
   stylists: Stylist[];
+  prefill?: BookingPrefill | null;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
   // The wizard reports whether "Back" is available + how to trigger it, so the
@@ -74,6 +77,7 @@ export function BookingModal({
         <BookingWizard
           services={services}
           stylists={stylists}
+          prefill={prefill}
           onBackChange={handleBackChange}
         />
       </div>
