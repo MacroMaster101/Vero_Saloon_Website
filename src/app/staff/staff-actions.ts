@@ -8,7 +8,7 @@ export async function staffSetBookingStatus(
   id: string,
   status: AdminBookingStatus,
 ): Promise<{ ok: true } | { error: string }> {
-  await requireRole(['staff', 'admin'], '/staff'); // gate the mutation
+  await requireRole(['staff', 'admin', 'owner'], '/staff'); // gate the mutation
   const sb = await createClient(); // authenticated → RLS allows the update
   const { error } = await sb.from('bookings').update({ status }).eq('id', id);
   if (error) return { error: error.message };

@@ -8,7 +8,7 @@ type Result = { ok: true } | { error: string };
 const PATH = '/admin/content';
 
 export async function saveHours(fd: FormData): Promise<Result> {
-  await requireRole(['admin'], PATH);
+  await requireRole(['admin', 'owner'], PATH);
   const rows = [];
   for (let dow = 0; dow <= 6; dow++) {
     const parsed = hoursDaySchema.safeParse({

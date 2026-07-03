@@ -1,0 +1,13 @@
+
+> vero-salon@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.8 C:/Users/Kavisha Lakshan/Documents/GitHub/Vero_Saloon_Website
+
+
+ Test Files  38 passed (38)
+      Tests  180 passed (180)
+   Start at  02:46:14
+   Duration  6.68s (transform 4.10s, setup 13.17s, import 9.86s, tests 5.99s, environment 90.65s)
+

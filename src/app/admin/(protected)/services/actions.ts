@@ -38,7 +38,7 @@ function isMissingImageColumn(error: { code?: string; message?: string } | null)
 }
 
 export async function createService(formData: FormData): Promise<Result> {
-  await requireRole(['admin'], PATH);
+  await requireRole(['admin', 'owner'], PATH);
   const parsed = parse(formData);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Invalid input' };
   const sb = await createClient();
@@ -54,7 +54,7 @@ export async function createService(formData: FormData): Promise<Result> {
 }
 
 export async function updateService(formData: FormData): Promise<Result> {
-  await requireRole(['admin'], PATH);
+  await requireRole(['admin', 'owner'], PATH);
   const id = String(formData.get('id') ?? '');
   if (!id) return { error: 'Missing service id' };
   const parsed = parse(formData);
@@ -71,11 +71,13 @@ export async function updateService(formData: FormData): Promise<Result> {
   return { ok: true };
 }
 
-export async function deleteService(formData: FormData): Promise<void> {
-  await requireRole(['admin'], PATH);
+export async function deleteService(formData: FormData): Promise<Result> {
+  await requireRole(['admin', 'owner'], PATH);
   const id = String(formData.get('id') ?? '');
-  if (!id) return;
+  if (!id) return { error: 'Missing service id' };
   const sb = await createClient();
-  await sb.from('services').delete().eq('id', id);
+  const { error } = await sb.from('services').delete().eq('id', id);
+  if (error) return { error: error.message };
   revalidate();
+  return { ok: true };
 }

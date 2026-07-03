@@ -1,6 +1,7 @@
 'use client';
 import { useActionState } from 'react';
 import { createBlock } from '@/app/admin/(protected)/blocked-slots/block-actions';
+import { FormStatus } from '@/components/admin/form-kit';
 import { minutesToLabel } from '@/lib/format';
 import type { Stylist } from '@/lib/supabase/types';
 
@@ -62,9 +63,7 @@ export function BlockForm({ stylists }: { stylists: Stylist[] }) {
         <input name="reason" type="text" placeholder="e.g. Holiday, training" className="ainput" />
       </label>
 
-      {state && 'error' in state && (
-        <p className="astatus astatus--err">{state.error}</p>
-      )}
+      <FormStatus state={state} okLabel="Block added." />
 
       <button className="btn btn--primary" disabled={pending}>
         {pending ? 'Adding…' : 'Add block'}

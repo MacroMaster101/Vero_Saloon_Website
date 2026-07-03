@@ -11,7 +11,7 @@ const PATH = '/admin/holidays';
 // `holidays` table (source='google'). Manual rows are left untouched. This is
 // the only place Google is contacted — the public calendar reads from the DB.
 export async function syncHolidays(formData: FormData): Promise<{ error: string } | { ok: true; count: number }> {
-  await requireRole(['admin'], PATH);
+  await requireRole(['admin', 'owner'], PATH);
   const year = Number(formData.get('year')) || new Date().getFullYear();
 
   if (!env.googleCalendarKey) {
@@ -47,7 +47,7 @@ export async function syncHolidays(formData: FormData): Promise<{ error: string 
 
 // Add a one-off closure by hand (e.g. a salon-specific holiday).
 export async function addManualHoliday(formData: FormData): Promise<{ error: string } | { ok: true }> {
-  await requireRole(['admin'], PATH);
+  await requireRole(['admin', 'owner'], PATH);
   const date = String(formData.get('date') ?? '');
   const name = String(formData.get('name') ?? '').trim();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { error: 'Pick a valid date.' };
@@ -63,12 +63,13 @@ export async function addManualHoliday(formData: FormData): Promise<{ error: str
   return { ok: true };
 }
 
-export async function deleteHoliday(formData: FormData): Promise<void> {
-  await requireRole(['admin'], PATH);
+export async function deleteHoliday(formData: FormData): Promise<{ error: string } | { ok: true }> {
+  await requireRole(['admin', 'owner'], PATH);
   const date = String(formData.get('date') ?? '');
-  if (date) {
-    const sb = await createClient();
-    await sb.from('holidays').delete().eq('date', date);
-  }
+  if (!date) return { error: 'Missing holiday date' };
+  const sb = await createClient();
+  const { error } = await sb.from('holidays').delete().eq('date', date);
+  if (error) return { error: error.message };
   revalidatePath(PATH);
+  return { ok: true };
 }

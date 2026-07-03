@@ -12,6 +12,7 @@ export function routeForSession(
   next?: string | null,
 ): string {
   if (next) return next;                              // explicit ?next= wins
+  if (role === 'owner') return '/owner';              // owner → owner dashboard
   if (role === 'staff' && stylistId) return '/staff'; // staff → today
   if (role === 'admin') return '/admin';              // admin → dashboard (app parity)
   if (isGuest) return '/book';                        // guest → book

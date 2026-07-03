@@ -10,7 +10,7 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 
 export type BookingStatus = 'confirmed' | 'cancelled' | 'completed' | 'no_show';
 export type ServiceCategory = 'hair' | 'beauty';
-export type UserRole = 'user' | 'staff' | 'admin';
+export type UserRole = 'user' | 'staff' | 'admin' | 'owner';
 
 export interface Database {
   public: {
@@ -216,7 +216,7 @@ export interface Database {
       profiles: {
         Row: {
           id: string;
-          role: 'user' | 'staff' | 'admin';
+          role: 'user' | 'staff' | 'admin' | 'owner';
           stylist_id: string | null;
           full_name: string | null;
           email: string | null;
@@ -225,7 +225,7 @@ export interface Database {
         };
         Insert: {
           id: string;
-          role?: 'user' | 'staff' | 'admin';
+          role?: 'user' | 'staff' | 'admin' | 'owner';
           stylist_id?: string | null;
           full_name?: string | null;
           email?: string | null;

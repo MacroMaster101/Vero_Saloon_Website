@@ -20,15 +20,18 @@ export type AdminNavItem = { href: string; label: string; icon: IconName; short?
 export function AdminBottomNav({
   primary,
   overflow,
+  root = '/admin',
 }: {
   primary: AdminNavItem[];
   overflow: AdminNavItem[];
+  root?: string;
 }) {
   const path = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
 
+  // the section root only matches exactly, so Home doesn't stay lit on subpages
   const isActive = (href: string) =>
-    href === '/admin' ? path === '/admin' : path.startsWith(href);
+    href === root ? path === root : path.startsWith(href);
 
   // any overflow item active should light up the "More" tab
   const moreActive = overflow.some((i) => isActive(i.href));

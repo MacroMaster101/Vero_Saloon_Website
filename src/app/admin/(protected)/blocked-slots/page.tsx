@@ -1,8 +1,10 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
+import { requireRole } from '@/lib/supabase/auth';
 import { getStylists } from '@/lib/queries';
 import type { BlockedSlot } from '@/lib/supabase/types';
 import { BlockForm } from '@/components/admin/block-form';
+import { DeleteForm } from '@/components/admin/form-kit';
 import { deleteBlock } from './block-actions';
 
 const TZ = 'Asia/Colombo';
@@ -19,6 +21,7 @@ const whenFmt = new Intl.DateTimeFormat('en-LK', {
 type Row = BlockedSlot & { stylists: { name: string } | null };
 
 export default async function BlockedSlotsPage() {
+  await requireRole(['admin'], '/admin/blocked-slots');
   const sb = await createClient();
   const [{ data }, stylists] = await Promise.all([
     sb
@@ -57,10 +60,7 @@ export default async function BlockedSlotsPage() {
                   </span>
                   {b.reason && <span className="arow__meta">{b.reason}</span>}
                 </div>
-                <form action={deleteBlock}>
-                  <input type="hidden" name="id" value={b.id} />
-                  <button type="submit" className="btn btn--danger-outline">Remove</button>
-                </form>
+                <DeleteForm action={deleteBlock} id={b.id} label="Remove" />
               </li>
             ))}
           </ul>

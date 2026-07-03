@@ -1,45 +1,23 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
-import type { Booking } from '@/lib/supabase/types';
-import { BookingsTable, type BookingRow } from '@/components/admin/bookings-table';
+import { requireRole } from '@/lib/supabase/auth';
+import { toUtcInstant } from '@/lib/time';
+import { SALON_TZ, salonDayKey, splitTodayUpcoming, type BookingJoinRow } from '@/lib/booking-rows';
+import { BookingsTable } from '@/components/admin/bookings-table';
 import { StatTiles, type StatTile } from '@/components/admin/stat-tiles';
 
-type Row = Booking & { services: { name: string } | null; stylists: { name: string } | null };
-
-const TZ = 'Asia/Colombo';
-const dayFmt = new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' });
-const whenFmt = new Intl.DateTimeFormat('en-LK', {
-  timeZone: TZ,
-  weekday: 'short',
-  day: 'numeric',
-  month: 'short',
-  hour: 'numeric',
-  minute: '2-digit',
-  hour12: true,
-});
-
-function toRow(b: Row): BookingRow {
-  return {
-    id: b.id,
-    reference: b.reference,
-    customerName: b.customer_name,
-    customerPhone: b.customer_phone,
-    serviceName: b.services?.name ?? 'Unknown service',
-    stylistName: b.stylists?.name ?? 'Any',
-    whenLabel: whenFmt.format(new Date(b.starts_at)),
-    status: b.status,
-  };
-}
-
 export default async function AdminHome() {
+  await requireRole(['admin'], '/admin');
   const sb = await createClient();
+  // Only today's and future bookings are shown, so filter in the query instead
+  // of fetching the whole history and discarding the past rows here.
   const { data, error } = await sb
     .from('bookings')
     .select('*, services(name), stylists(name)')
+    .gte('starts_at', toUtcInstant(salonDayKey(new Date()), 0, SALON_TZ))
     .order('starts_at', { ascending: true });
 
-  const rows = (data ?? []) as unknown as Row[];
-  const todayKey = dayFmt.format(new Date());
+  const rows = (data ?? []) as unknown as BookingJoinRow[];
 
   const [{ count: serviceCount }, { count: bookableCount }, { count: stylistCount }] = await Promise.all([
     sb.from('services').select('*', { count: 'exact', head: true }),
@@ -48,13 +26,7 @@ export default async function AdminHome() {
   ]);
 
   // Group by salon-local calendar date. Past bookings are excluded (Today + Upcoming only).
-  const today: BookingRow[] = [];
-  const upcoming: BookingRow[] = [];
-  for (const b of rows) {
-    const key = dayFmt.format(new Date(b.starts_at));
-    if (key === todayKey) today.push(toRow(b));
-    else if (key > todayKey) upcoming.push(toRow(b));
-  }
+  const { today, upcoming } = splitTodayUpcoming(rows);
 
   const tiles: StatTile[] = [
     { k: 'Today', n: String(today.length), sub: 'bookings' },

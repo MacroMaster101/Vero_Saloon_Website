@@ -12,7 +12,7 @@ const PATH = '/admin/reviews';
 // shared stylist_reviews table has no admin-delete RLS policy, so this runs via
 // the service-role client; requireRole is the app-level admin guard.
 export async function deleteReview(id: string): Promise<Result> {
-  await requireRole(['admin'], PATH);
+  await requireRole(['admin', 'owner'], PATH);
   const admin = createAdminClient();
 
   // Read the review's stylist + rating so we can decrement the aggregate.

@@ -1,7 +1,7 @@
 'use client';
 import { useActionState } from 'react';
 import { ListToolbar, type FilterChip } from '@/components/admin/list-toolbar';
-import { Field, TextInput, Switch, SubmitButton, FormStatus } from '@/components/admin/form-kit';
+import { Field, TextInput, Switch, SubmitButton, FormStatus, DeleteForm } from '@/components/admin/form-kit';
 import { ImageField } from '@/components/admin/image-field';
 import { createGalleryItem, updateGalleryItem, deleteGalleryItem } from './actions';
 import type { GalleryItem } from '@/lib/supabase/types';
@@ -61,10 +61,7 @@ function EditRow({ g }: { g: GalleryItem }) {
             </div>
           </form>
         </details>
-        <form action={deleteGalleryItem}>
-          <input type="hidden" name="id" value={g.id} />
-          <button type="submit" className="btn btn--danger-outline">Delete</button>
-        </form>
+        <DeleteForm action={deleteGalleryItem} id={g.id} confirm={`Delete "${g.title}"?`} />
       </div>
     </li>
   );
