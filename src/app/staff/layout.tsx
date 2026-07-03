@@ -12,7 +12,7 @@ const STAFF_NAV: { href: string; label: string; icon: IconName }[] = [
 ];
 
 export default async function StaffLayout({ children }: { children: React.ReactNode }) {
-  const profile = await requireRole(['staff', 'admin'], '/staff');
+  const profile = await requireRole(['staff', 'admin', 'owner'], '/staff');
   const initial = (profile.fullName || profile.email || '?').trim().charAt(0).toUpperCase();
 
   return (

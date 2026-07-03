@@ -8,7 +8,7 @@ const TZ = 'Asia/Colombo';
 const PATH = '/admin/blocked-slots';
 
 export async function createBlock(formData: FormData): Promise<{ error: string } | { ok: true }> {
-  await requireRole(['admin'], PATH); // defense-in-depth; RLS also enforces admin
+  await requireRole(['admin', 'owner'], PATH); // defense-in-depth; RLS also enforces admin/owner
   const sb = await createClient();
   const date = String(formData.get('date') ?? '');
   const startMin = Number(formData.get('startMin'));
@@ -32,10 +32,13 @@ export async function createBlock(formData: FormData): Promise<{ error: string }
   return { ok: true };
 }
 
-export async function deleteBlock(formData: FormData): Promise<void> {
-  await requireRole(['admin'], PATH); // defense-in-depth; RLS also enforces admin
+export async function deleteBlock(formData: FormData): Promise<{ error: string } | { ok: true }> {
+  await requireRole(['admin', 'owner'], PATH); // defense-in-depth; RLS also enforces admin/owner
   const sb = await createClient();
   const id = String(formData.get('id') ?? '');
-  if (id) await sb.from('blocked_slots').delete().eq('id', id);
+  if (!id) return { error: 'Missing block id' };
+  const { error } = await sb.from('blocked_slots').delete().eq('id', id);
+  if (error) return { error: error.message };
   revalidatePath(PATH);
+  return { ok: true };
 }

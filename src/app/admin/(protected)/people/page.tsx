@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { PeopleList } from './people-list';
 
 export default async function PeoplePage() {
-  await requireRole(['admin'], '/admin/people');
+  const profile = await requireRole(['admin'], '/admin/people');
   const sb = await createClient();
   const { data: profiles } = await sb.from('profiles').select('id, full_name, email, role, stylist_id').order('created_at', { ascending: true });
   const { data: stylists } = await sb.from('stylists').select('id, name').order('sort_order');
@@ -15,7 +15,7 @@ export default async function PeoplePage() {
           <h1 className="ahead__title">People</h1>
         </div>
       </div>
-      <PeopleList people={profiles ?? []} stylists={stylists ?? []} />
+      <PeopleList people={profiles ?? []} stylists={stylists ?? []} actorRole={profile.role} />
     </div>
   );
 }

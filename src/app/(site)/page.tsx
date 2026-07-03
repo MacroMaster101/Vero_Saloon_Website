@@ -91,7 +91,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
   const userMetadata = user?.user_metadata ?? null;
 
   const looks = gallery.slice(0, 5);
-  const isCustomer = profile?.role !== 'admin' && profile?.role !== 'staff';
+  const isCustomer = profile?.role !== 'admin' && profile?.role !== 'staff' && profile?.role !== 'owner';
   const hoursByDow = new Map(hours.map((h) => [h.day_of_week, h]));
 
   // Account tab for the mobile bottom bar — mirror NavAuth's routing/avatar.
@@ -100,10 +100,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
     ? '/login'
     : profile.role === 'admin'
       ? '/admin'
-      : profile.role === 'staff'
-        ? '/admin/schedule'
-        : null;
-  const accountLabel = profile?.role === 'staff' ? 'Schedule' : profile?.role === 'admin' ? 'Admin' : 'Account';
+      : profile.role === 'owner'
+        ? '/owner'
+        : profile.role === 'staff'
+          ? '/staff' // /admin/schedule is admin-only; staff's surface is /staff
+          : null;
+  const accountLabel = profile?.role === 'staff' ? 'Schedule' : profile?.role === 'admin' ? 'Admin' : profile?.role === 'owner' ? 'My shop' : 'Account';
   const accountAvatar = profile ? avatarSrc(userMetadata, profile.email ?? profile.fullName ?? 'guest') : null;
 
   return (
@@ -165,7 +167,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
                 <p className="home-hero__lead">{hero.lead}</p>
                 <div className="home-hero__actions">
                   <BookButton variant="primary">Book a visit</BookButton>
-                  <a className="home-link" href="#services">See the menu <span aria-hidden="true">→</span></a>
+                  <a className="home-link" href="#services">See our services <span aria-hidden="true">→</span></a>
                 </div>
                 <dl className="home-hero__facts">
                   <div>
@@ -236,7 +238,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
           <section className="home-section" id="services">
             <div className="home-wrap">
               <div className="home-head home-reveal">
-                <span className="home-eyebrow home-eyebrow--center">The menu</span>
+                <span className="home-eyebrow home-eyebrow--center">What we offer</span>
                 <h2 className="home-h">Services &amp; <em>pricing</em></h2>
                 <p className="home-lead">Hair, colour and beauty for him &amp; her. Prices in LKR — final quote confirmed at your consultation.</p>
               </div>

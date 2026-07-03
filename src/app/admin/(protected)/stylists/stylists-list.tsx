@@ -1,7 +1,7 @@
 'use client';
 import { useActionState } from 'react';
 import { ListToolbar, type FilterChip } from '@/components/admin/list-toolbar';
-import { Field, TextInput, Switch, SubmitButton, FormStatus } from '@/components/admin/form-kit';
+import { Field, TextInput, Switch, SubmitButton, FormStatus, DeleteForm } from '@/components/admin/form-kit';
 import { ImageField } from '@/components/admin/image-field';
 import { createStylist, updateStylist, deleteStylist } from './actions';
 import type { Stylist } from '@/lib/supabase/types';
@@ -62,10 +62,7 @@ function EditRow({ s }: { s: Stylist }) {
             </div>
           </form>
         </details>
-        <form action={deleteStylist}>
-          <input type="hidden" name="id" value={s.id} />
-          <button type="submit" className="btn btn--danger-outline">Delete</button>
-        </form>
+        <DeleteForm action={deleteStylist} id={s.id} confirm={`Delete "${s.name}"?`} />
       </div>
     </li>
   );

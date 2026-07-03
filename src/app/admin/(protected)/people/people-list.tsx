@@ -1,11 +1,36 @@
 'use client';
+import { useActionState } from 'react';
 import { ListToolbar, type FilterChip } from '@/components/admin/list-toolbar';
+import { SubmitButton, FormStatus, DeleteForm } from '@/components/admin/form-kit';
 import { setRole, adminDeleteUser } from './actions';
+import { assignableRoles, canSetRole } from '@/lib/auth/role-rules';
+import type { Role } from '@/lib/auth/roles';
 
 export interface Person { id: string; full_name: string | null; email: string | null; role: string; stylist_id: string | null; }
 export interface Stylist { id: string; name: string; }
 
-export function PeopleList({ people, stylists }: { people: Person[]; stylists: Stylist[] }) {
+function RoleForm({ p, stylists, actorRole }: { p: Person; stylists: Stylist[]; actorRole: Role }) {
+  const [state, action, pending] = useActionState(
+    async (_prev: unknown, fd: FormData) => setRole(fd),
+    undefined as undefined | { error: string } | { ok: true },
+  );
+  return (
+    <form action={action} className="person__edit">
+      <input type="hidden" name="id" value={p.id} />
+      <select name="role" defaultValue={p.role} aria-label="Role">
+        {assignableRoles(actorRole).map((r) => <option key={r} value={r}>{r}</option>)}
+      </select>
+      <select name="stylist_id" defaultValue={p.stylist_id ?? ''} aria-label="Linked stylist">
+        <option value="">— no stylist —</option>
+        {stylists.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+      </select>
+      <SubmitButton pending={pending} />
+      <FormStatus state={state} />
+    </form>
+  );
+}
+
+export function PeopleList({ people, stylists, actorRole }: { people: Person[]; stylists: Stylist[]; actorRole: Role }) {
   const chips: FilterChip<Person>[] = [
     { id: 'all', label: 'All', match: () => true },
     { id: 'admin', label: 'Admin', match: (p) => p.role === 'admin' },
@@ -23,27 +48,27 @@ export function PeopleList({ people, stylists }: { people: Person[]; stylists: S
         <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: 10 }}>
           {rows.map((p) => {
             const initial = (p.full_name || p.email || '?').trim().charAt(0).toUpperCase();
+            const canTouch = canSetRole(actorRole, p.role as Role, p.role as Role);
             return (
               <li key={p.id} className="person">
                 <div className="person__id">
                   <span className="avatar" style={{ width: 38, height: 38 }}><b style={{ fontSize: 14 }}>{initial}</b></span>
                   <div><b style={{ fontSize: 14 }}>{p.full_name ?? '—'}</b><div className="step__hint" style={{ margin: 0 }}>{p.email}</div></div>
                 </div>
-                <form action={setRole} className="person__edit">
-                  <input type="hidden" name="id" value={p.id} />
-                  <select name="role" defaultValue={p.role} aria-label="Role">
-                    <option value="user">user</option><option value="staff">staff</option><option value="admin">admin</option>
-                  </select>
-                  <select name="stylist_id" defaultValue={p.stylist_id ?? ''} aria-label="Linked stylist">
-                    <option value="">— no stylist —</option>
-                    {stylists.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-                  </select>
-                  <button className="btn btn--primary" type="submit">Save</button>
-                </form>
-                <form action={adminDeleteUser} className="person__del">
-                  <input type="hidden" name="id" value={p.id} />
-                  <button type="submit" className="btn btn--danger-outline">Delete</button>
-                </form>
+                {canTouch ? (
+                  <RoleForm p={p} stylists={stylists} actorRole={actorRole} />
+                ) : (
+                  <span className="role-badge">{p.role}</span>
+                )}
+                {canTouch && actorRole === 'admin' && (
+                  <div className="person__del">
+                    <DeleteForm
+                      action={adminDeleteUser}
+                      id={p.id}
+                      confirm={`Delete ${p.full_name ?? p.email ?? 'this user'} and anonymize their bookings? This cannot be undone.`}
+                    />
+                  </div>
+                )}
               </li>
             );
           })}

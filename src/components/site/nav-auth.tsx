@@ -27,8 +27,10 @@ export function NavAuth({ profile, userMetadata }: { profile: Profile | null; us
   if (!profile) return <a href="/login" className="nav__cta">Sign in</a>;
 
   const isUser = profile.role === 'user';
-  const dash = profile.role === 'admin' ? '/admin' : '/admin/schedule';
-  const dashLabel = profile.role === 'staff' ? 'My schedule' : 'Admin';
+  // Each elevated role has its own surface: admin console, owner dashboard,
+  // staff schedule. (/admin/schedule is admin-only — staff must go to /staff.)
+  const dash = profile.role === 'admin' ? '/admin' : profile.role === 'owner' ? '/owner' : '/staff';
+  const dashLabel = profile.role === 'admin' ? 'Admin' : profile.role === 'owner' ? 'My shop' : 'My schedule';
   const seed = profile.email ?? profile.fullName ?? 'guest';
   const src = avatarSrc(userMetadata, seed);
 

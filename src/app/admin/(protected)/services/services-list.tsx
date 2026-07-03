@@ -1,7 +1,7 @@
 'use client';
 import { useActionState } from 'react';
 import { ListToolbar, type FilterChip } from '@/components/admin/list-toolbar';
-import { Field, TextInput, Segmented, Switch, SubmitButton, FormStatus } from '@/components/admin/form-kit';
+import { Field, TextInput, Segmented, Switch, SubmitButton, FormStatus, DeleteForm } from '@/components/admin/form-kit';
 import { ImageField } from '@/components/admin/image-field';
 import { createService, updateService, deleteService } from './actions';
 import { money } from '@/lib/format';
@@ -80,10 +80,7 @@ function EditRow({ s }: { s: Service }) {
             </div>
           </form>
         </details>
-        <form action={deleteService}>
-          <input type="hidden" name="id" value={s.id} />
-          <button type="submit" className="btn btn--danger-outline">Delete</button>
-        </form>
+        <DeleteForm action={deleteService} id={s.id} confirm={`Delete "${s.name}"?`} />
       </div>
     </li>
   );

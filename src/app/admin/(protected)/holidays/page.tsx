@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
+import { requireRole } from '@/lib/supabase/auth';
 import type { Holiday } from '@/lib/supabase/types';
 import { HolidayForms } from '@/components/admin/holiday-form';
+import { DeleteForm } from '@/components/admin/form-kit';
 import { deleteHoliday } from './holiday-actions';
 
 const dateFmt = new Intl.DateTimeFormat('en-LK', {
@@ -14,6 +16,7 @@ function label(ymd: string): string {
 }
 
 export default async function HolidaysPage() {
+  await requireRole(['admin'], '/admin/holidays');
   const sb = await createClient();
   // Upcoming holidays (today onward), soonest first.
   const today = new Date().toISOString().slice(0, 10);
@@ -50,10 +53,7 @@ export default async function HolidaysPage() {
                   <span className="arow__meta">{label(h.date)}</span>
                   <span className="arow__meta">{h.source === 'google' ? 'From Google' : 'Added manually'}</span>
                 </div>
-                <form action={deleteHoliday}>
-                  <input type="hidden" name="date" value={h.date} />
-                  <button type="submit" className="btn btn--danger-outline">Remove</button>
-                </form>
+                <DeleteForm action={deleteHoliday} id={h.date} name="date" label="Remove" />
               </li>
             ))}
           </ul>

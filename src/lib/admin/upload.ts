@@ -10,7 +10,7 @@ const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 type UploadResult = { url: string } | { error: string };
 
 export async function uploadImage(formData: FormData): Promise<UploadResult> {
-  await requireRole(['admin'], '/admin');
+  await requireRole(['admin', 'owner'], '/admin');
   const file = formData.get('file');
   if (!(file instanceof File) || file.size === 0) return { error: 'No file selected' };
   if (!ALLOWED.includes(file.type)) return { error: 'Use a JPG, PNG, WEBP, AVIF or GIF image' };
