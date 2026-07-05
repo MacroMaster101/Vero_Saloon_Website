@@ -1008,26 +1008,6 @@ html, body { overflow-x:clip; }
   .bk-list { max-width:none !important; }
 }
 
-/* ---- Staff booking card ---- */
-.staff-bk { background:var(--surface); border:1px solid var(--line); border-left:4px solid var(--line);
-  border-radius:var(--radius, 14px); padding:14px 16px; margin-bottom:14px; display:flex; flex-direction:column; gap:10px; }
-.staff-bk--confirmed { border-left-color:var(--accent); }
-.staff-bk--completed { border-left-color:var(--success); }
-.staff-bk--cancelled, .staff-bk--no_show { border-left-color:var(--error); }
-.staff-bk__top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
-.staff-bk__head { min-width:0; }
-.staff-bk__time { display:block; font-size:12px; font-weight:600; color:var(--accent-text); }
-.staff-bk__name { display:block; font-size:17px; font-weight:700; color:var(--fg); }
-.staff-bk__meta { display:flex; flex-wrap:wrap; gap:8px 16px; font-size:13px; color:var(--fg-2); }
-.staff-bk__meta span, .staff-bk__phone { display:inline-flex; align-items:center; gap:6px; }
-.staff-bk__phone { color:var(--accent-text); text-decoration:none; font-weight:600;
-  border:1px solid var(--line); background:var(--bg-2); padding:4px 10px; border-radius:var(--radius-pill, 999px); }
-.staff-bk__notes { margin:0; font-size:13px; font-style:italic; color:var(--fg-muted);
-  border-top:1px solid var(--line); padding-top:10px; }
-.staff-bk__err { margin:0; font-size:12.5px; color:var(--error); font-weight:600; }
-.staff-bk__actions { display:flex; flex-wrap:wrap; gap:8px; border-top:1px solid var(--line); padding-top:10px; }
-.staff-bk__actions .btn { font-size:13px; padding:6px 12px; }
-
 /* Live Status Badge */
 .live-status-badge {
   display: inline-flex;
@@ -2487,3 +2467,102 @@ button.home-dock__sheet-item { border: 0; font-family: inherit; cursor: pointer;
 }
 @media (max-width: 480px) { .oday__time { min-width: 70px; font-size: 18px; } }
 @media (prefers-reduced-motion: reduce) { .otile { transition: none; } .otile:hover { transform: none; } }
+
+/* ── staff desk v2 ── */
+.sd-card-editor { margin-top: 18px; }
+.sd-card-preview {
+  display: flex; justify-content: center; padding: 18px;
+  border: 1px dashed var(--line); border-radius: 14px; margin: 12px 0 16px;
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+}
+.sd-card-preview .home-member { max-width: 240px; }
+
+.sd-id { align-items: center; }
+.sd-id__photo {
+  width: 44px; height: 44px; border-radius: 50%; object-fit: cover;
+  border: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+}
+.sd-id__chair { font-size: 12px; color: var(--fg-muted); margin-top: 2px; }
+
+.sd-slots { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; min-height: 40px; }
+.sd-slot {
+  padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line);
+  background: transparent; color: var(--fg); font: inherit; font-size: 13px; cursor: pointer;
+}
+.sd-slot:hover { border-color: var(--accent); }
+.sd-slot.is-picked { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* Today page + booking card v2 */
+.sd-day { font-size: 13px; color: var(--fg-muted); align-self: end; }
+.sd-h { font-size: 17px; margin: 0 0 10px; }
+
+.sd-strip {
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  padding: 14px 18px; border: 1px solid var(--line); border-radius: 14px;
+  margin: 16px 0 26px; background: var(--surface);
+}
+.sd-strip__item { display: flex; align-items: baseline; gap: 6px; }
+.sd-strip__item b { font-size: 24px; line-height: 1; }
+.sd-strip__item span { font-size: 12px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: .04em; }
+.sd-strip__bar {
+  flex: 1; min-width: 120px; height: 6px; border-radius: 999px;
+  background: color-mix(in srgb, var(--line) 60%, transparent); overflow: hidden;
+}
+.sd-strip__bar span { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width .3s ease; }
+
+.sd-next { margin-bottom: 26px; }
+.sd-timeline { display: flex; flex-direction: column; gap: 10px; }
+
+.sd-now { display: flex; align-items: center; gap: 10px; margin: 2px 0; }
+.sd-now__label {
+  font-size: 11px; font-weight: 600; color: var(--accent);
+  text-transform: uppercase; letter-spacing: .06em; white-space: nowrap;
+}
+.sd-now__line { flex: 1; height: 2px; border-radius: 999px; background: var(--accent); }
+
+.sd-bk {
+  position: relative; display: flex; border: 1px solid var(--line);
+  border-radius: 14px; overflow: hidden; background: var(--surface);
+}
+.sd-bk__rail { width: 4px; flex: none; background: var(--accent); }
+.sd-bk--completed .sd-bk__rail { background: var(--success); }
+.sd-bk--cancelled .sd-bk__rail, .sd-bk--no_show .sd-bk__rail { background: var(--error); }
+.sd-bk--cancelled, .sd-bk--no_show { opacity: .62; }
+.sd-bk--hero { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); box-shadow: 0 8px 28px -18px var(--accent); }
+.sd-bk__body { flex: 1; padding: 14px 16px; min-width: 0; }
+.sd-bk__top { display: flex; justify-content: space-between; align-items: start; gap: 10px; }
+.sd-bk__time { display: block; font-size: 12.5px; color: var(--fg-muted); letter-spacing: .02em; }
+.sd-bk__name { font-size: 17px; }
+.sd-bk--hero .sd-bk__name { font-size: 21px; }
+.sd-bk__meta { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 8px; font-size: 13.5px; color: var(--fg-muted); }
+.sd-bk__phone { color: var(--accent); text-decoration: none; }
+.sd-bk__notes { margin: 8px 0 0; font-size: 13px; color: var(--fg-muted); font-style: italic; }
+
+.sd-daygroup { margin-top: 22px; }
+.sd-daygroup__head {
+  position: sticky; top: 0; z-index: 2; padding: 8px 0;
+  background: var(--bg); font-size: 14.5px;
+}
+.sd-bk__err { margin: 8px 0 0; font-size: 13px; color: var(--error); }
+.sd-bk__actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.sd-act { font-size: 13px; padding: 7px 14px; }
+.sd-act--danger { color: var(--error); border-color: color-mix(in srgb, var(--error) 40%, var(--line)); }
+
+/* invite-staff — email + button row on People / Team */
+.invite-staff { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 0 0 18px; }
+.invite-staff input[type="email"] {
+  flex: 1 1 240px; padding: 10px 14px; border: 1px solid var(--line);
+  border-radius: 999px; background: var(--surface); color: var(--fg);
+}
+.invite-staff .astatus { flex-basis: 100%; margin: 0; }
+
+/* sd-setup — onboarding banner while the card is hidden and untitled */
+.sd-setup {
+  display: block; padding: 14px 18px; margin: 0 0 18px;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line));
+  border-left: 4px solid var(--accent); border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+  color: var(--fg); text-decoration: none;
+}
+.sd-setup b { display: block; margin-bottom: 2px; }
+.sd-setup span { font-size: 13.5px; color: var(--fg-muted); }

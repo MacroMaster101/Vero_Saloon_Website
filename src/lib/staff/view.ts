@@ -59,3 +59,15 @@ export function completionPercent(list: StaffBooking[]): number {
   const completed = list.filter((b) => b.status === 'completed').length;
   return Math.round((completed / list.length) * 100);
 }
+
+export function sortByStart(list: StaffBooking[]): StaffBooking[] {
+  return [...list].sort((a, b) => a.starts_at.localeCompare(b.starts_at));
+}
+
+export function applyReschedule(list: StaffBooking[], id: string, startsAt: string, endsAt: string): StaffBooking[] {
+  return sortByStart(list.map((b) => (b.id === id ? { ...b, starts_at: startsAt, ends_at: endsAt } : b)));
+}
+
+export function colomboDayKey(offsetDays = 0): string {
+  return dayKeyFmt.format(new Date(Date.now() + offsetDays * 86400000));
+}

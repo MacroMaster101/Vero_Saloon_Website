@@ -1,6 +1,7 @@
 import { requireRole } from '@/lib/supabase/auth';
 import { createClient } from '@/lib/supabase/server';
 import { PeopleList } from './people-list';
+import { InviteStaffForm } from './invite-form';
 
 export default async function PeoplePage() {
   const profile = await requireRole(['admin'], '/admin/people');
@@ -15,6 +16,7 @@ export default async function PeoplePage() {
           <h1 className="ahead__title">People</h1>
         </div>
       </div>
+      <InviteStaffForm />
       <PeopleList people={profiles ?? []} stylists={stylists ?? []} actorRole={profile.role} />
     </div>
   );

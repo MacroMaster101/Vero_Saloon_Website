@@ -8,6 +8,7 @@ import { createBookingSchema, type CreateBookingInput } from '@/lib/validators';
 import { makeReference } from '@/lib/reference';
 import { notifyBookingConfirmed } from '@/lib/notify';
 import { getHolidayMap } from '@/lib/lk-holidays';
+import { roleCanBook } from '@/lib/auth/roles';
 
 // Sri Lankan holidays for a month, as { 'YYYY-MM-DD': name }, read from our
 // `holidays` DB table (never Google directly — see lib/lk-holidays). Used by the
@@ -97,6 +98,12 @@ export async function createBooking(raw: CreateBookingInput): Promise<CreateResu
 
   const admin = createAdminClient();
   const sessionUser = await getUser();
+  if (sessionUser) {
+    const { data: actorProfile } = await admin.from('profiles').select('role').eq('id', sessionUser.id).single();
+    if (!roleCanBook((actorProfile?.role ?? null) as Parameters<typeof roleCanBook>[0])) {
+      return { ok: false, error: 'invalid', message: 'Staff accounts can\'t place customer bookings.' };
+    }
+  }
   // Re-derive price + duration from DB for every chosen service (never trust
   // client). Dedupe ids, then preserve the client's order so the first pick
   // stays the "primary" service written to bookings.service_id.

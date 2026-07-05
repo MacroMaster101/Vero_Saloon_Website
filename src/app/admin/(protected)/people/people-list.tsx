@@ -65,7 +65,7 @@ export function PeopleList({ people, stylists, actorRole }: { people: Person[]; 
                     <DeleteForm
                       action={adminDeleteUser}
                       id={p.id}
-                      confirm={`Delete ${p.full_name ?? p.email ?? 'this user'} and anonymize their bookings? This cannot be undone.`}
+                      confirm={`Delete ${p.full_name ?? p.email ?? 'this user'} and anonymize their bookings? Their linked stylist card is removed too (hidden instead if it has booking history). This cannot be undone.`}
                     />
                   </div>
                 )}

@@ -1,9 +1,9 @@
 import { getProfile } from '@/lib/supabase/auth';
 import { createClient } from '@/lib/supabase/server';
-import { getStylists } from '@/lib/queries';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { getAvatarInfo } from '@/lib/avatar';
 import { ProfileForm } from '@/app/account/profile-form';
-import { signOut } from '@/app/admin/actions';
-import { Icon } from '@/components/ui/icon';
+import { PublicCardForm } from './public-card-form';
 
 export default async function StaffAccountPage() {
   const profile = await getProfile();
@@ -11,10 +11,14 @@ export default async function StaffAccountPage() {
   const { data: { user } } = await sb.auth.getUser();
   const userMetadata = user?.user_metadata ?? null;
 
-  const stylists = (await getStylists()) as { id: string; name: string }[];
-  const stylistName = profile?.stylistId
-    ? stylists.find((s) => s.id === profile.stylistId)?.name ?? '—'
-    : 'Not linked';
+  // Hidden shell cards are invisible to staff under RLS; service-role read is
+  // scoped to the session's own stylistId (server-derived, never client input).
+  const { data: stylist } = profile?.stylistId
+    ? await createAdminClient().from('stylists').select('id, name, role, tags, avatar_url, slug, is_active').eq('id', profile.stylistId).single()
+    : { data: null };
+
+  const seed = profile?.email ?? profile?.fullName ?? 'staff';
+  const avatar = getAvatarInfo(userMetadata, seed).src;
 
   return (
     <div className="apage">
@@ -23,21 +27,28 @@ export default async function StaffAccountPage() {
         <span className="role-badge">Staff</span>
       </div>
 
-      <p className="step__hint" style={{ marginTop: -10 }}>Chair: <b>{stylistName}</b></p>
+      <p className="step__hint" style={{ marginTop: -10 }}>
+        Chair: <b>{stylist?.name ?? 'Not linked'}</b>
+        {!stylist && ' — ask an admin to connect your login to your stylist profile.'}
+      </p>
 
       <ProfileForm
         fullName={profile?.fullName ?? ''}
         email={profile?.email ?? ''}
         phone={profile?.phone ?? ''}
         userMetadata={userMetadata}
-        seed={profile?.email ?? profile?.fullName ?? 'staff'}
+        seed={seed}
       />
 
-      <div style={{ marginTop: 28 }}>
-        <form action={signOut}>
-          <button className="btn btn--ghost" type="submit"><Icon name="logout" className="ic" /> Sign out</button>
-        </form>
-      </div>
+      {stylist && (
+        <PublicCardForm
+          displayName={profile?.fullName ?? stylist.name}
+          avatarUrl={avatar}
+          initialRole={stylist.role}
+          initialTags={stylist.tags ?? []}
+          initialActive={stylist.is_active}
+        />
+      )}
     </div>
   );
 }

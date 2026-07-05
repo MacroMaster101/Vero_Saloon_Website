@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { requireRole } from '@/lib/supabase/auth';
 import { stylistInputSchema } from '@/lib/admin/stylist-schema';
+import { syncStylistToProfiles } from '@/lib/identity/sync';
 
 type Result = { ok: true } | { error: string };
 const PATH = '/admin/stylists';
@@ -40,6 +41,12 @@ export async function updateStylist(fd: FormData): Promise<Result> {
   const sb = await createClient();
   const { error } = await sb.from('stylists').update(parsed.data).eq('id', id);
   if (error) return { error: error.message };
+  // Mirror identity fields onto any linked staff login so the person's name
+  // and photo match everywhere (best-effort; never blocks the save).
+  await syncStylistToProfiles(id, {
+    name: parsed.data.name,
+    ...(parsed.data.avatar_url !== null ? { avatarUrl: parsed.data.avatar_url } : {}),
+  });
   revalidate();
   return { ok: true };
 }
