@@ -6,14 +6,10 @@ import { canStaffSetStatus, canStaffReschedule } from '@/lib/staff/action-rules'
 import { getAvailability } from '@/app/book/actions';
 import { toUtcInstant } from '@/lib/time';
 import { notifyBookingCancelled, notifyBookingRescheduled } from '@/lib/notify';
-import type { BookingChange } from '@/lib/notify/types';
+import { buildBookingChange } from '@/lib/notify/change-payload';
 import type { AdminBookingStatus } from '@/lib/staff/view';
 
 const TZ = 'Asia/Colombo';
-const whenFmt = new Intl.DateTimeFormat('en-LK', {
-  timeZone: TZ, weekday: 'short', day: 'numeric', month: 'short',
-  hour: 'numeric', minute: '2-digit', hour12: true,
-});
 
 type ActionBookingRow = {
   id: string; stylist_id: string | null; status: string; starts_at: string;
@@ -23,28 +19,6 @@ type ActionBookingRow = {
 
 const ROW_COLUMNS =
   'id, stylist_id, status, starts_at, service_id, service_ids, reference, customer_name, customer_phone, customer_email';
-
-// Best-effort payload for customer notifications (mirrors account/booking-actions).
-async function changePayload(booking: ActionBookingRow, newStartsAt?: string): Promise<BookingChange> {
-  const admin = createAdminClient();
-  const serviceIds = booking.service_ids?.length ? booking.service_ids : [booking.service_id];
-  const [{ data: services }, { data: stylist }] = await Promise.all([
-    admin.from('services').select('name').in('id', serviceIds),
-    booking.stylist_id
-      ? admin.from('stylists').select('name').eq('id', booking.stylist_id).single()
-      : Promise.resolve({ data: null }),
-  ]);
-  return {
-    reference: booking.reference,
-    customerName: booking.customer_name,
-    customerEmail: booking.customer_email,
-    customerPhone: booking.customer_phone,
-    serviceName: (services ?? []).map((s) => s.name).join(', ') || 'Service',
-    stylistName: stylist?.name ?? 'Any stylist',
-    whenLabel: whenFmt.format(new Date(booking.starts_at)),
-    newWhenLabel: newStartsAt ? whenFmt.format(new Date(newStartsAt)) : undefined,
-  };
-}
 
 function revalidateStaff() {
   revalidatePath('/staff');
@@ -73,7 +47,7 @@ export async function staffSetBookingStatus(
   }
 
   if (status === 'cancelled') {
-    try { await notifyBookingCancelled(await changePayload(booking)); }
+    try { await notifyBookingCancelled(await buildBookingChange(booking)); }
     catch (err) { console.error('[notify] staff cancel notification failed:', err); }
   }
   revalidateStaff();
@@ -140,7 +114,7 @@ export async function staffRescheduleBooking(
     if (error.code === '23P01') return { error: 'That time was just taken — pick another.' };
     return { error: 'Could not reschedule. Please try again.' };
   }
-  try { await notifyBookingRescheduled(await changePayload(booking, startsAt)); }
+  try { await notifyBookingRescheduled(await buildBookingChange(booking, startsAt)); }
   catch (err) { console.error('[notify] staff reschedule notification failed:', err); }
   revalidateStaff();
   return { ok: true, startsAt, endsAt };

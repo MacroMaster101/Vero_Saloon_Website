@@ -5,7 +5,7 @@ import { getAvatarInfo } from '@/lib/avatar';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { signOut } from '@/app/admin/actions';
 import { Icon, type IconName } from '@/components/ui/icon';
-import { StaffNavLinks } from './nav-links';
+import { NavLinks } from '@/app/admin/(protected)/nav-links';
 import { AdminBottomNav, type AdminNavItem } from '@/app/admin/(protected)/admin-bottom-nav';
 
 const STAFF_NAV: { href: string; label: string; icon: IconName }[] = [
@@ -33,7 +33,7 @@ export default async function StaffLayout({ children }: { children: React.ReactN
   const avatar = getAvatarInfo(user?.user_metadata ?? null, seed).src;
 
   return (
-    <div className="shell shell--admin sd-shell">
+    <div className="shell shell--admin">
       <aside className="shell__side">
         <Link href="/" className="side__back"><Icon name="arrowLeft" className="ic" /> Back to site</Link>
         <div className="side__brand">
@@ -48,7 +48,7 @@ export default async function StaffLayout({ children }: { children: React.ReactN
             {stylist && <div className="sd-id__chair">{stylist.role || 'Stylist'}</div>}
           </div>
         </div>
-        <StaffNavLinks items={STAFF_NAV} />
+        <NavLinks items={STAFF_NAV} root="/staff" />
         <div className="side__foot">
           <form action={signOut}><button className="btn btn--ghost" type="submit"><Icon name="logout" className="ic" /> Sign out</button></form>
           <ThemeToggle />

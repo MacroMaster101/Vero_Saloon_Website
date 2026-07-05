@@ -1,9 +1,9 @@
 'use client';
-import { useActionState, useState } from 'react';
+import { useActionState } from 'react';
 import Link from 'next/link';
 import { signInWithGoogle, signInWithPassword } from './actions';
 import { AuthShell } from '@/components/auth/auth-shell';
-import { Icon } from '@/components/ui/icon';
+import { PasswordInput } from '@/components/auth/password-input';
 
 function GoogleMark() {
   return (
@@ -18,7 +18,6 @@ function GoogleMark() {
 
 export function LoginForm({ next, oauthError }: { next: string; oauthError?: string | null }) {
   const [state, action] = useActionState(signInWithPassword, undefined);
-  const [show, setShow] = useState(false);
   const signupHref = next ? `/signup?next=${encodeURIComponent(next)}` : '/signup';
 
   return (
@@ -41,12 +40,7 @@ export function LoginForm({ next, oauthError }: { next: string; oauthError?: str
           <div className="field"><label htmlFor="login-email">Email</label><input id="login-email" name="email" type="email" placeholder="verosalon@gmail.com" autoComplete="email" required /></div>
           <div className="field">
             <label htmlFor="login-password">Password</label>
-            <div className="pw">
-              <input id="login-password" name="password" type={show ? 'text' : 'password'} placeholder="••••••••" autoComplete="current-password" required />
-              <button type="button" className="pw__eye" onClick={() => setShow((s) => !s)} aria-label={show ? 'Hide password' : 'Show password'}>
-                <Icon name={show ? 'eyeOff' : 'eye'} className="ic" size={18} />
-              </button>
-            </div>
+            <PasswordInput id="login-password" name="password" autoComplete="current-password" required />
           </div>
           <p style={{ textAlign: 'right', margin: '-6px 0 14px', fontSize: 13 }}>
             <Link href="/forgot-password">Forgot password?</Link>

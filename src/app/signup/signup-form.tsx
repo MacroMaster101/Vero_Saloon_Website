@@ -5,7 +5,7 @@ import { signInWithGoogle } from '../login/actions';
 import { signUpWithPassword } from './actions';
 import { checkPassword } from '@/lib/auth/password';
 import { AuthShell } from '@/components/auth/auth-shell';
-import { Icon } from '@/components/ui/icon';
+import { PasswordInput } from '@/components/auth/password-input';
 
 function GoogleMark() {
   return (
@@ -22,8 +22,6 @@ export function SignupForm({ next, prefillEmail = '' }: { next: string; prefillE
   const [state, action] = useActionState(signUpWithPassword, undefined);
   const [pw, setPw] = useState('');
   const [confirm, setConfirm] = useState('');
-  const [showPw, setShowPw] = useState(false);
-  const [showCf, setShowCf] = useState(false);
   const loginHref = next ? `/login?next=${encodeURIComponent(next)}` : '/login';
 
   const check = checkPassword(pw);
@@ -61,12 +59,7 @@ export function SignupForm({ next, prefillEmail = '' }: { next: string; prefillE
 
           <div className="field">
             <label htmlFor="su-pw">Password</label>
-            <div className="pw">
-              <input id="su-pw" name="password" type={showPw ? 'text' : 'password'} placeholder="••••••••" autoComplete="new-password" required value={pw} onChange={(e) => setPw(e.target.value)} />
-              <button type="button" className="pw__eye" onClick={() => setShowPw((s) => !s)} aria-label={showPw ? 'Hide password' : 'Show password'}>
-                <Icon name={showPw ? 'eyeOff' : 'eye'} className="ic" size={18} />
-              </button>
-            </div>
+            <PasswordInput id="su-pw" name="password" autoComplete="new-password" required value={pw} onChange={setPw} />
             <div className={`pwmeta${pw ? ' show' : ''}`}>
               <div>
                 <div className="meter"><i style={{ width: `${(check.score / 5) * 100}%`, background: barColor }} /></div>
@@ -81,12 +74,7 @@ export function SignupForm({ next, prefillEmail = '' }: { next: string; prefillE
 
           <div className="field">
             <label htmlFor="su-cf">Confirm password</label>
-            <div className="pw">
-              <input id="su-cf" name="confirm" type={showCf ? 'text' : 'password'} placeholder="••••••••" autoComplete="new-password" required value={confirm} onChange={(e) => setConfirm(e.target.value)} />
-              <button type="button" className="pw__eye" onClick={() => setShowCf((s) => !s)} aria-label={showCf ? 'Hide password' : 'Show password'}>
-                <Icon name={showCf ? 'eyeOff' : 'eye'} className="ic" size={18} />
-              </button>
-            </div>
+            <PasswordInput id="su-cf" name="confirm" autoComplete="new-password" required value={confirm} onChange={setConfirm} />
             {confirm.length > 0 && (
               <p className={`match ${matches ? 'ok' : 'bad'}`}>{matches ? '✓ Passwords match' : '✗ Passwords don’t match'}</p>
             )}

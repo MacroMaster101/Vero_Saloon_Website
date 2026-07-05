@@ -79,7 +79,7 @@ export function TodayView({
         </section>
       )}
 
-      <section className="sd-list">
+      <section>
         <h2 className="h-section sd-h">Full day</h2>
         {rest.length === 0 && !next ? (
           <p className="step__hint">No appointments today. Enjoy the quiet ☕</p>

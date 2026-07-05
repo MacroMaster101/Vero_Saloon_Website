@@ -32,7 +32,7 @@ export function ScheduleView({
   const doneRecent = history.filter((b) => b.status === 'completed').length;
 
   return (
-    <div className="apage sd-week">
+    <div className="apage">
       <div className="ahead">
         <div><span className="eyebrow">Roster</span><h1 className="ahead__title">My week</h1></div>
       </div>

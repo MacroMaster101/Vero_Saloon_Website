@@ -2,7 +2,6 @@ import { getProfile } from '@/lib/supabase/auth';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getAvatarInfo } from '@/lib/avatar';
-import { ProfileForm } from '@/app/account/profile-form';
 import { PublicCardForm } from './public-card-form';
 
 export default async function StaffAccountPage() {
@@ -29,16 +28,10 @@ export default async function StaffAccountPage() {
 
       <p className="step__hint" style={{ marginTop: -10 }}>
         Chair: <b>{stylist?.name ?? 'Not linked'}</b>
-        {!stylist && ' — ask an admin to connect your login to your stylist profile.'}
+        {stylist
+          ? ' — edit your name and photo from the profile menu at the top of the site.'
+          : ' — ask an admin to connect your login to your stylist profile.'}
       </p>
-
-      <ProfileForm
-        fullName={profile?.fullName ?? ''}
-        email={profile?.email ?? ''}
-        phone={profile?.phone ?? ''}
-        userMetadata={userMetadata}
-        seed={seed}
-      />
 
       {stylist && (
         <PublicCardForm

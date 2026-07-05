@@ -73,7 +73,7 @@ export function LegalPage({
           </div>
         </aside>
 
-        <main className="legal-main">
+        <main>
           {sections.map((s) => (
             <section className="legal-section" id={s.id} key={s.id}>
               <h2 className="legal-h">{s.heading}</h2>

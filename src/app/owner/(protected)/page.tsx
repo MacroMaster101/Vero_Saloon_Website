@@ -46,7 +46,7 @@ export default async function OwnerHome() {
       </div>
 
       <div className="ohome">
-        <section className="ohome__main">
+        <section>
           <h2 className="h-section" style={{ fontSize: 20, margin: '0 0 12px' }}>Today</h2>
           {today.length === 0
             ? <p className="opage__hint">No appointments today.</p>
