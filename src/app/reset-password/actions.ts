@@ -17,7 +17,11 @@ export async function updatePassword(_prev: UpdatePasswordState, formData: FormD
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return { error: 'Your session has expired — request a new reset link.' };
 
-  const { error } = await sb.auth.updateUser({ password });
+  // Set the password AND stamp a flag in user_metadata. Supabase does not add
+  // an "email" identity when a password is set on an OAuth (Google) account —
+  // encrypted_password is hidden from the client — so this flag is the only
+  // client-readable signal that a password now exists.
+  const { error } = await sb.auth.updateUser({ password, data: { has_password: true } });
   if (error) return { error: error.message };
   return { ok: true };
 }

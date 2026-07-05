@@ -89,6 +89,13 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
   const sb = await createClient();
   const { data: { user } } = await sb.auth.getUser();
   const userMetadata = user?.user_metadata ?? null;
+  // Has a password when either: an "email" identity exists (native email
+  // signup / invited staff), OR the has_password flag was stamped when a
+  // Google user set one (setting a password on an OAuth account doesn't add
+  // an email identity, so the flag is the only client-readable signal).
+  const hasPassword =
+    (user?.identities ?? []).some((i) => i.provider === 'email') ||
+    user?.user_metadata?.has_password === true;
 
   const looks = gallery.slice(0, 5);
   const isCustomer = profile?.role !== 'admin' && profile?.role !== 'staff' && profile?.role !== 'owner';
@@ -115,7 +122,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
       enabled={isCustomer}
       prefill={profile ? { name: profile.fullName ?? '', phone: profile.phone ?? '', email: profile.email ?? '' } : null}
     >
-      <AccountModalsProvider profile={profile} userMetadata={userMetadata}>
+      <AccountModalsProvider profile={profile} userMetadata={userMetadata} hasPassword={hasPassword}>
       <div className="home" id="top">
         <HomeEffects />
 

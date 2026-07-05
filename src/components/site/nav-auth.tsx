@@ -66,19 +66,17 @@ export function NavAuth({ profile, userMetadata }: { profile: Profile | null; us
           Edit profile
         </button>
         {isUser ? (
-          <>
-            <button type="button" role="menuitem" className="nav-profile__item" onClick={() => pick('bookings')}>
-              My bookings
-            </button>
-            <button type="button" role="menuitem" className="nav-profile__item" onClick={() => pick('settings')}>
-              Settings
-            </button>
-          </>
+          <button type="button" role="menuitem" className="nav-profile__item" onClick={() => pick('bookings')}>
+            My bookings
+          </button>
         ) : (
           <a href={dash} role="menuitem" className="nav-profile__item" onClick={() => setOpen(false)}>
             {dashLabel}
           </a>
         )}
+        <button type="button" role="menuitem" className="nav-profile__item" onClick={() => pick('settings')}>
+          Settings
+        </button>
         <form action={signOut}>
           <button type="submit" role="menuitem" className="nav-profile__item nav-profile__item--danger">
             Sign out

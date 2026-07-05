@@ -6,13 +6,9 @@ import { toUtcInstant } from '@/lib/time';
 import { canModifyBooking } from '@/lib/account/booking-rules';
 import { getAvailability } from '@/app/book/actions';
 import { notifyBookingCancelled, notifyBookingRescheduled } from '@/lib/notify';
-import type { BookingChange } from '@/lib/notify/types';
+import { buildBookingChange } from '@/lib/notify/change-payload';
 
 const TZ = 'Asia/Colombo';
-const whenFmt = new Intl.DateTimeFormat('en-LK', {
-  timeZone: TZ, weekday: 'short', day: 'numeric', month: 'short',
-  hour: 'numeric', minute: '2-digit', hour12: true,
-});
 
 type Ok = { ok: true };
 type Err = { ok: false; message: string };
@@ -72,28 +68,6 @@ async function loadModifiable(bookingId: string): Promise<
   return { ok: true, userId: user.id, booking };
 }
 
-// Resolve display names + labels for a change notification. Best-effort:
-// notifications never block the change itself.
-async function changePayload(booking: ModifiableBooking, newStartsAt?: string): Promise<BookingChange> {
-  const admin = createAdminClient();
-  const serviceIds = booking.service_ids?.length ? booking.service_ids : [booking.service_id];
-  const [{ data: services }, { data: stylist }] = await Promise.all([
-    admin.from('services').select('name').in('id', serviceIds),
-    booking.stylist_id
-      ? admin.from('stylists').select('name').eq('id', booking.stylist_id).single()
-      : Promise.resolve({ data: null }),
-  ]);
-  return {
-    reference: booking.reference,
-    customerName: booking.customer_name,
-    customerEmail: booking.customer_email,
-    customerPhone: booking.customer_phone,
-    serviceName: (services ?? []).map((s) => s.name).join(', ') || 'Service',
-    stylistName: stylist?.name ?? 'Any stylist',
-    whenLabel: whenFmt.format(new Date(booking.starts_at)),
-    newWhenLabel: newStartsAt ? whenFmt.format(new Date(newStartsAt)) : undefined,
-  };
-}
 
 export async function cancelMyBooking(bookingId: string): Promise<Ok | Err> {
   const loaded = await loadModifiable(bookingId);
@@ -102,7 +76,7 @@ export async function cancelMyBooking(bookingId: string): Promise<Ok | Err> {
   const { error } = await admin.from('bookings').update({ status: 'cancelled' }).eq('id', bookingId);
   if (error) return { ok: false, message: 'Could not cancel. Please try again.' };
   try {
-    await notifyBookingCancelled(await changePayload(loaded.booking));
+    await notifyBookingCancelled(await buildBookingChange(loaded.booking));
   } catch (err) {
     console.error('[notify] cancel notification failed:', err);
   }
@@ -149,7 +123,7 @@ export async function rescheduleMyBooking(
     return { ok: false, message: 'Could not reschedule. Please try again.' };
   }
   try {
-    await notifyBookingRescheduled(await changePayload(booking, startsAt));
+    await notifyBookingRescheduled(await buildBookingChange(booking, startsAt));
   } catch (err) {
     console.error('[notify] reschedule notification failed:', err);
   }

@@ -406,6 +406,15 @@ body, .book__card, .book__main, .field input, .field textarea, .choice, .date-ch
 .pw__eye { position:absolute; right:8px; top:50%; transform:translateY(-50%); width:30px; height:30px;
   border:0; background:transparent; cursor:pointer; color:var(--fg-muted); display:grid; place-items:center; border-radius:8px; }
 .pw__eye:hover { color:var(--accent-dark); background:var(--bg-2); }
+.pw-done { text-align:center; padding:22px 12px 26px; margin-bottom:18px;
+  border:1px solid color-mix(in srgb, var(--success) 32%, var(--line));
+  border-radius:14px; background:color-mix(in srgb, var(--success) 8%, var(--surface));
+  animation:pw-done-in .3s var(--ease); }
+@keyframes pw-done-in { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+.pw-done__badge { display:grid; place-items:center; width:46px; height:46px; margin:0 auto 12px;
+  border-radius:50%; background:var(--success); color:#fff; }
+.pw-done h4 { margin:0 0 6px; font-size:16px; color:var(--fg); }
+.pw-done p { margin:0 auto; max-width:280px; font-size:13px; line-height:1.5; color:var(--fg-muted); }
 .pwmeta { display:grid; grid-template-rows:0fr; opacity:0; transition:grid-template-rows .28s var(--ease), opacity .2s; }
 .pwmeta > div { overflow:hidden; }
 .pwmeta.show { grid-template-rows:1fr; opacity:1; }
@@ -1048,31 +1057,6 @@ html, body { overflow-x:clip; }
   0% { transform: scale(0.9); opacity: 0.6; }
   50% { transform: scale(1.2); opacity: 1; }
   100% { transform: scale(0.9); opacity: 0.6; }
-}
-
-/* Review Masonry Grid */
-.reviews-masonry {
-  column-count: 3;
-  column-gap: 20px;
-}
-
-@media (max-width: 900px) {
-  .reviews-masonry {
-    column-count: 2;
-  }
-}
-
-@media (max-width: 600px) {
-  .reviews-masonry {
-    column-count: 1;
-  }
-}
-
-.reviews-masonry-card {
-  break-inside: avoid;
-  margin-bottom: 20px;
-  display: inline-block;
-  width: 100%;
 }
 
 /* ════════════════════════════════════════════════════════════════════

@@ -38,15 +38,20 @@
 | ➕ | **Multi-service booking** — bundle several services into one visit; combined duration + price reserve a single continuous slot |
 | 🗓️ | **Month calendar + SL holidays** — pick a date from a month grid; Sri Lankan public & poya holidays (synced from Google Calendar into a `holidays` table) are blocked as closed days |
 | 🔒 | **Race-proof slots** — a Postgres `EXCLUDE` constraint makes double-booking impossible |
-| 🔑 | **Accounts & auth** — salon-mirror **login** + **signup** (email/password with live password-strength rules, or Google OAuth), email-confirmation flow, **forgot/reset password**, in-app change password |
+| 🔑 | **Accounts & auth** — salon-mirror **login** + **signup** (email/password with live password-strength rules & show/hide reveal, or Google OAuth), **forgot/reset password**, and an in-app **Set / Change password** — Google-only users can add a password to also sign in by email (detected via a `has_password` metadata flag), available to **every** role |
+| ✉️ | **Cross-browser email links** — all auth emails (invite, recovery, signup, email-change) route through a single `/auth/confirm` route that verifies the emailed `token_hash` server-side, so links work in any browser/device (not just the one that requested them) |
 | 👤 | **Customer account — all in popups** — Edit profile (name, SL mobile number, avatar with DiceBear fallback), My bookings (reschedule · cancel · rate), Settings (change password, account deletion) — opened from the nav avatar menu or the mobile dock; no separate account page |
 | 📝 | **Booking prefill** — signed-in customers get name/phone/email pre-filled in the booking form from their profile |
 | ⭐ | **Ratings & reviews** — customers rate their own **completed** visits; the stylist's running average is recomputed app-side, and admins moderate reviews |
-| 🧑‍🤝‍🧑 | **Roles** — `user` / `staff` / `admin`, enforced by Supabase RLS; admins manage roles & stylist links in **People** |
-| 📧 | **Notifications** — booking confirmations + cancel/reschedule notices via Resend (customer **and** salon inbox), WhatsApp staff alerts via the Meta Cloud API, and a pluggable SMS stub |
+| 🧑‍🤝‍🧑 | **Roles** — `user` / `staff` / `owner` / `admin`, enforced by Supabase RLS + a `protect_profile_privileges` trigger (staff can't self-promote or repoint their own chair); admins & owners manage roles and stylist links in **People** / **My team** |
+| 📨 | **Invite staff by email** — admins/owners invite an email as **staff** from People/Team; one action sends the Supabase invite, creates a hidden shell **stylist card**, and links it — all in the acting session (the privilege trigger blocks any other actor). The invitee sets a password and lands on the staff desk; deleting the person removes (or hides) their linked card too |
+| 💇 | **Self-serve stylist card** — invited staff complete their own public card (job title + specialties, name & photo synced from their profile) and flip a **“Show on website”** toggle when ready; a hidden card is invisible to the public until activated by the staff member, admin, or owner |
+| 🔁 | **Two-way identity sync** — a linked staff member's name & photo stay in sync between their `profiles` row and their `stylists` card, both directions, best-effort last-write-wins (`lib/identity/`) |
+| 📧 | **Notifications** — booking confirmations + cancel/reschedule notices via Resend (customer **and** salon inbox), staff cancels/reschedules email the customer, WhatsApp staff alerts via the Meta Cloud API, and a pluggable SMS stub |
 | ✍️ | **Editable site content** — homepage copy (and the **Google Maps embed** in the Visit section) lives in a `site_content` table, editable from the admin **Content** page (no redeploy needed) |
 | 🛠️ | **Admin dashboard** — sidebar shell with live bookings (Realtime), status controls, searchable/filterable lists, and full CRUD for **Services**, **Stylists**, **Gallery**, **Content**, **Reviews**, **People**, **Schedule**, **Blocked slots** & **Holidays** (sync from Google or add manual closures) |
-| 🧑‍🔧 | **Staff dashboard** — staff see only their own RLS-scoped **My schedule** and today's bookings, with the same search/filter toolbar |
+| 🧑‍🔧 | **Staff Desk** — a phone-first staff surface: **Today** (stat strip, “up next” hero card, timeline with a live *now* marker), **My week** (day-grouped, collapsible history), and **Account** (public-card editor). Complete / No-show / Cancel via in-app confirm sheets, plus full **Reschedule** against real availability — all RLS-scoped to the staff member's own chair. Staff can browse the site but **cannot book** (hidden UI + server-side `roleCanBook` guard) |
+| 🏪 | **Owner dashboard** — an owner role with its own `/owner` surface (Home, Bookings, My day, Team, Services, Photos, Reviews, Hours, Days off), reusing the admin components |
 | 🔏 | **Privacy-aware deletion** — account deletion anonymizes past bookings (strips PII, keeps business records) via a `security definer` DB function |
 | ✅ | **Tested** — Vitest unit + integration (availability, schemas, roles, reviews, …) and a Playwright end-to-end booking flow |
 
@@ -116,6 +121,7 @@ Apply the migrations with the Supabase CLI using a direct DB connection string (
 # 0008_booking_multi_service.sql — `bookings.service_ids[]` for multi-service visits
 # 0009_holidays.sql        — `holidays` table (SL public/poya days + manual closures)
 # 0010_profile_phone.sql   — `profiles.phone` (self-editable contact number)
+# 0011_owner_role.sql      — `owner` role: profile RLS + privilege-trigger rules so owners manage the user/staff team
 npx supabase db push --db-url "postgresql://postgres:<DB_PASSWORD>@db.<ref>.supabase.co:5432/postgres"
 ```
 
@@ -174,18 +180,43 @@ Auth is handled by Supabase (`@supabase/ssr`). Sign-in and registration live at 
 In **Supabase → Authentication → URL Configuration**, set:
 
 - **Site URL** → your environment's base URL (e.g. `http://localhost:3000` in dev, your domain in prod).
-- **Redirect URLs** → add **both** `http://localhost:3000/auth/callback` **and** `https://<your-domain>/auth/callback` (the OAuth + email-confirmation callback).
+- **Redirect URLs** → add wildcard patterns for **both** environments so OAuth and every emailed link resolve: `https://<your-domain>/**` and `http://localhost:3000/**`. (Two mechanisms land users back: Google OAuth uses `/auth/callback`; email links use `/auth/confirm` — see below.)
 
 In **Authentication → Providers**:
 
-- **Email** → this project runs with **"Confirm email" OFF**, so signup creates a live session immediately (no confirmation email needed — the app uses email + password, not OTP). Turn it **ON** only if you wire a real email sender (Resend SMTP) and want the "check your email" confirmation flow.
+- **Email** → this project uses email + password (not OTP). "Confirm email" can stay OFF for instant signup, or ON once you've wired custom SMTP (below).
 - **Google** → optional. Leave disabled unless you create real OAuth credentials in Google Cloud Console (the **Client IDs** field needs a real `...apps.googleusercontent.com` ID + secret, not a project name) and add the Supabase callback URL as an authorized redirect URI.
 
 > 🔁 The code derives every redirect from `NEXT_PUBLIC_SITE_URL`, so that env var **must** match your deployed domain or OAuth/confirmation links will point at the wrong host.
 
-### 👤 Roles (user / staff / admin)
+### ✉️ Transactional auth emails (SMTP + templates)
 
-New sign-ups are `user` by default. To grant the **first admin**, follow the [First admin (bootstrap)](#-first-admin-bootstrap) steps above (a plain `UPDATE` is silently blocked by the privilege trigger). After that, manage everyone else from the in-app **Admin → People** page (set role + linked stylist). Roles are enforced by RLS and by `requireRole(...)` route guards. `admin`/`staff` land on `/admin`; `user` lands on `/`.
+Staff invites and password recovery send real emails, so Supabase needs **custom SMTP** (the built-in mailer is rate-limited and can't edit templates). This project uses **Resend**:
+
+1. Verify a sending domain in **Resend → Domains** (add the DKIM/SPF/DMARC DNS records at your registrar).
+2. In **Supabase → Authentication → Emails → SMTP Settings**: host `smtp.resend.com`, port `465`, username `resend`, password = your `RESEND_API_KEY`, sender = an address on your verified domain (e.g. `bookings@yourdomain`). Match `RESEND_FROM_EMAIL` to the same address so booking emails use it too.
+3. In **Authentication → Emails → Templates**, point every action link at the cross-browser confirm route:
+
+   ```html
+   <!-- Invite user -->
+   <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite&next=/reset-password">Accept invitation</a>
+   <!-- Reset password -->
+   <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password">Reset password</a>
+   <!-- Confirm sign up -->
+   <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=signup&next=/">Confirm email</a>
+   ```
+
+   `/auth/confirm` verifies the `token_hash` server-side (via `verifyOtp`), so links work on any device — unlike `/auth/callback`'s PKCE exchange, which needs the same-browser cookie.
+4. *(Recommended)* In **Authentication → Emails → Security**, enable the **"Password changed"** notification so account owners are alerted on any password change.
+
+### 👤 Roles (user / staff / owner / admin)
+
+New sign-ups are `user` by default. To grant the **first admin**, follow the [First admin (bootstrap)](#-first-admin-bootstrap) steps above (a plain `UPDATE` is silently blocked by the privilege trigger). After that, manage everyone else from the in-app **Admin → People** (or **Owner → My team**) page. Two ways to add a team member:
+
+- **Invite by email** — type an email, click **Invite as staff**: sends the Supabase invite, creates a hidden shell stylist card, and links it in one step.
+- **Promote an existing account** — set the role and linked stylist on any existing person.
+
+Roles are enforced by RLS, the `protect_profile_privileges` trigger, and `requireRole(...)` route guards. `admin` → `/admin`, `owner` → `/owner`, `staff` → `/staff`, `user` → `/`. Staff can browse the public site but can't book.
 
 ---
 
@@ -215,7 +246,8 @@ npm run e2e        # 🎭 Playwright e2e (run `npm run build` first)
 - ⭐ **Ratings & reviews** (`lib/reviews.ts`, `account/review-actions.ts`) — a customer may review only their **own completed** booking; ownership and state are re-verified server-side. The stylist's running average is recomputed app-side (`computeUpdatedRating` / `computeRemovedRating`) on insert/delete (no DB trigger), and the pure helpers are unit-tested. The `stylist_reviews` table and `stylists.rating`/`rating_count` columns are created by migration `0007`.
 - ✍️ **Editable content** (`lib/content/`) — homepage copy is stored per-block in the `site_content` table; `blocks.ts` defines each block's shape, `get.ts` fetches, and `merge.ts` overlays saved values onto defaults so the site renders even before anything is edited. Admins edit it from **Admin → Content**.
 - 🔏 **Privacy & deletion** — deleting an account calls the `anonymize_user_bookings()` `security definer` function (migration `0004`), which strips PII from past bookings while keeping the rows for business records.
-- 🛠️ **Admin & staff** (`/admin`) — guarded by `requireRole`; a sidebar shell with role-scoped nav. Admins see all bookings (live via Supabase Realtime) with status controls and a searchable/filterable table, plus full management of **Services**, **Stylists**, **Gallery**, **Content**, **Reviews**, **People** (role + stylist links), **Schedule** and **Blocked slots**. Staff see only **My schedule** — their own RLS-scoped bookings — with the same search/filter toolbar.
+- 🛠️ **Admin & owner** (`/admin`, `/owner`) — guarded by `requireRole`; a sidebar shell with role-scoped nav. Admins see all bookings (live via Supabase Realtime) with status controls and a searchable/filterable table, plus full management of **Services**, **Stylists**, **Gallery**, **Content**, **Reviews**, **People** (role + stylist links, invite by email), **Schedule** and **Blocked slots**. Owners get a parallel `/owner` surface (reusing the admin components) scoped to running the shop and team.
+- 🧑‍🔧 **Staff Desk** (`/staff`) — a phone-first surface, RLS-scoped to the staff member's own chair: **Today** (stat strip, "up next" card, timeline with a *now* marker), **My week** (day-grouped, collapsible history), and **Account** (self-serve public-card editor with a visibility toggle). Complete / No-show / Cancel via in-app confirm sheets and full **Reschedule** against live availability. Name & photo sync two-way with the stylist card (`lib/identity/`).
 
 ---
 
@@ -223,25 +255,31 @@ npm run e2e        # 🎭 Playwright e2e (run `npm run build` first)
 
 ```
 app/                   # 🧭 routes: public page, /book actions
-  login/ · signup/     # 🔑 auth pages (email/password + Google)
+  login/ · signup/     # 🔑 auth pages (email/password + Google, shared PasswordInput)
   forgot-password/ · reset-password/  # 🔑 password recovery flow
   account/             # 👤 account server actions + popup content (profile, bookings, delete)
   admin/(protected)/   # 🛠️ role-guarded shell: dashboard, services, stylists, gallery,
-                       #     content, reviews, people, schedule, blocked-slots, holidays
-  staff/               # 🧑‍🔧 staff "my schedule" + today view
-  auth/callback/       # 🔁 OAuth + email-confirmation + password-recovery handler
+                       #     content, reviews, people (invite), schedule, blocked-slots, holidays
+  owner/(protected)/   # 🏪 owner surface: home, bookings, my-day, team, services, photos, reviews, hours, time-off
+  staff/               # 🧑‍🔧 staff desk: today, schedule (my week), account (public-card editor)
+  auth/callback/       # 🔁 OAuth + PKCE code-exchange handler
+  auth/confirm/        # ✉️ token_hash verifier for invite/recovery/signup email links (cross-browser)
 components/site/        # 🎨 marketing sections (hero, lookbook, services, …)
 components/booking/     # 📅 5-step wizard (service · stylist · date · time · details)
 components/account/     # 👤 account popups (profile / bookings / settings) + provider
-components/auth/        # 🔑 shared auth-page shell (salon-mirror arch)
+components/auth/        # 🔑 shared auth-page shell + PasswordInput (eye toggle)
 components/admin/       # 🛠️ bookings table, list-toolbar (search/filter), block/image forms
+components/staff/        # 🧑‍🔧 staff booking card, confirm sheet, reschedule modal
 components/reviews/     # ⭐ star row + review list
 components/ui/          # 🧩 shared primitives (size-constrained Icon, Modal, …)
 lib/                    # 🧰 availability, time, validators, queries, notify, supabase clients
-lib/auth/              # 🔐 password rules, redirect-safety (safeNext), roles
+lib/auth/              # 🔐 password rules, redirect-safety (safeNext), roles, role-rules, routing
+lib/identity/           # 🔁 two-way profile ↔ stylist name/photo sync (patch + IO)
+lib/staff/              # 🧑‍🔧 pure view/action/invite/card rules for the staff desk (unit-tested)
+lib/notify/             # 📧 channels (Resend/WhatsApp/SMS stub) + shared change-payload builder
 lib/content/           # ✍️ editable site-content blocks (get / merge / shapes)
 lib/reviews.ts          # ⭐ pure rating-average helpers (unit-tested)
-supabase/migrations/    # 🗄️ schema + RLS + realtime + roles + retention + content + service-image + reviews + multi-service + holidays + profile-phone (0001–0010)
+supabase/migrations/    # 🗄️ schema + RLS + realtime + roles + retention + content + service-image + reviews + multi-service + holidays + profile-phone + owner-role (0001–0011)
 supabase/seed.sql       # 🌱 real Vero data
 tests/                  # 🧪 vitest unit/integration; tests/e2e Playwright
 ```
@@ -252,7 +290,7 @@ tests/                  # 🧪 vitest unit/integration; tests/e2e Playwright
 
 1. Import the repo into Vercel.
 2. Add the same environment variables (Project → Settings → Environment Variables). Mark `SUPABASE_SERVICE_ROLE_KEY` and `RESEND_API_KEY` as **secret**; set `NEXT_PUBLIC_SITE_URL` to your production domain (e.g. `https://saloon-vero.vercel.app`).
-3. In **Supabase → Authentication → URL Configuration**, add `https://<your-domain>/auth/callback` to **Redirect URLs** (and set the **Site URL**), or Google sign-in and email-confirmation links will fail in production.
+3. In **Supabase → Authentication → URL Configuration**, add `https://<your-domain>/**` to **Redirect URLs** (and set the **Site URL** to your prod domain), or Google sign-in and emailed invite/recovery links will fail in production. If you use staff invites, also configure custom SMTP + the `/auth/confirm` email templates (see [Transactional auth emails](#️-transactional-auth-emails-smtp--templates)).
 4. Deploy 🚀 — public pages are server-rendered and booking/auth run via Server Actions; no extra build config needed. Production deploys from the `main` branch.
 
 ---

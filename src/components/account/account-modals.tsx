@@ -16,15 +16,21 @@ export function useAccountModals() { return useContext(Ctx); }
 export function AccountModalsProvider({
   profile,
   userMetadata,
+  hasPassword = true,
   children,
 }: {
   profile: Profile | null;
   userMetadata?: UserMetadata | null;
+  hasPassword?: boolean;
   children: ReactNode;
 }) {
   const [modal, setModal] = useState<AccountModal | null>(null);
   const close = () => setModal(null);
   const seed = profile?.email ?? profile?.fullName ?? 'guest';
+  // Server tells us if a password exists at load; once the user sets one in
+  // this session, treat them as a password user without needing a refresh.
+  const [passwordSet, setPasswordSet] = useState(false);
+  const accountHasPassword = hasPassword || passwordSet;
 
   return (
     <Ctx.Provider value={{ openModal: setModal }}>
@@ -41,7 +47,13 @@ export function AccountModalsProvider({
             email={profile.email}
           />
           <BookingsModal open={modal === 'bookings'} onClose={close} />
-          <SettingsModal open={modal === 'settings'} onClose={close} />
+          <SettingsModal
+            open={modal === 'settings'}
+            onClose={close}
+            canDelete={profile.role === 'user'}
+            hasPassword={accountHasPassword}
+            onPasswordSet={() => setPasswordSet(true)}
+          />
         </>
       )}
     </Ctx.Provider>

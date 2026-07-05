@@ -4,14 +4,12 @@ import Link from 'next/link';
 import { updatePassword } from './actions';
 import { checkPassword } from '@/lib/auth/password';
 import { AuthShell } from '@/components/auth/auth-shell';
-import { Icon } from '@/components/ui/icon';
+import { PasswordInput } from '@/components/auth/password-input';
 
 export function ResetForm({ email }: { email: string }) {
   const [state, action] = useActionState(updatePassword, undefined);
   const [pw, setPw] = useState('');
   const [confirm, setConfirm] = useState('');
-  const [showPw, setShowPw] = useState(false);
-  const [showCf, setShowCf] = useState(false);
 
   const check = checkPassword(pw);
   const barColor = check.score <= 2 ? 'var(--error)' : check.score <= 4 ? 'var(--accent)' : 'var(--success)';
@@ -37,12 +35,7 @@ export function ResetForm({ email }: { email: string }) {
         <form action={action}>
           <div className="field">
             <label htmlFor="rp-pw">New password</label>
-            <div className="pw">
-              <input id="rp-pw" name="password" type={showPw ? 'text' : 'password'} placeholder="••••••••" required value={pw} onChange={(e) => setPw(e.target.value)} autoComplete="new-password" />
-              <button type="button" className="pw__eye" onClick={() => setShowPw((s) => !s)} aria-label={showPw ? 'Hide password' : 'Show password'}>
-                <Icon name={showPw ? 'eyeOff' : 'eye'} className="ic" size={18} />
-              </button>
-            </div>
+            <PasswordInput id="rp-pw" name="password" required value={pw} onChange={setPw} autoComplete="new-password" />
             <div className={`pwmeta${pw ? ' show' : ''}`}>
               <div>
                 <div className="meter"><i style={{ width: `${(check.score / 5) * 100}%`, background: barColor }} /></div>
@@ -57,12 +50,7 @@ export function ResetForm({ email }: { email: string }) {
 
           <div className="field">
             <label htmlFor="rp-cf">Confirm password</label>
-            <div className="pw">
-              <input id="rp-cf" name="confirm" type={showCf ? 'text' : 'password'} placeholder="••••••••" required value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
-              <button type="button" className="pw__eye" onClick={() => setShowCf((s) => !s)} aria-label={showCf ? 'Hide password' : 'Show password'}>
-                <Icon name={showCf ? 'eyeOff' : 'eye'} className="ic" size={18} />
-              </button>
-            </div>
+            <PasswordInput id="rp-cf" name="confirm" required value={confirm} onChange={setConfirm} autoComplete="new-password" />
             {confirm.length > 0 && (
               <p className={`match ${matches ? 'ok' : 'bad'}`}>{matches ? '✓ Passwords match' : '✗ Passwords don’t match'}</p>
             )}
