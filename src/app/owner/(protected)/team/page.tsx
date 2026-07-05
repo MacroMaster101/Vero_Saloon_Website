@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getProfile, requireRole } from '@/lib/supabase/auth';
 import { StylistsList } from '@/app/admin/(protected)/stylists/stylists-list';
 import { PeopleList } from '@/app/admin/(protected)/people/people-list';
+import { InviteStaffForm } from '@/app/admin/(protected)/people/invite-form';
 import { Icon } from '@/components/ui/icon';
 
 export default async function OwnerTeamPage() {
@@ -23,6 +24,7 @@ export default async function OwnerTeamPage() {
       <section style={{ marginTop: 32 }}>
         <h2 className="h-section" style={{ fontSize: 18, marginBottom: 10 }}>Staff logins</h2>
         <p className="opage__hint">Make someone &quot;staff&quot; and pick their stylist profile so they can see their own schedule.</p>
+        <InviteStaffForm />
         <PeopleList people={profiles ?? []} stylists={stylistOptions ?? []} actorRole={profile?.role ?? 'owner'} />
       </section>
     </div>

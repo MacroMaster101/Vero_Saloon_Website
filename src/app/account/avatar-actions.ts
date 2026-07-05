@@ -4,12 +4,32 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getUser } from '@/lib/supabase/auth';
 import { slLankaPhone } from '@/lib/validators';
+import { syncProfileToStylist } from '@/lib/identity/sync';
+import { getAvatarInfo } from '@/lib/avatar';
 
 const ALLOWED = ['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif'];
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 const BUCKET = 'avatars';
 
 type Result = { url: string } | { error: string };
+
+// After an avatar/name change, mirror it onto the linked stylist card (if any).
+// The stylist row stores the RESOLVED image URL so the public card always
+// matches what the profile shows (uploaded photo, Google photo, or DiceBear).
+async function syncAvatarForUser(userId: string): Promise<void> {
+  try {
+    const admin = createAdminClient();
+    const { data: prof } = await admin.from('profiles').select('stylist_id, email, full_name').eq('id', userId).single();
+    if (!prof?.stylist_id) return;
+    const { data: authUser } = await admin.auth.admin.getUserById(userId);
+    const meta = authUser?.user?.user_metadata ?? {};
+    const seed = prof.email ?? prof.full_name ?? 'staff';
+    const resolved = getAvatarInfo(meta, seed).src;
+    await syncProfileToStylist(prof.stylist_id, { avatarUrl: resolved });
+  } catch (err) {
+    console.error('[identity] avatar sync skipped:', err);
+  }
+}
 
 /**
  * Upload a profile photo for the CURRENT user and persist it to their auth
@@ -50,6 +70,8 @@ export async function uploadAvatar(formData: FormData): Promise<Result> {
   });
   if (metaErr) return { error: metaErr.message };
 
+  await syncAvatarForUser(user.id);
+
   revalidatePath('/', 'layout');
   return { url };
 }
@@ -67,6 +89,9 @@ export async function removeAvatar(): Promise<Result> {
     },
   });
   if (error) return { error: error.message };
+
+  await syncAvatarForUser(user.id);
+
   revalidatePath('/', 'layout');
   return { url: '' };
 }
@@ -93,6 +118,8 @@ export async function updateAvatarChoice(choice: 'custom' | 'dicebear' | 'email'
   });
   if (error) return { error: error.message };
 
+  await syncAvatarForUser(user.id);
+
   revalidatePath('/', 'layout');
   return { url: avatarUrl || '' };
 }
@@ -114,6 +141,11 @@ export async function updateProfileDetails(fullName: string, phone: string): Pro
   const sb = await createClient();
   const { error } = await sb.from('profiles').update({ full_name: name, phone: phoneValue }).eq('id', user.id);
   if (error) return { error: error.message };
+
+  const admin = createAdminClient();
+  const { data: prof } = await admin.from('profiles').select('stylist_id').eq('id', user.id).single();
+  if (prof?.stylist_id) await syncProfileToStylist(prof.stylist_id, { name });
+
   revalidatePath('/', 'layout');
   return { url: '' };
 }

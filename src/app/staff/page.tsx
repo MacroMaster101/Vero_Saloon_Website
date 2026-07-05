@@ -2,6 +2,8 @@ import { getProfile } from '@/lib/supabase/auth';
 import { getMyAssignedBookings } from '@/lib/staff/bookings';
 import { getServices } from '@/lib/queries';
 import { colomboDayWindow } from '@/lib/staff/view';
+import { cardNeedsSetup } from '@/lib/staff/card-input';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { TodayView } from './today-view';
 
 const TZ = 'Asia/Colombo';
@@ -21,16 +23,22 @@ export default async function StaffTodayPage() {
   }
 
   const { from, to } = colomboDayWindow(0);
-  const [bookings, services] = await Promise.all([
+  // Hidden shell cards are invisible to staff under RLS; service-role read is
+  // scoped to the session's own stylistId (server-derived, never client input).
+  const admin = createAdminClient();
+  const [bookings, services, { data: card }] = await Promise.all([
     getMyAssignedBookings({ stylistId, from, to }),
     getServices(),
+    admin.from('stylists').select('role, is_active').eq('id', stylistId).single(),
   ]);
+  const showSetup = card ? cardNeedsSetup(card) : false;
 
   return (
     <TodayView
       initialBookings={bookings}
       services={services as { id: string; name: string }[]}
       dayTitle={dayTitleFmt.format(new Date())}
+      showSetup={showSetup}
     />
   );
 }
