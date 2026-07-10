@@ -38,7 +38,7 @@ export function getFallbackImage(src: string | null | undefined, alt: string): s
   return null;
 }
 
-export function ImgSlot({ src, alt, className, priority = false }: { src?: string | null; alt: string; className?: string; priority?: boolean }) {
+export function ImgSlot({ src, alt, className, priority = false, sizes = '(max-width: 980px) 100vw, 33vw' }: { src?: string | null; alt: string; className?: string; priority?: boolean; sizes?: string }) {
   const [isLoaded, setIsLoaded] = useState(false);
   const imageSrc = getFallbackImage(src, alt);
 
@@ -56,20 +56,9 @@ export function ImgSlot({ src, alt, className, priority = false }: { src?: strin
   const reveal = priority || isLoaded;
 
   return (
-    <div className={`img-slot ${className ?? ''}`} style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden', backgroundColor: 'rgba(21, 13, 14, 0.3)' }}>
-      {/* Skeleton / Blur Loading Placeholder (lazy images only) */}
-      {!reveal && (
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'linear-gradient(90deg, rgba(212,176,94,0.05) 25%, rgba(212,176,94,0.12) 50%, rgba(212,176,94,0.05) 75%)',
-            backgroundSize: '200% 100%',
-            animation: 'shimmer 1.6s infinite linear',
-            zIndex: 1
-          }}
-        />
-      )}
+    <div className={`img-slot ${className ?? ''}`} style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
+      {/* Skeleton / Blur Loading Placeholder (lazy images only) — themed via globals.css */}
+      {!reveal && <div className="img-slot__shimmer" />}
 
       <Image
         src={imageSrc}
@@ -81,7 +70,7 @@ export function ImgSlot({ src, alt, className, priority = false }: { src?: strin
         priority={priority}
         loading={priority ? 'eager' : 'lazy'}
         fetchPriority={priority ? 'high' : 'auto'}
-        sizes="(max-width: 980px) 100vw, 33vw"
+        sizes={sizes}
         onLoad={() => setIsLoaded(true)}
         style={{
           objectFit: 'cover',

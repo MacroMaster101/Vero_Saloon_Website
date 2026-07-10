@@ -67,3 +67,4 @@ playwright-report/
 /docs/
 !docs/privacy.md
 /reference/
+/.claude

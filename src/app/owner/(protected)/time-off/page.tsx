@@ -8,6 +8,7 @@ import { BlockForm } from '@/components/admin/block-form';
 import { DeleteForm } from '@/components/admin/form-kit';
 import { deleteHoliday } from '@/app/admin/(protected)/holidays/holiday-actions';
 import { deleteBlock } from '@/app/admin/(protected)/blocked-slots/block-actions';
+import { salonDayKey } from '@/lib/booking-rows';
 import { Icon } from '@/components/ui/icon';
 
 const dateFmt = new Intl.DateTimeFormat('en-LK', {
@@ -35,7 +36,9 @@ type BlockRow = BlockedSlot & { stylists: { name: string } | null };
 export default async function OwnerTimeOffPage() {
   await requireRole(['owner', 'admin'], '/owner/time-off');
   const sb = await createClient();
-  const today = new Date().toISOString().slice(0, 10);
+  // Salon-local "today" — toISOString() is UTC (5:30 behind Colombo) and would
+  // drop today's holiday from the list between midnight and 5:30 AM.
+  const today = salonDayKey(new Date());
   const [{ data: holidayData }, { data: blockData }, stylists] = await Promise.all([
     sb
       .from('holidays')

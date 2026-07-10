@@ -49,7 +49,7 @@ export const StepDetails = forwardRef<
   }));
 
   return (
-    <div className="step active" data-step="3">
+    <div className="step active" data-step="4">
       <h3 className="step__title">Almost done — your details</h3>
       <p className="step__hint">We&apos;ll email your confirmation so you can find this booking anytime — and remind you the morning of.</p>
       <div className="fields-2">

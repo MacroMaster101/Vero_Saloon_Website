@@ -14,7 +14,7 @@ export default async function GalleryPage() {
           <span className="eyebrow">Lookbook</span>
           <h1 className="ahead__title">Gallery</h1>
         </div>
-        <Link href="/#destinations" target="_blank" className="btn btn--ghost">View on site ↗</Link>
+        <Link href="/#looks" target="_blank" className="btn btn--ghost">View on site ↗</Link>
       </div>
       <GalleryList items={items ?? []} />
     </div>

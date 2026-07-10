@@ -151,15 +151,19 @@ body, .book__card, .book__main, .field input, .field textarea, .choice, .date-ch
 .nav-profile__menu form { margin:0; }
 
 /* ── Profile edit modal (popup) ───────────────────────────── */
-.pm__overlay { position:fixed; inset:0; z-index:200; display:grid; place-items:center; padding:20px;
-  background:color-mix(in srgb, #1c130a 55%, transparent); backdrop-filter:blur(3px);
+/* z-index sits above the route loader (1500) so a navigation triggered while a
+   dialog is open can't paint the full-screen loader over it. Splash (2000) stays
+   topmost — it only shows on first paint. */
+.pm__overlay { position:fixed; inset:0; z-index:1600; display:grid; place-items:center; padding:20px;
+  overflow-y:auto; background:color-mix(in srgb, #1c130a 55%, transparent); backdrop-filter:blur(3px);
   animation:pm-fade .15s var(--ease); }
 @keyframes pm-fade { from { opacity:0; } to { opacity:1; } }
 .pm { position:relative; width:100%; max-width:440px; background:var(--surface); color:var(--fg);
   border:1px solid var(--line); border-radius:var(--radius-lg); padding:26px 24px 22px;
+  max-height:min(84vh, 720px); overflow-y:auto;
   box-shadow:0 30px 70px -24px rgba(0,0,0,.5); animation:pm-pop .18s var(--ease); }
 @keyframes pm-pop { from { opacity:0; transform:translateY(10px) scale(.98); } to { opacity:1; transform:none; } }
-.pm--wide { max-width:600px; max-height:min(84vh, 720px); overflow-y:auto; }
+.pm--wide { max-width:600px; }
 .pm__x { position:absolute; top:12px; right:14px; background:none; border:0; font-size:26px; line-height:1;
   color:var(--fg-muted); cursor:pointer; padding:4px 8px; border-radius:8px; transition:color .15s, background .15s; }
 .pm__x:hover { color:var(--fg); background:var(--bg-2); }
@@ -276,6 +280,14 @@ body, .book__card, .book__main, .field input, .field textarea, .choice, .date-ch
 .reveal[data-d="3"] { transition-delay:.24s; }
 
 /* ── img-slot ────────────────────────────────────────────── */
+.img-slot { background:color-mix(in srgb, var(--fg) 10%, var(--bg-2)); }
+.img-slot__shimmer { position:absolute; inset:0; z-index:1;
+  background:linear-gradient(90deg,
+    color-mix(in srgb, var(--accent) 5%, transparent) 25%,
+    color-mix(in srgb, var(--accent) 12%, transparent) 50%,
+    color-mix(in srgb, var(--accent) 5%, transparent) 75%);
+  background-size:200% 100%; animation:shimmer 1.6s linear infinite; }
+@keyframes shimmer { from { background-position:200% 0; } to { background-position:-200% 0; } }
 .img-slot--empty { background:var(--bg-2); display:grid; place-items:center; color:var(--fg-muted); font-size:13px; }
 
 /* ── Custom Scrollbar ────────────────────────────────────── */
@@ -1031,15 +1043,22 @@ html, body { overflow-x:clip; }
 }
 
 .live-status-badge--open {
-  background: rgba(46, 204, 113, 0.15);
-  color: #2ecc71;
-  border: 1px solid rgba(46, 204, 113, 0.3);
+  background: color-mix(in srgb, var(--success) 15%, transparent);
+  color: var(--success);
+  border: 1px solid color-mix(in srgb, var(--success) 30%, transparent);
 }
 
 .live-status-badge--closed {
-  background: rgba(231, 76, 60, 0.15);
-  color: #e74c3c;
-  border: 1px solid rgba(231, 76, 60, 0.3);
+  background: color-mix(in srgb, var(--error) 15%, transparent);
+  color: var(--error);
+  border: 1px solid color-mix(in srgb, var(--error) 30%, transparent);
+}
+
+/* Neutral look while the open/closed check runs — must not flash red. */
+.live-status-badge--loading {
+  background: var(--gray-tint);
+  color: var(--gray-text);
+  border: 1px solid color-mix(in srgb, var(--gray-text) 30%, transparent);
 }
 
 .live-status-dot {
@@ -1271,8 +1290,8 @@ html, body { overflow-x:clip; }
   border: 1px solid var(--line); border-radius: 14px; padding: 11px 15px; box-shadow: var(--shadow-sm); }
 .home-hero__badge b { font-size: 13.5px; font-weight: 700; color: var(--fg); }
 .home-hero__badge span { font-size: 11px; color: var(--fg-muted); }
-.home-dot { width: 9px; height: 9px; border-radius: 50%; background: #3FAE6A; flex: none;
-  box-shadow: 0 0 0 4px color-mix(in srgb, #3FAE6A 22%, transparent); }
+.home-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--success); flex: none;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--success) 22%, transparent); }
 
 /* ── marquee trust strip ─────────────────────────────────── */
 .home-strip { background: var(--bg-2); border-block: 1px solid var(--line); overflow: hidden; }
@@ -1705,7 +1724,10 @@ button.home-dock__sheet-item { border: 0; font-family: inherit; cursor: pointer;
    without a full screen of image each */
 @media (min-width: 601px) and (max-width: 1000px) {
   .home-hero__frame { aspect-ratio: 16 / 11; }
-  .home-story__art { aspect-ratio: 16 / 11; max-width: 640px; margin-inline: auto; }
+  /* width:100% is required — as a grid item, the auto margins beat the default
+     stretch and the box would otherwise shrink to fit-content (≈0, its img-slot
+     child is absolutely positioned), collapsing the story photo entirely. */
+  .home-story__art { aspect-ratio: 16 / 11; width: 100%; max-width: 640px; margin-inline: auto; }
 }
 /* mid-size: smooth the tablet→phone transition so nothing jumps at one width */
 @media (max-width: 720px) {
@@ -1923,7 +1945,8 @@ button.home-dock__sheet-item { border: 0; font-family: inherit; cursor: pointer;
 .home-route-loader .home-loader-sub { margin-top: 0; }
 
 /* ── Booking popup ───────────────────────────────────────── */
-.home-modal { position:fixed; inset:0; z-index:200; display:grid; place-items:center; padding:24px;
+/* z-index above the route loader (1500) — see .pm__overlay note. */
+.home-modal { position:fixed; inset:0; z-index:1600; display:grid; place-items:center; padding:24px;
   grid-template-rows:minmax(0, 1fr); }
 .home-modal__backdrop { position:absolute; inset:0; background:rgba(20,14,8,.55); backdrop-filter:blur(3px); }
 .home-modal__panel { position:relative; width:100%; max-width:820px; height:88vh; max-height:88vh; display:flex; flex-direction:column;

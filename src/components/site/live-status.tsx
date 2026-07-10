@@ -38,7 +38,7 @@ export function LiveStatus({ hours }: { hours: BusinessHour[] }) {
 
   if (status === 'loading') {
     return (
-      <div className="live-status-badge live-status-badge--closed">
+      <div className="live-status-badge live-status-badge--loading">
         <span className="live-status-dot" />
         <span>Checking Status...</span>
       </div>

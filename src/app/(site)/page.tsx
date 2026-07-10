@@ -195,7 +195,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
               <div className="home-hero__media home-reveal">
                 <span className="home-hero__pole" aria-hidden="true" />
                 <div className="home-hero__frame">
-                  <ImgSlot src="/images/story/interior.png" alt="Vero Salon interior" priority={true} />
+                  <ImgSlot src="/images/story/interior.png" alt="Vero Salon interior" priority={true} sizes="(max-width: 980px) 100vw, 50vw" />
                 </div>
                 <div className="home-hero__badge">
                   <span className="home-dot" aria-hidden="true" />
@@ -222,7 +222,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
               <div className="home-story__art home-reveal">
                 {/* Same asset as the hero image (already preloaded), so eager-load it too —
     a lazy second instance trips Next's LCP warning when it paints first. */}
-                <ImgSlot src="/images/story/interior.png" alt="Inside Vero Salon" priority={true} />
+                <ImgSlot src="/images/story/interior.png" alt="Inside Vero Salon" priority={true} sizes="(max-width: 980px) 100vw, 50vw" />
               </div>
               <div className="home-reveal">
                 <span className="home-eyebrow">{story.eyebrow}</span>

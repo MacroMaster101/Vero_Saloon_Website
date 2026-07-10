@@ -28,8 +28,10 @@ const MORE_LINKS = [
   { id: 'visit', label: 'Visit' },
 ];
 
-// Ids the scroll-spy watches to decide which dock item is active.
-const SPY_IDS = ['top', 'services', 'about', 'how', 'looks', 'team', 'reviews', 'faq', 'visit'];
+// Ids the scroll-spy watches to decide which dock item is active. MUST be in
+// true DOM (top-to-bottom) order — the loop takes the last section whose top
+// has crossed the line, so a mis-ordered list highlights the wrong tab.
+const SPY_IDS = ['top', 'about', 'services', 'how', 'looks', 'team', 'reviews', 'faq', 'visit'];
 
 function Icon({ name }: { name: string }) {
   const common = { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
