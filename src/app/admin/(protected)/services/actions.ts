@@ -20,6 +20,7 @@ function parse(formData: FormData) {
     image_url: formData.get('image_url') ?? '',
     bookable: formData.get('bookable') ? 'true' : '',
     is_active: formData.get('is_active') ? 'true' : '',
+    is_featured: formData.get('is_featured') ? 'true' : '',
     sort_order: formData.get('sort_order') ?? '0',
   });
 }

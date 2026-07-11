@@ -14,7 +14,7 @@ export default async function StylistsPage() {
           <span className="eyebrow">Team</span>
           <h1 className="ahead__title">Stylists</h1>
         </div>
-        <Link href="/#stylists" target="_blank" className="btn btn--ghost">View on site ↗</Link>
+        <Link href="/#team" target="_blank" className="btn btn--ghost">View on site ↗</Link>
       </div>
       <StylistsList stylists={stylists ?? []} />
     </div>

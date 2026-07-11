@@ -9,6 +9,9 @@ const nextConfig: NextConfig = {
     // Its avatars are SVG, so allow SVG but sandbox it with a strict CSP.
     remotePatterns: [
       { protocol: "https", hostname: "api.dicebear.com" },
+      // Supabase Storage public objects (media/avatars buckets) so uploads can
+      // go through next/image instead of raw <img>.
+      { protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/**" },
     ],
     dangerouslyAllowSVG: true,
     contentDispositionType: "attachment",

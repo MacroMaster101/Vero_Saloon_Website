@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { requireRole } from '@/lib/supabase/auth';
 import type { Holiday } from '@/lib/supabase/types';
+import { salonDayKey } from '@/lib/booking-rows';
 import { HolidayForms } from '@/components/admin/holiday-form';
 import { DeleteForm } from '@/components/admin/form-kit';
 import { deleteHoliday } from './holiday-actions';
@@ -18,8 +19,10 @@ function label(ymd: string): string {
 export default async function HolidaysPage() {
   await requireRole(['admin'], '/admin/holidays');
   const sb = await createClient();
-  // Upcoming holidays (today onward), soonest first.
-  const today = new Date().toISOString().slice(0, 10);
+  // Upcoming holidays (today onward), soonest first. Salon-local "today" —
+  // toISOString() is UTC, which is 5:30 behind and would drop today's holiday
+  // from midnight to 5:30 AM in Sri Lanka.
+  const today = salonDayKey(new Date());
   const { data } = await sb
     .from('holidays')
     .select('*')

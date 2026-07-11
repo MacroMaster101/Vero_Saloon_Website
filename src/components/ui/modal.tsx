@@ -19,8 +19,11 @@ export function Modal({
     if (!open) return;
     function onKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose(); }
     document.addEventListener('keydown', onKey);
-    document.body.style.overflow = 'hidden';
-    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = ''; };
+    // Lock only the Y axis — body already has `overflow-x:clip` in the stylesheet,
+    // and setting full `overflow` here re-introduces a stray sideways scroll
+    // (same reasoning as booking-modal.tsx).
+    document.body.style.overflowY = 'hidden';
+    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflowY = ''; };
   }, [open, onClose]);
 
   if (!open) return null;
