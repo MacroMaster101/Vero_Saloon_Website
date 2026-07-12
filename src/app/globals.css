@@ -465,10 +465,22 @@ body, .book__card, .book__main, .field input, .field textarea, .choice, .date-ch
 .aempty .lead { color:var(--fg-muted); font-size:15px; }
 .side__back { display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:700; color:var(--fg-muted); padding:6px 4px; margin-bottom:18px; }
 .side__back:hover { color:var(--accent-dark); }
-.side__id { display:flex; align-items:center; gap:12px; padding:0 4px 18px; border-bottom:1px solid var(--line); margin-bottom:8px; min-width:0; }
+/* Mobile-only theme switch slot in the app bar; desktop keeps the footer toggle. */
+.side__theme { display:none; }
+/* Signed-in identity: a soft card so the person reads as a profile, not a stray
+   row. Rendered as a link to the Account page on admin/owner. */
+.side__id { display:flex; align-items:center; gap:12px; min-width:0; margin-bottom:14px;
+  background:var(--surface); border:1px solid var(--line); border-radius:14px;
+  padding:10px 12px; box-shadow:var(--shadow-sm); color:inherit; text-decoration:none;
+  transition:border-color .15s var(--ease); }
+a.side__id:hover { border-color:var(--accent); }
 .side__brand { display:flex; align-items:center; gap:10px; font-weight:700; font-size:16px; color:var(--fg); padding:2px 4px 16px; border-bottom:1px solid var(--line); margin-bottom:6px; }
 .avatar { width:46px; height:46px; border-radius:50%; flex:none; position:relative; overflow:hidden;
   background:conic-gradient(from 210deg,var(--accent),var(--accent-dark),var(--accent-tint),var(--accent)); }
+/* gold ring on the profile-card avatar */
+.side__id .avatar { width:40px; height:40px;
+  box-shadow:0 0 0 2px var(--surface), 0 0 0 3.5px color-mix(in srgb, var(--accent) 55%, transparent); }
+.side__id .avatar b { font-size:16px; }
 .avatar b { position:absolute; inset:0; display:grid; place-items:center; font-weight:700; color:#fff; font-size:18px; }
 .avatar img { width:100%; height:100%; object-fit:cover; }
 .side__name { font-weight:700; font-size:14.5px; color:var(--fg); line-height:1.2;
@@ -488,7 +500,7 @@ body, .book__card, .book__main, .field input, .field textarea, .choice, .date-ch
 .side__foot .btn { width:100%; }
 
 /* ── List toolbar (search + chips) ── */
-.toolbar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+.toolbar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
 .search { position:relative; flex:1; min-width:220px; }
 .search .ic { position:absolute; left:13px; top:50%; transform:translateY(-50%); color:var(--fg-muted); }
 .search input { width:100%; font-size:14px; color:var(--fg); background:var(--surface);
@@ -516,13 +528,19 @@ body, .book__card, .book__main, .field input, .field textarea, .choice, .date-ch
 /* admin schedule: cards flow into responsive columns to fill the width */
 .bk-list--grid { grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); }
 .bk-card { display:flex; align-items:center; gap:14px; background:var(--surface); border:1px solid var(--line);
-  border-radius:14px; padding:14px 16px; box-shadow:0 10px 26px -22px rgba(184,116,42,.3); }
+  border-radius:14px; padding:14px 16px; box-shadow:0 10px 26px -22px rgba(184,116,42,.3);
+  transition:border-color .2s var(--ease), box-shadow .2s var(--ease); }
+.bk-card:hover { border-color:color-mix(in srgb, var(--accent) 45%, var(--line));
+  box-shadow:0 6px 16px -12px rgba(120,75,20,.25); }
 .bk-card__ic { width:38px; height:38px; border-radius:11px; background:var(--bg-2); display:grid; place-items:center; color:var(--accent-text); flex:none; }
 .bk-card__time { text-align:center; flex:none; width:64px; }
 .bk-card__time b { display:block; font-size:16px; font-weight:700; color:var(--fg); }
 .bk-card__time span { font-size:10px; color:var(--fg-muted); }
 .bk-card__bar { width:3px; align-self:stretch; border-radius:var(--radius-pill); background:var(--accent); flex:none; }
 .bk-card__actions { display:flex; gap:8px; flex-basis:100%; margin-top:4px; padding-top:10px; border-top:1px solid var(--line); }
+.bk-card__del { flex:none; }
+.bk-card__del form { margin:0; }
+.bk-card__del .btn { font-size:12.5px; padding:6px 12px; }
 .bk-card__actions .btn { font-size:13px; padding:6px 12px; }
 .bk-resched { margin-top:10px; padding-top:12px; border-top:1px dashed var(--line); display:flex; flex-direction:column; gap:12px; }
 .bk-resched__dates { display:flex; flex-wrap:wrap; gap:8px; }
@@ -567,13 +585,13 @@ body, .book__card, .book__main, .field input, .field textarea, .choice, .date-ch
 .person__del { margin-left:4px; }
 
 /* ── Space-filling CRUD layout: list (left) + add-form (right) ──── */
-.acrud { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(280px,.9fr); gap:22px; align-items:start; }
+.acrud { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(280px,.9fr); gap:16px; align-items:start; }
 .acrud__list { min-width:0; }
 .acrud__form { min-width:0; }
-.acrud__form .acard { position:sticky; top:20px; margin:0; max-width:none; }
+.acrud__form .acard { position:sticky; top:16px; margin:0; max-width:none; }
 
 /* ── Content page: section forms in a 2-up grid ────────────────── */
-.acontent-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start; }
+.acontent-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:start; }
 .acontent-grid .acard { margin:0; max-width:none; }
 
 .btn--danger-outline { background:transparent; color:var(--error); border-color:var(--error); }
@@ -597,8 +615,12 @@ body, .book__card, .book__main, .field input, .field textarea, .choice, .date-ch
   .auth__form { justify-self:stretch; width:100%; }
   .auth__lead { margin-bottom:18px; }
   /* minmax(0,1fr) + min-width:0 stop the single column from growing past
-     the viewport when a child (tiles, booking cards) is intrinsically wide */
-  .shell { grid-template-columns:minmax(0,1fr); margin:0; border-radius:0; min-height:0; }
+     the viewport when a child (tiles, booking cards) is intrinsically wide.
+     Explicit rows are required: the base grid-auto-rows:minmax(0,1fr) would
+     give the stacked sidebar a full 1fr row — a viewport-tall blank header
+     that pushes the page content below the fold. */
+  .shell { grid-template-columns:minmax(0,1fr); grid-template-rows:auto minmax(0,1fr);
+    margin:0; border-radius:0; min-height:0; }
   .shell__main { min-width:0; overflow:hidden; }
   .shell__side { border-right:0; border-bottom:1px solid var(--line); padding:16px; }
   .side__meta { display:none; }
@@ -611,7 +633,7 @@ body, .book__card, .book__main, .field input, .field textarea, .choice, .date-ch
 
 /* ===== ADMIN (redesign — direction B) ===== */
 /* Page header */
-.ahead { display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap; margin-bottom:22px; }
+.ahead { display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
 .ahead__title { font-size:32px; font-weight:800; letter-spacing:-.03em; color:var(--fg); margin:6px 0 0; }
 
 /* Dashboard stat tiles */
@@ -636,7 +658,7 @@ body, .book__card, .book__main, .field input, .field textarea, .choice, .date-ch
 
 /* Elevated card (forms + grouped sections) */
 .acard { background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent);
-  border-radius:var(--radius-md); padding:20px; box-shadow:var(--shadow-card); max-width:480px; margin-bottom:22px; }
+  border-radius:var(--radius-md); padding:18px; box-shadow:var(--shadow-card); max-width:480px; margin-bottom:16px; }
 .acard__title { font-size:14px; font-weight:800; color:var(--fg); margin:0 0 16px; display:flex; align-items:center; gap:8px; }
 /* give the form's submit button breathing room from the fields above it */
 .shell--admin .acard > .btn--primary,
@@ -683,7 +705,9 @@ body, .book__card, .book__main, .field input, .field textarea, .choice, .date-ch
 .aseg input:focus-visible + span { box-shadow:0 0 0 3px var(--accent-tint); }
 
 /* Toggle switch (real checkbox, styled) */
-.aswitch { display:inline-flex; align-items:center; gap:9px; font-size:13px; color:var(--fg); cursor:pointer; margin-bottom:14px; }
+/* flex (not inline-flex): adjacent switches each get their own row instead of
+   cramming onto one line in the edit forms */
+.aswitch { display:flex; align-items:center; gap:9px; font-size:13px; color:var(--fg); cursor:pointer; margin-bottom:14px; width:fit-content; }
 .aswitch input { position:absolute; opacity:0; pointer-events:none; }
 .aswitch .track { width:38px; height:22px; border-radius:var(--radius-pill); background:var(--line); position:relative;
   flex:none; transition:background .2s var(--ease); }
@@ -701,6 +725,11 @@ body, .book__card, .book__main, .field input, .field textarea, .choice, .date-ch
 .arow__head { display:flex; justify-content:space-between; align-items:center; gap:12px; }
 .arow__name { font-size:14px; font-weight:700; color:var(--fg); }
 .arow__meta { font-size:12px; color:var(--fg-muted); }
+/* split row (holidays / blocked slots): stacked info, action to the right.
+   Without this the name/date/source spans render as one run-together line —
+   the grid layout only existed inside the ≤640px block. */
+.arow--split { display:flex; justify-content:space-between; align-items:center; gap:14px; }
+.arow--split .arow__main { display:grid; gap:4px; min-width:0; }
 /* Edit + Delete sit together on one action row under the name */
 .arow__actions { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:12px; }
 .arow__actions form { margin:0; }
@@ -718,6 +747,53 @@ body, .book__card, .book__main, .field input, .field textarea, .choice, .date-ch
 /* the edit form drops full-width below the action row when open */
 .arow__edit[open] { flex:1 1 100%; order:3; }
 .arow__edit > form { margin-top:14px; }
+
+/* ── Admin media cards — the dashboards' twin of .home-scard ──
+   Photo-first cards for the Services / Stylists / Gallery CRUDs, with the
+   same lift + gold hover the public site uses, so both surfaces feel like
+   one product. Rows (.alist/.arow) remain as the alternate view. */
+.mgrid { list-style:none; padding:0; margin:0; display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:14px; }
+.mcard { display:flex; flex-direction:column; background:var(--surface); border:1px solid var(--line);
+  border-radius:18px; overflow:hidden;
+  transition:transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease); }
+.mcard:hover { transform:translateY(-4px);
+  box-shadow:0 18px 40px -18px color-mix(in srgb, var(--accent-dark) 32%, transparent);
+  border-color:color-mix(in srgb, var(--accent) 45%, var(--line)); }
+/* an editing card takes the whole grid row so the form has room to breathe */
+.mcard:has(.arow__edit[open]) { grid-column:1 / -1; transform:none; }
+.mcard__media { position:relative; background:var(--bg-2); }
+.mcard__photo { width:100%; aspect-ratio:4 / 3; object-fit:cover; display:block; }
+.mcard__media--avatar { aspect-ratio:4 / 3; display:grid; place-items:center;
+  background:linear-gradient(160deg, var(--accent-tint), var(--bg-2)); }
+.mcard__avatar { width:96px; height:96px; border-radius:50%; object-fit:cover;
+  border:3px solid var(--surface); box-shadow:0 6px 16px -8px rgba(120,75,20,.35); }
+.mcard__badges { position:absolute; top:10px; left:10px; display:flex; gap:6px; }
+.mcard__badge { font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:var(--radius-pill);
+  background:color-mix(in srgb, var(--surface) 88%, transparent); backdrop-filter:blur(4px);
+  border:1px solid var(--line); color:var(--fg-2); }
+.mcard__badge--hidden { color:var(--error); border-color:color-mix(in srgb, var(--error) 45%, var(--line)); }
+.mcard__badge--featured { color:var(--accent-text); border-color:color-mix(in srgb, var(--accent) 55%, var(--line)); }
+.mcard__body { display:flex; flex-direction:column; gap:5px; padding:13px 14px 12px; flex:1; }
+.mcard__top { display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+.mcard__name { font-size:14.5px; font-weight:700; color:var(--fg); line-height:1.25; }
+.mcard__price { flex:none; font-family:var(--font-display); font-style:italic; font-size:16.5px;
+  color:var(--accent-text); }
+.mcard__meta { font-size:12px; color:var(--fg-muted); }
+.mcard__dur { align-self:flex-start; margin-top:2px; font-size:11px; font-weight:600; color:var(--fg-2);
+  background:var(--bg-2); padding:3px 9px; border-radius:var(--radius-pill); }
+.mcard__actions { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:0 14px 13px; margin-top:auto; }
+.mcard__actions form { margin:0; }
+.mcard .arow__edit[open] { flex:1 1 100%; order:3; }
+.mcard .arow__edit > form { margin-top:12px; padding-bottom:4px; }
+
+/* ── Card/row view toggle (list toolbar) ── */
+.vtoggle { display:inline-flex; border:1.5px solid var(--line); border-radius:var(--radius-pill);
+  overflow:hidden; flex:none; background:var(--surface); }
+.vtoggle button { background:none; border:0; padding:7px 11px; cursor:pointer; color:var(--fg-muted);
+  display:grid; place-items:center; }
+.vtoggle button:hover { color:var(--fg); }
+.vtoggle button.on { background:var(--accent-tint); color:var(--accent-text); }
 /* Save + Cancel footer for the edit form */
 .aform__foot { display:flex; gap:10px; margin-top:14px; padding-top:14px; border-top:1px solid var(--line); }
 .aform__foot .btn { flex:0 0 auto; }
@@ -855,8 +931,48 @@ body, .book__card, .book__main, .field input, .field textarea, .choice, .date-ch
   .shell--admin .side__foot { display:none; }
   /* clear the fixed bar so content isn't hidden behind it */
   .shell--admin .shell__main { padding-bottom:calc(74px + env(safe-area-inset-bottom)); }
+  /* the desktop 280px centring block would push empty-state text under the
+     fixed bar on short pages — let it sit naturally below the content instead */
+  .shell--admin .aempty { min-height:0; flex:0 0 auto; padding-block:28px; }
   /* the sheet must clear the bar too (the more-sheet panel sits above it) */
   .more-sheet--admin .more-sheet__panel { padding-bottom:calc(82px + env(safe-area-inset-bottom)); }
+
+  /* ── Mobile app bar ─────────────────────────────────────────
+     The stacked sidebar header collapses to one glass row that twins the
+     bottom bar: [← back] [brand + role] ·· [theme] [avatar]. Sticky, so
+     the chrome frames the page top and bottom like a native app. */
+  /* overflow:visible — the base shell clips (overflow:hidden) for its desktop
+     card radius, which would silently disable the sticky header below */
+  .shell--admin { overflow:visible; }
+  .shell--admin .shell__side {
+    position:sticky; top:0; z-index:60;
+    flex-direction:row; align-items:center; gap:10px;
+    padding:10px 14px;
+    background:color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);
+    box-shadow:0 6px 24px rgba(46,37,25,.08);
+  }
+  /* back becomes a circular icon button; the label lives on desktop only */
+  .shell--admin .side__back {
+    order:0; align-self:center; margin:0; padding:0; flex:none;
+    width:38px; height:38px; border-radius:var(--radius-pill);
+    display:grid; place-items:center; gap:0;
+    background:var(--surface); border:1.5px solid var(--line); color:var(--fg);
+  }
+  .shell--admin .side__back:hover { border-color:var(--accent); color:var(--accent-dark); }
+  .shell--admin .side__back-txt { display:none; }
+  .shell--admin .side__brand { flex:1; min-width:0; margin:0; padding:0; border:0; font-size:15px; }
+  .shell--admin .side__brand .role-badge { flex:none; }
+  /* theme switch joins the bar (hidden on desktop, where the footer has one) */
+  .shell--admin .side__theme { display:block; flex:none; }
+  .shell--admin .side__theme .theme-toggle { width:38px; height:38px; background:var(--surface); }
+  /* identity shrinks to just the ringed avatar */
+  .shell--admin .side__id { margin:0; padding:0; border:0; background:none; box-shadow:none; flex:none; }
+  .shell--admin .side__id .avatar { width:34px; height:34px; }
+  .shell--admin .side__id .avatar b { font-size:14px; }
+  .shell--admin .side__id .sd-id__photo { width:34px; height:34px; }
+  .shell--admin .side__id .side__name, .shell--admin .sd-id__chair { display:none; }
 }
 
 /* ══ Mobile "More" bottom sheet ═════════════════════════════
@@ -962,7 +1078,7 @@ html, body { overflow-x:clip; }
    ══════════════════════════════════════════════════════════════ */
 @media (max-width:640px) {
   /* page header: title + action stack instead of squeezing */
-  .ahead { flex-direction:column; align-items:flex-start; gap:10px; margin-bottom:18px; }
+  .ahead { flex-direction:column; align-items:flex-start; gap:10px; margin-bottom:14px; }
   .ahead .btn { width:100%; }
 
   /* forms span full width on mobile (drop the 480px cap) */
@@ -998,7 +1114,14 @@ html, body { overflow-x:clip; }
   .arow--split .btn { width:100%; }
 
   /* space-filling layouts collapse to a single column on mobile */
-  .acrud { grid-template-columns:1fr; gap:18px; }
+  .acrud { grid-template-columns:1fr; gap:14px; }
+
+  /* media cards: 2-up on phones, tighter padding, side-by-side actions */
+  .mgrid { grid-template-columns:repeat(auto-fill, minmax(158px, 1fr)); gap:10px; }
+  .mcard__body { padding:11px 12px 10px; }
+  .mcard__actions { padding:0 12px 11px; }
+  .mcard .arow__edit summary { margin-top:0; padding:8px 14px; font-size:13px; }
+  .mcard .arow__edit:not([open]) summary { display:inline-block; width:auto; }
   .acrud__form .acard { position:static; }
   .acontent-grid { grid-template-columns:1fr; }
 
@@ -2430,11 +2553,12 @@ button.home-dock__sheet-item { border: 0; font-family: inherit; cursor: pointer;
 
 /* Softer cards: no admin amber bar inside the owner shell */
 .oshell .acard { border-left: 1px solid var(--line); border-radius: 18px; box-shadow: 0 12px 26px -22px rgba(122, 74, 34, .4); }
+.oshell .mcard { border-radius: 16px; }
 .oshell .arow, .oshell .person { border-radius: 16px; }
 .oshell .data-table th { background: var(--accent-tint); color: var(--fg); }
 
 /* Home: full-width stats row, then bookings beside shortcuts on wide screens */
-.ostats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 16px 0 22px; }
+.ostats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 14px 0 18px; }
 .ostat { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; }
 .ostat b { display: block; font-size: 28px; color: var(--fg); }
 .ostat span { color: var(--fg-2); font-size: 13px; }

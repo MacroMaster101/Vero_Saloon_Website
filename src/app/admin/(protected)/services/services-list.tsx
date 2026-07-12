@@ -3,8 +3,12 @@ import { useActionState } from 'react';
 import { ListToolbar, type FilterChip } from '@/components/admin/list-toolbar';
 import { Field, TextInput, Segmented, Switch, SubmitButton, FormStatus, DeleteForm } from '@/components/admin/form-kit';
 import { ImageField } from '@/components/admin/image-field';
+import { MediaCard } from '@/components/admin/media-card';
+import { useViewMode } from '@/components/admin/use-view-mode';
+import { ViewToggle } from '@/components/admin/view-toggle';
 import { createService, updateService, deleteService } from './actions';
 import { money } from '@/lib/format';
+import { servicePhoto } from '@/lib/service-photo';
 import type { Service } from '@/lib/supabase/types';
 
 function durationLabel(min: number): string {
@@ -53,11 +57,35 @@ function CreateForm() {
   );
 }
 
-function EditRow({ s }: { s: Service }) {
+/** Edit <details> + Delete — one instance per item, shared by row and card views. */
+function ServiceActions({ s }: { s: Service }) {
   const [state, action, pending] = useActionState(
     async (_p: unknown, fd: FormData) => updateService(fd),
     undefined as undefined | { error: string } | { ok: true },
   );
+  return (
+    <>
+      <details className="arow__edit">
+        <summary />
+        <form action={action}>
+          <input type="hidden" name="id" value={s.id} />
+          <ServiceFields s={s} />
+          <FormStatus state={state} />
+          <div className="aform__foot">
+            <SubmitButton pending={pending} />
+            <button type="button" className="btn btn--ghost"
+              onClick={(e) => e.currentTarget.closest('details')?.removeAttribute('open')}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      </details>
+      <DeleteForm action={deleteService} id={s.id} confirm={`Delete "${s.name}"?`} />
+    </>
+  );
+}
+
+function EditRow({ s }: { s: Service }) {
   return (
     <li className="arow">
       <div className="arow__head">
@@ -65,28 +93,33 @@ function EditRow({ s }: { s: Service }) {
         <span className="arow__meta">{money(s.price_lkr)} · {durationLabel(s.duration_min)} · {s.category}{s.is_featured ? ' · featured' : ''}{s.is_active ? '' : ' · hidden'}</span>
       </div>
       <div className="arow__actions">
-        <details className="arow__edit">
-          <summary />
-          <form action={action}>
-            <input type="hidden" name="id" value={s.id} />
-            <ServiceFields s={s} />
-            <FormStatus state={state} />
-            <div className="aform__foot">
-              <SubmitButton pending={pending} />
-              <button type="button" className="btn btn--ghost"
-                onClick={(e) => e.currentTarget.closest('details')?.removeAttribute('open')}>
-                Cancel
-              </button>
-            </div>
-          </form>
-        </details>
-        <DeleteForm action={deleteService} id={s.id} confirm={`Delete "${s.name}"?`} />
+        <ServiceActions s={s} />
       </div>
     </li>
   );
 }
 
+function ServiceCard({ s }: { s: Service }) {
+  const photo = servicePhoto(s);
+  return (
+    <MediaCard
+      media={{ src: photo.type === 'img' ? photo.src : '', fallbackSrc: photo.type === 'img' ? photo.fallbackSrc : undefined }}
+      title={s.name}
+      price={money(s.price_lkr)}
+      meta={s.description || s.category}
+      dur={durationLabel(s.duration_min)}
+      badges={[
+        ...(s.is_featured ? [{ label: 'Featured', tone: 'featured' as const }] : []),
+        ...(s.is_active ? [] : [{ label: 'Hidden', tone: 'hidden' as const }]),
+      ]}
+    >
+      <ServiceActions s={s} />
+    </MediaCard>
+  );
+}
+
 export function ServicesList({ services }: { services: Service[] }) {
+  const [mode, setMode] = useViewMode('services');
   const chips: FilterChip<Service>[] = [
     { id: 'all', label: 'All', match: () => true },
     { id: 'hair', label: 'Hair', match: (s) => s.category === 'hair' },
@@ -103,7 +136,12 @@ export function ServicesList({ services }: { services: Service[] }) {
           searchText={(s) => `${s.name} ${s.category} ${s.slug}`}
           chips={chips}
           emptyLabel="No services match your filters."
-          render={(rows) => <ul className="alist">{rows.map((s) => <EditRow key={s.id} s={s} />)}</ul>}
+          right={<ViewToggle mode={mode} onChange={setMode} />}
+          render={(rows) =>
+            mode === 'cards'
+              ? <ul className="mgrid">{rows.map((s) => <ServiceCard key={s.id} s={s} />)}</ul>
+              : <ul className="alist">{rows.map((s) => <EditRow key={s.id} s={s} />)}</ul>
+          }
         />
       </div>
       <div className="acrud__form">

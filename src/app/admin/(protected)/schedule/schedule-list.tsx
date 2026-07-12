@@ -1,7 +1,9 @@
 'use client';
 import { ListToolbar, type FilterChip } from '@/components/admin/list-toolbar';
+import { DeleteForm } from '@/components/admin/form-kit';
+import { deleteBooking } from '../booking-actions';
 
-export interface SchedRow { reference: string; whenLabel: string; timeLabel: string; ampm: string; customer: string; status: string; }
+export interface SchedRow { id: string; reference: string; whenLabel: string; timeLabel: string; ampm: string; customer: string; status: string; }
 const TAG_CLASS: Record<string, string> = { confirmed: 'tag--confirmed', completed: 'tag--completed', no_show: 'tag--no_show', cancelled: 'tag--cancelled' };
 
 export function ScheduleList({ rows }: { rows: SchedRow[] }) {
@@ -26,6 +28,13 @@ export function ScheduleList({ rows }: { rows: SchedRow[] }) {
               <span className="bk-card__bar" />
               <span className="bk-card__info"><b>{r.customer}</b><span>{r.reference} · {r.whenLabel}</span></span>
               <span className={`tag ${TAG_CLASS[r.status] ?? ''}`} style={{ marginLeft: 'auto' }}>{r.status}</span>
+              <span className="bk-card__del">
+                <DeleteForm
+                  action={deleteBooking}
+                  id={r.id}
+                  confirm={`Delete booking ${r.reference} for ${r.customer}? This cannot be undone.`}
+                />
+              </span>
             </li>
           ))}
         </ul>
