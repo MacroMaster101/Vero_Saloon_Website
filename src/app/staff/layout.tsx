@@ -35,11 +35,13 @@ export default async function StaffLayout({ children }: { children: React.ReactN
   return (
     <div className="shell shell--admin">
       <aside className="shell__side">
-        <Link href="/" className="side__back"><Icon name="arrowLeft" className="ic" /> Back to site</Link>
+        <Link href="/" className="side__back"><Icon name="arrowLeft" className="ic" /> <span className="side__back-txt">Back to site</span></Link>
         <div className="side__brand">
           <span className="pole" style={{ height: 26 }} /> Vero Salon
           <span className="role-badge" style={{ marginLeft: 'auto' }}>Staff</span>
         </div>
+        {/* Mobile-only theme switch — the desktop one lives in the sidebar footer. */}
+        <span className="side__theme"><ThemeToggle /></span>
         <div className="side__id sd-id">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={avatar} alt="" className="sd-id__photo" />

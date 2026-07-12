@@ -9,7 +9,7 @@ export interface FilterChip<T> {
 }
 
 export function ListToolbar<T>({
-  items, searchText, placeholder, chips, render, emptyLabel = 'Nothing matches your filters.',
+  items, searchText, placeholder, chips, render, emptyLabel = 'Nothing matches your filters.', right,
 }: {
   items: T[];
   searchText: (item: T) => string;     // searchable string for an item
@@ -17,6 +17,8 @@ export function ListToolbar<T>({
   chips: FilterChip<T>[];              // first chip is the default ("All")
   render: (filtered: T[]) => ReactNode;
   emptyLabel?: string;
+  /** Extra toolbar control (e.g. the card/row view toggle). */
+  right?: ReactNode;
 }) {
   const [q, setQ] = useState('');
   const [active, setActive] = useState(chips[0]?.id);
@@ -46,6 +48,7 @@ export function ListToolbar<T>({
           ))}
         </div>
         <span className="count">{filtered.length} shown</span>
+        {right}
       </div>
       {filtered.length === 0 ? <p className="lead" style={{ opacity: 0.7 }}>{emptyLabel}</p> : render(filtered)}
     </>
