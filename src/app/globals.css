@@ -1918,18 +1918,6 @@ button.home-dock__sheet-item { border: 0; font-family: inherit; cursor: pointer;
   .home-bottomnav__center { width: 56px; height: 56px; margin-top: -24px; }
 }
 
-/* ── Top Scroll Progress Bar ── */
-.home-scroll-progress {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--accent), var(--accent-dark));
-  box-shadow: 0 1px 10px rgba(217, 154, 61, 0.4);
-  z-index: 1000;
-  transition: width 0.1s linear;
-  pointer-events: none;
-}
 
 /* ── Luxury Load Splash Loader ── */
 .home-page-loader {
@@ -2777,23 +2765,34 @@ button.home-dock__sheet-item { border: 0; font-family: inherit; cursor: pointer;
   font-size: 9.5px !important;
   white-space: normal !important;
   text-align: center;
-  line-height: 1.15 !important;
+  line-height: 1.25 !important;
 }
 
 :lang(si) .home-bottomnav__center span {
   font-size: 8.5px !important;
   white-space: normal !important;
   text-align: center;
-  line-height: 1.1 !important;
+  line-height: 1.2 !important;
   padding: 0 4px;
 }
 
-:lang(si) .btn, :lang(si) button, :lang(si) .steps__label, :lang(si) .field label, :lang(si) .pm__field span, :lang(si) .sum-row .k, :lang(si) .sum-total .k, :lang(si) .tag {
+:lang(si) .btn, :lang(si) .home-btn, :lang(si) button, :lang(si) .steps__label, :lang(si) .field label, :lang(si) .pm__field span, :lang(si) .sum-row .k, :lang(si) .sum-total .k, :lang(si) .tag {
   text-transform: none !important;
+}
+
+/* Enable wrapping for buttons in Sinhala theme to prevent overflow on mobile */
+:lang(si) .btn, :lang(si) .home-btn {
+  white-space: normal !important;
+  text-align: center;
+  line-height: 1.3 !important;
 }
 
 /* Prevent horizontal stats clipping in hero section on mobile screens */
 @media (max-width: 600px) {
+  :lang(si) .home-hero__facts dt {
+    white-space: normal !important;
+    line-height: 1.2 !important;
+  }
   :lang(si) .home-hero__facts dd {
     white-space: normal !important;
     line-height: 1.25 !important;

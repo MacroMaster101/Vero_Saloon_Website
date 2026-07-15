@@ -25,7 +25,6 @@ const SECTIONS = [
 ];
 
 export function HomeEffects() {
-  const [scrollProgress, setScrollProgress] = useState(0);
   const [loading, setLoading] = useState(true);
   const mounted = useMounted();
 
@@ -82,11 +81,7 @@ export function HomeEffects() {
         link.classList.toggle('is-active', href === `#${current}`);
       });
 
-      // 3. Scroll progress percentage
-      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-      if (totalHeight > 0) {
-        setScrollProgress((window.scrollY / totalHeight) * 100);
-      }
+
     };
 
     onScroll();
@@ -141,12 +136,6 @@ export function HomeEffects() {
 
   return (
     <>
-      {/* ── Top Scroll Progress Bar ── */}
-      <div
-        className="home-scroll-progress"
-        style={{ width: `${scrollProgress}%` }}
-      />
-
       {/* ── Luxury Load Splash Screen ── */}
       {loading && (
         <div className="home-page-loader">

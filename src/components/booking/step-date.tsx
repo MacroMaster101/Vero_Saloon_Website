@@ -43,6 +43,7 @@ export function StepDate({
   // is an external-data sync effect, so a synchronous loading flag is expected.
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoadingHols(true);
     getMonthHolidays(view.y, view.m0)
       .then((map) => { if (!cancelled) setHolidays(map); })
