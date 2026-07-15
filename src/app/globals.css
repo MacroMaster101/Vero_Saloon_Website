@@ -1731,6 +1731,9 @@ button.home-dock__sheet-item { border: 0; font-family: inherit; cursor: pointer;
   background: color-mix(in srgb, var(--error) 10%, transparent); }
 .home-dock__sheet-item.is-active { color: var(--accent-text);
   background: color-mix(in srgb, var(--accent) 16%, transparent); }
+/* Language toggle row inside the More sheet — spans both grid columns */
+.home-dock__sheet > div:first-child { grid-column: 1 / -1; border-radius: 13px;
+  background: var(--bg-2); padding: 6px 12px; }
 
 /* ── scroll reveal — desktop-only ────────────────────────────
    Hiding content until an IntersectionObserver fires is a desktop luxury: on
@@ -1817,6 +1820,7 @@ button.home-dock__sheet-item { border: 0; font-family: inherit; cursor: pointer;
     padding-left: 0; border-left: 0; flex: none; }
   .home-header .nav__cta,
   .home-header .nav-profile,
+  .home-header__lang,
   .home-header__book { display: none; }
   .home-header .theme-toggle { display: grid; flex: none; }
   .home-brand { min-width: 0; flex: 1; }
@@ -2697,3 +2701,117 @@ button.home-dock__sheet-item { border: 0; font-family: inherit; cursor: pointer;
 }
 .sd-setup b { display: block; margin-bottom: 2px; }
 .sd-setup span { font-size: 13.5px; color: var(--fg-muted); }
+
+/* ── Sinhala (lang="si") typography overrides ─────────────────────────────
+   Sinhala script has complex below-baseline glyphs; the tight line-heights
+   and negative letter-spacing used for Latin display text clip or collide
+   when Sinhala characters are rendered. These selectors reset the spacing
+   whenever the html[lang="si"] attribute is set. */
+
+:lang(si) .home-hero__display {
+  line-height: 1.35;
+  letter-spacing: 0;
+  font-size: clamp(32px, 5.5vw, 68px);
+}
+:lang(si) .home-hero__display em {
+  font-style: normal;
+  letter-spacing: 0;
+}
+:lang(si) .home-hero__facts dt {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 11px;
+}
+:lang(si) .home-hero__facts dd {
+  font-style: normal;
+  font-size: clamp(14px, 1.8vw, 20px);
+}
+:lang(si) .home-hero__lead {
+  max-width: 54ch;
+}
+:lang(si) .home-nav a {
+  font-size: 12px;
+  padding: 7px 8px;
+  letter-spacing: 0;
+}
+:lang(si) .home-h {
+  line-height: 1.35;
+  letter-spacing: 0;
+}
+:lang(si) .home-h em {
+  font-style: normal;
+  letter-spacing: 0;
+}
+:lang(si) .home-eyebrow {
+  letter-spacing: 0;
+}
+:lang(si) .home-step h3 {
+  line-height: 1.45;
+  letter-spacing: 0;
+}
+:lang(si) .home-brand__name small {
+  letter-spacing: 0;
+  text-transform: none;
+  font-size: 10px;
+}
+
+/* Global resets for Sinhala to ensure readable rendering of ligatures */
+:lang(si) * {
+  letter-spacing: 0 !important;
+}
+
+:lang(si) em, :lang(si) i {
+  font-style: normal !important;
+}
+
+:lang(si) h1, :lang(si) h2, :lang(si) h3, :lang(si) h4, :lang(si) h5, :lang(si) h6 {
+  line-height: 1.35 !important;
+}
+
+:lang(si) {
+  --font-sans: "Noto Sans Sinhala", "Sinhala Sangam MN", "Sinhala MN", "Nirmala UI", var(--font-poppins), system-ui, -apple-system, sans-serif;
+  --font-display: "Noto Sans Sinhala", "Sinhala Sangam MN", "Sinhala MN", "Nirmala UI", var(--font-display), serif;
+}
+
+:lang(si) .home-bottomnav__tab span {
+  font-size: 9.5px !important;
+  white-space: normal !important;
+  text-align: center;
+  line-height: 1.15 !important;
+}
+
+:lang(si) .home-bottomnav__center span {
+  font-size: 8.5px !important;
+  white-space: normal !important;
+  text-align: center;
+  line-height: 1.1 !important;
+  padding: 0 4px;
+}
+
+:lang(si) .btn, :lang(si) button, :lang(si) .steps__label, :lang(si) .field label, :lang(si) .pm__field span, :lang(si) .sum-row .k, :lang(si) .sum-total .k, :lang(si) .tag {
+  text-transform: none !important;
+}
+
+/* Prevent horizontal stats clipping in hero section on mobile screens */
+@media (max-width: 600px) {
+  :lang(si) .home-hero__facts dd {
+    white-space: normal !important;
+    line-height: 1.25 !important;
+  }
+  :lang(si) .home-hero__facts {
+    gap: 12px 10px !important;
+  }
+}
+
+/* Prevent services category tabs from clipping on mobile viewports */
+@media (max-width: 480px) {
+  :lang(si) .home-svc__cats {
+    gap: 2px !important;
+    padding: 3px !important;
+  }
+  :lang(si) .home-svc__cat {
+    font-size: 12px !important;
+    padding: 9px 12px !important;
+  }
+}
+

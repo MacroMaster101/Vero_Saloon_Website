@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { Icon } from '@/components/ui/icon';
+import { t } from '@/lib/i18n/translations';
 
 // Shared frame for all auth pages (sign in / sign up / forgot / reset):
 // the salon interior in an arched mirror frame with a live "open" chip,
@@ -9,9 +10,11 @@ import { Icon } from '@/components/ui/icon';
 export function AuthShell({
   back,
   children,
+  locale = 'en',
 }: {
   back?: { href: string; label: string };
   children: ReactNode;
+  locale?: string;
 }) {
   return (
     <div className="auth">
@@ -26,7 +29,7 @@ export function AuthShell({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/images/story/interior.png" alt="" />
         </div>
-        <div className="auth__chip"><span className="auth__dot" /> Open daily 10 AM – midnight<span className="auth__chip-loc">· Pasyala</span></div>
+        <div className="auth__chip"><span className="auth__dot" /> {t('Open daily 10 AM – midnight', locale)}<span className="auth__chip-loc">· {t('Pasyala', locale)}</span></div>
       </aside>
       <div className="auth__form">{children}</div>
     </div>

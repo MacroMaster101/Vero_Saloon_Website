@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { money } from '@/lib/format';
 import { servicePhoto } from '@/lib/service-photo';
+import { t } from '@/lib/i18n/translations';
 import type { Service } from '@/lib/supabase/types';
 
 type Audience = 'him' | 'her' | 'both';
@@ -20,17 +21,7 @@ export function audienceOf(s: Service): Audience {
   return 'both';
 }
 
-const CATS: { id: 'hair' | 'beauty'; label: string }[] = [
-  { id: 'hair', label: 'Hair' },
-  { id: 'beauty', label: 'Beauty & bridal' },
-];
-const AUDIENCES: { id: Audience; label: string }[] = [
-  { id: 'both', label: 'Everyone' },
-  { id: 'him', label: 'For him' },
-  { id: 'her', label: 'For her' },
-];
-
-function ServiceCard({ s }: { s: Service }) {
+function ServiceCard({ s, locale }: { s: Service; locale: string }) {
   const photo = servicePhoto(s);
   return (
     <div className="home-scard">
@@ -49,19 +40,29 @@ function ServiceCard({ s }: { s: Service }) {
       />
       <div className="home-scard__body">
         <div className="home-scard__top">
-          <b className="home-scard__name">{s.name}</b>
+          <b className="home-scard__name">{t(s.name, locale)}</b>
           <span className="home-scard__price">{money(s.price_lkr)}</span>
         </div>
-        {s.description && <p className="home-scard__desc">{s.description}</p>}
-        <span className="home-scard__dur">{s.duration_min} min</span>
+        {s.description && <p className="home-scard__desc">{t(s.description, locale)}</p>}
+        <span className="home-scard__dur">{s.duration_min} {t('min', locale)}</span>
       </div>
     </div>
   );
 }
 
-export function ServicesTabs({ services }: { services: Service[]; featured?: Service | null }) {
+export function ServicesTabs({ services, locale = 'en' }: { services: Service[]; featured?: Service | null; locale?: string }) {
   const [cat, setCat] = useState<'hair' | 'beauty'>('hair');
   const [aud, setAud] = useState<Audience>('both');
+
+  const CATS: { id: 'hair' | 'beauty'; label: string }[] = [
+    { id: 'hair', label: t('Hair services', locale) },
+    { id: 'beauty', label: t('Beauty & bridal', locale) },
+  ];
+  const AUDIENCES: { id: Audience; label: string }[] = [
+    { id: 'both', label: t('Everyone', locale) },
+    { id: 'him', label: t('For him', locale) },
+    { id: 'her', label: t('For her', locale) },
+  ];
 
   // Services in the chosen category, filtered by audience. "Everyone" shows all
   // in the category; Him/Her show gendered + unisex services.
@@ -109,12 +110,12 @@ export function ServicesTabs({ services }: { services: Service[]; featured?: Ser
       </div>
 
       {list.length === 0 ? (
-        <p className="home-lead home-svc__empty">No services in this group yet.</p>
+        <p className="home-lead home-svc__empty">{t('No services in this group yet.', locale)}</p>
       ) : (
         <>
-          <span className="home-swipe" aria-hidden="true">swipe</span>
+          <span className="home-swipe" aria-hidden="true">{t('swipe', locale)}</span>
           <div className="home-svc__cards">
-            {list.map((s) => <ServiceCard key={s.id} s={s} />)}
+            {list.map((s) => <ServiceCard key={s.id} s={s} locale={locale} />)}
           </div>
         </>
       )}

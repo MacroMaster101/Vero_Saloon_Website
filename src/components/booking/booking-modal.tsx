@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Service, Stylist } from '@/lib/supabase/types';
 import { BookingWizard } from './booking-wizard';
 import type { BookingPrefill } from './booking-provider';
+import { ComingSoon } from './coming-soon';
+import { t } from '@/lib/i18n/translations';
 
 export function BookingModal({
   open,
@@ -11,12 +13,14 @@ export function BookingModal({
   services,
   stylists,
   prefill,
+  locale = 'en',
 }: {
   open: boolean;
   onClose: () => void;
   services: Service[];
   stylists: Stylist[];
   prefill?: BookingPrefill | null;
+  locale?: string;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
   // The wizard reports whether "Back" is available + how to trigger it, so the
@@ -50,6 +54,8 @@ export function BookingModal({
 
   if (!open) return null;
 
+  const isComingSoon = process.env.NEXT_PUBLIC_COMING_SOON === 'true';
+
   return (
     <div className="home-modal" role="presentation">
       <div className="home-modal__backdrop" data-testid="booking-backdrop" onClick={onClose} />
@@ -63,23 +69,28 @@ export function BookingModal({
       >
         <div className="home-modal__head">
           <div className="home-modal__head-left">
-            {back && (
+            {!isComingSoon && back && (
               <button type="button" className="home-modal__back" onClick={back} aria-label="Go back a step">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <polyline points="15 18 9 12 15 6" />
                 </svg>
               </button>
             )}
-            <h2 id="booking-modal-title" className="home-modal__title">Book your visit</h2>
+            <h2 id="booking-modal-title" className="home-modal__title">{t('Book your visit', locale)}</h2>
           </div>
           <button type="button" className="home-modal__close" aria-label="Close booking" onClick={onClose}>×</button>
         </div>
-        <BookingWizard
-          services={services}
-          stylists={stylists}
-          prefill={prefill}
-          onBackChange={handleBackChange}
-        />
+        {isComingSoon ? (
+          <ComingSoon locale={locale} />
+        ) : (
+          <BookingWizard
+            services={services}
+            stylists={stylists}
+            prefill={prefill}
+            onBackChange={handleBackChange}
+            locale={locale}
+          />
+        )}
       </div>
     </div>
   );

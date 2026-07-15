@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { t } from '@/lib/i18n/translations';
 import type { BusinessHour } from '@/lib/supabase/types';
 
-export function LiveStatus({ hours }: { hours: BusinessHour[] }) {
+export function LiveStatus({ hours, locale = 'en' }: { hours: BusinessHour[]; locale?: string }) {
   const [status, setStatus] = useState<'open' | 'closed' | 'loading'>('loading');
 
   useEffect(() => {
@@ -40,7 +41,7 @@ export function LiveStatus({ hours }: { hours: BusinessHour[] }) {
     return (
       <div className="live-status-badge live-status-badge--loading">
         <span className="live-status-dot" />
-        <span>Checking Status...</span>
+        <span>{t('Checking status...', locale)}</span>
       </div>
     );
   }
@@ -49,7 +50,7 @@ export function LiveStatus({ hours }: { hours: BusinessHour[] }) {
     return (
       <div className="live-status-badge live-status-badge--open">
         <span className="live-status-dot" />
-        <span>Open Now</span>
+        <span>{t('Open now', locale)}</span>
       </div>
     );
   }
@@ -57,7 +58,7 @@ export function LiveStatus({ hours }: { hours: BusinessHour[] }) {
   return (
     <div className="live-status-badge live-status-badge--closed">
       <span className="live-status-dot" />
-      <span>Closed</span>
+      <span>{t('Closed', locale)}</span>
     </div>
   );
 }

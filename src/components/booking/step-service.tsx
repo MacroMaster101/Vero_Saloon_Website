@@ -2,21 +2,24 @@
 import type { Service } from '@/lib/supabase/types';
 import { money } from '@/lib/format';
 import { servicePhoto } from '@/lib/service-photo';
+import { t } from '@/lib/i18n/translations';
 
 export function StepService({
   services,
   selectedIds,
   onSelect,
+  locale = 'en',
 }: {
   services: Service[];
   selectedIds: string[];
   onSelect: (id: string) => void;
+  locale?: string;
 }) {
   return (
     <div className="step active" data-step="0">
-      <h3 className="step__title">What are you booking?</h3>
+      <h3 className="step__title">{t('What are you booking?', locale)}</h3>
       <p className="step__hint">
-        Pick one or more — we&apos;ll bundle them into a single visit. Add notes for your stylist at the end.
+        {t("Pick one or more — we'll bundle them into a single visit. Add notes for your stylist at the end.", locale)}
       </p>
       <div className="choices choices--grid" id="serviceList">
         {services.map((s) => {
@@ -50,9 +53,9 @@ export function StepService({
                 }}
               />
               <span className="choice__txt">
-                <b>{s.name}</b>
+                <b>{t(s.name, locale)}</b>
                 <small>
-                  {s.description} · {s.duration_min} min
+                  {s.description ? `${t(s.description, locale)} · ` : ''}{s.duration_min} {t('min', locale)}
                 </small>
               </span>
               <span className="choice__price">{money(s.price_lkr)}</span>

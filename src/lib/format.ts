@@ -5,11 +5,16 @@ export function money(n: number): string {
 }
 
 // minutes-from-midnight → "10:00 AM" / "12:00 AM" (1440 = midnight)
-export function minutesToLabel(min: number): string {
+export function minutesToLabel(min: number, locale?: string): string {
+  if (min === 1440 && locale === 'si') {
+    return 'මධ්‍යම රාත්‍රී 12:00';
+  }
   const m = min % 1440;
   const h24 = Math.floor(m / 60);
   const mm = m % 60;
-  const period = h24 < 12 || h24 === 24 ? 'AM' : 'PM';
+  const period = h24 < 12 || h24 === 24 
+    ? (locale === 'si' ? 'පෙ.ව.' : 'AM')
+    : (locale === 'si' ? 'ප.ව.' : 'PM');
   let h12 = h24 % 12; if (h12 === 0) h12 = 12;
   // 1440 (midnight next day) and 0 both render as 12:00 AM
   return `${h12}:${String(mm).padStart(2, '0')} ${period}`;

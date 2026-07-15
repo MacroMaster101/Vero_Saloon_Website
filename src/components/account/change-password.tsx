@@ -4,11 +4,12 @@ import { updatePassword } from '@/app/reset-password/actions';
 import { checkPassword } from '@/lib/auth/password';
 import { Icon } from '@/components/ui/icon';
 import { PasswordInput } from '@/components/auth/password-input';
+import { t } from '@/lib/i18n/translations';
 
 // Signed-in password change for the Settings popup. Reuses the recovery
 // flow's updatePassword action — both just set a new password on the session.
 // Google-only users can use it too: setting a password enables email sign-in.
-export function ChangePassword({ hasPassword = true, onPasswordSet }: { hasPassword?: boolean; onPasswordSet?: () => void }) {
+export function ChangePassword({ hasPassword = true, onPasswordSet, locale = 'en' }: { hasPassword?: boolean; onPasswordSet?: () => void; locale?: string }) {
   const [state, action] = useActionState(updatePassword, undefined);
   const [pw, setPw] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -31,11 +32,11 @@ export function ChangePassword({ hasPassword = true, onPasswordSet }: { hasPassw
     return (
       <div className="pw-done" role="status">
         <span className="pw-done__badge"><Icon name="check" className="ic" size={22} /></span>
-        <h4>{wasSet ? 'Password set' : 'Password updated'}</h4>
+        <h4>{wasSet ? t('Password set', locale) : t('Password updated', locale)}</h4>
         <p>
           {wasSet
-            ? 'You can now sign in with your email and this password — and Google still works too.'
-            : 'Your new password is ready to use next time you sign in.'}
+            ? t('You can now sign in with your email and this password — and Google still works too.', locale)
+            : t('Your new password is ready to use next time you sign in.', locale)}
         </p>
       </div>
     );
@@ -44,7 +45,7 @@ export function ChangePassword({ hasPassword = true, onPasswordSet }: { hasPassw
   return (
     <form action={action} style={{ marginBottom: 18 }}>
       <label className="pm__field">
-        <span>New password</span>
+        <span>{t('New password', locale)}</span>
         <PasswordInput name="password" autoComplete="new-password" value={pw} onChange={setPw} />
       </label>
       {pw.length > 0 && (
@@ -58,19 +59,19 @@ export function ChangePassword({ hasPassword = true, onPasswordSet }: { hasPassw
         </div>
       )}
       <label className="pm__field">
-        <span>Confirm new password</span>
+        <span>{t('Confirm new password', locale)}</span>
         <PasswordInput name="confirm" autoComplete="new-password" value={confirm} onChange={setConfirm} />
       </label>
       {confirm.length > 0 && (
         <p className={`match ${matches ? 'ok' : 'bad'}`} style={{ margin: '-6px 0 12px' }}>
-          {matches ? '✓ Passwords match' : '✗ Passwords don’t match'}
+          {matches ? `✓ ${t('Passwords match', locale)}` : `✗ ${t("Passwords don't match", locale)}`}
         </p>
       )}
 
       {state && 'error' in state && <p className="astatus astatus--err">{state.error}</p>}
 
       <button className="btn btn--primary" type="submit" disabled={!check.passed || !matches}>
-        {hasPassword ? 'Update password' : 'Set password'}
+        {hasPassword ? t('Update password', locale) : t('Set password', locale)}
       </button>
     </form>
   );

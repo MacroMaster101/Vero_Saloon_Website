@@ -13,9 +13,8 @@ import { Confirmation } from './confirmation';
 import { GuestRecentBookings } from './guest-recent';
 import { saveGuestBooking } from '@/lib/guest-bookings';
 import { money } from '@/lib/format';
+import { t } from '@/lib/i18n/translations';
 
-// Steps: 0 Service · 1 Stylist · 2 Date · 3 Time · 4 Details · (5 = confirmation)
-const STEP_LABELS = ['Service', 'Stylist', 'Date', 'Time', 'Details'] as const;
 const LAST_STEP = 4; // Details; step 5 is the confirmation screen
 const BOOK_HORIZON_DAYS = 60; // how far ahead the calendar lets you book
 
@@ -28,6 +27,7 @@ export function BookingWizard({
   stylists,
   prefill,
   onBackChange,
+  locale = 'en',
 }: {
   services: Service[];
   stylists: Stylist[];
@@ -35,6 +35,7 @@ export function BookingWizard({
   prefill?: BookingPrefill | null;
   /** Reports the header "Back" handler (null when Back isn't available). */
   onBackChange?: (back: (() => void) | null) => void;
+  locale?: string;
 }) {
   // Bookable date range for the calendar: today → today + horizon (salon-local).
   const { minDate, maxDate } = useMemo(() => {
@@ -63,6 +64,15 @@ export function BookingWizard({
   const [customerName, setCustomerName] = useState('');
   const [guestRefresh, setGuestRefresh] = useState(0);
 
+  // Steps: 0 Service · 1 Stylist · 2 Date · 3 Time · 4 Details · (5 = confirmation)
+  const stepLabels = useMemo(() => [
+    t('Service', locale),
+    t('Stylist', locale),
+    t('Date', locale),
+    t('Time', locale),
+    t('Details', locale)
+  ], [locale]);
+
   // The chosen services, in selection order. Drives the summary + combined total.
   const chosenServices = useMemo(
     () => serviceIds.map((id) => services.find((s) => s.id === id)).filter((s): s is Service => Boolean(s)),
@@ -76,37 +86,39 @@ export function BookingWizard({
     const first = chosenServices[0]!;
     const name = chosenServices.length === 1
       ? first.name
-      : `${first.name} + ${chosenServices.length - 1} more`;
+      : `${first.name} + ${chosenServices.length - 1} ${t('more', locale)}`;
     return {
       ...first,
       name,
       price_lkr: chosenServices.reduce((sum, s) => sum + s.price_lkr, 0),
       duration_min: chosenServices.reduce((sum, s) => sum + s.duration_min, 0),
     };
-  }, [chosenServices]);
+  }, [chosenServices, locale]);
 
   const stylistLabel = useMemo(() => {
     if (!stylistTouched) return null;
-    if (stylistId === null) return 'Any available';
-    return stylists.find((s) => s.id === stylistId)?.name ?? 'Any available';
-  }, [stylistTouched, stylistId, stylists]);
+    if (stylistId === null) return t('Any available', locale);
+    return stylists.find((s) => s.id === stylistId)?.name ?? t('Any available', locale);
+  }, [stylistTouched, stylistId, stylists, locale]);
 
   // "Mon, 7 Jul" for a chosen YYYY-MM-DD (parsed as a local date, no UTC drift).
   const dateLabel = useMemo(() => {
     if (!date) return null;
     const [y, m, d] = date.split('-').map(Number) as [number, number, number];
-    return new Date(y, m - 1, d).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
-  }, [date]);
+    return new Date(y, m - 1, d).toLocaleDateString(locale === 'si' ? 'si-LK' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  }, [date, locale]);
 
   const whenLabel = useMemo(() => {
     if (!date || !time || !dateLabel) return null;
     const [h, m] = time.split(':').map(Number) as [number, number];
-    const period = h < 12 ? 'AM' : 'PM';
+    const period = h < 12 
+      ? (locale === 'si' ? 'පෙ.ව.' : 'AM')
+      : (locale === 'si' ? 'ප.ව.' : 'PM');
     let h12 = h % 12;
     if (h12 === 0) h12 = 12;
-    const t = `${h12}:${String(m).padStart(2, '0')} ${period}`;
-    return `${dateLabel} · ${t}`;
-  }, [date, time, dateLabel]);
+    const tLabel = `${h12}:${String(m).padStart(2, '0')} ${period}`;
+    return `${dateLabel} · ${tLabel}`;
+  }, [date, time, dateLabel, locale]);
 
   // Fetch availability whenever we're on the date step and inputs change.
   const refetch = (d: string | null) => {
@@ -140,13 +152,13 @@ export function BookingWizard({
 
   // What the user still needs to do on the current step — shown next to Continue
   // when they try to advance before it's complete.
-  const STEP_NEEDS = [
-    'Pick at least one service to continue.',
-    'Choose a stylist (or “Any stylist”) to continue.',
-    'Pick a day to continue.',
-    'Pick a time to continue.',
-    'Fill in your details to continue.',
-  ] as const;
+  const stepNeeds = useMemo(() => [
+    t('Pick at least one service to continue.', locale),
+    t('Choose a stylist (or "Any stylist") to continue.', locale),
+    t('Pick a day to continue.', locale),
+    t('Pick a time to continue.', locale),
+    t('Fill in your details to continue.', locale),
+  ], [locale]);
 
   // A one-shot "why you can't continue" nudge: message + a shake on the content.
   const [needHint, setNeedHint] = useState<string | null>(null);
@@ -166,10 +178,10 @@ export function BookingWizard({
     setTime(null);
   }
 
+  // Clicking the already-selected stylist again clears the choice (toggle
+  // off), matching the Service step. Resetting `touched` makes the step
+  // invalid again until something is picked.
   function handleStylist(id: string | null) {
-    // Clicking the already-selected stylist again clears the choice (toggle
-    // off), matching the Service step. Resetting `touched` makes the step
-    // invalid again until something is picked.
     if (stylistTouched && stylistId === id) {
       setStylistId(null);
       setStylistTouched(false);
@@ -188,9 +200,9 @@ export function BookingWizard({
     setTime(null);
   }
 
-  function handlePickTime(t: string) {
+  function handlePickTime(tLabel: string) {
     // Clicking the selected time again clears it (toggle off).
-    setTime((prev) => (prev === t ? null : t));
+    setTime((prev) => (prev === tLabel ? null : tLabel));
   }
 
   function goBack() {
@@ -205,10 +217,9 @@ export function BookingWizard({
     onBackChange?.(step > 0 && step <= LAST_STEP ? goBack : null);
   }, [step, onBackChange]);
 
-
   // Flash the "you still need X" hint and shake the current step's content.
   function nudge() {
-    setNeedHint(STEP_NEEDS[step] ?? null);
+    setNeedHint(stepNeeds[step] ?? null);
     setShake(true);
     window.setTimeout(() => setShake(false), 450);
   }
@@ -290,7 +301,7 @@ export function BookingWizard({
     setCustomerName('');
   }
 
-  const nextLabel = step === LAST_STEP ? 'Confirm booking' : 'Continue';
+  const nextLabel = step === LAST_STEP ? t('Confirm booking', locale) : t('Continue', locale);
 
   return (
     <>
@@ -306,12 +317,13 @@ export function BookingWizard({
           variant="bar"
           chips={chosenServices}
           onRemoveService={step === 0 ? removeService : undefined}
+          locale={locale}
         />
       )}
       <div className={`book__main${shake ? ' shake' : ''}`}>
         {step <= LAST_STEP && (
           <div className="steps" id="steps">
-            {STEP_LABELS.map((label, i) => {
+            {stepLabels.map((label, i) => {
               const cls = step > i ? 'done' : step === i ? 'active' : '';
               return (
                 <div className={`steps__item${cls ? ' ' + cls : ''}`} data-step={i} key={label}>
@@ -324,7 +336,7 @@ export function BookingWizard({
         )}
 
         {step === 0 && (
-          <StepService services={services} selectedIds={serviceIds} onSelect={handleService} />
+          <StepService services={services} selectedIds={serviceIds} onSelect={handleService} locale={locale} />
         )}
         {step === 1 && (
           <StepStylist
@@ -332,6 +344,7 @@ export function BookingWizard({
             selectedId={stylistId}
             touched={stylistTouched}
             onSelect={handleStylist}
+            locale={locale}
           />
         )}
         {step === 2 && (
@@ -340,6 +353,7 @@ export function BookingWizard({
             minDate={minDate}
             maxDate={maxDate}
             onPickDate={handlePickDate}
+            locale={locale}
           />
         )}
         {step === 3 && (
@@ -349,15 +363,16 @@ export function BookingWizard({
             loading={loadingSlots}
             selectedTime={time}
             onPickTime={handlePickTime}
+            locale={locale}
           />
         )}
         {/* Keep details mounted from the Details step onward so RHF state
             survives a slot_taken bounce back to Time and forward again. */}
         <div style={{ display: step === 4 ? 'block' : 'none' }}>
-          <StepDetails ref={detailsRef} prefill={prefill} onValidityChange={setDetailsValid} active={step === 4} />
+          <StepDetails ref={detailsRef} prefill={prefill} onValidityChange={setDetailsValid} active={step === 4} locale={locale} />
         </div>
         {step === LAST_STEP + 1 && result && (
-          <Confirmation result={result} customerName={customerName} onRestart={restart} />
+          <Confirmation result={result} customerName={customerName} onRestart={restart} locale={locale} />
         )}
       </div>
 
@@ -368,10 +383,11 @@ export function BookingWizard({
           whenLabel={whenLabel}
           chips={chosenServices}
           onRemoveService={step === 0 ? removeService : undefined}
+          locale={locale}
         />
       )}
     </div>
-    <GuestRecentBookings refreshKey={guestRefresh} />
+    <GuestRecentBookings refreshKey={guestRefresh} locale={locale} />
     </div>
 
     {/* Fixed panel footer — pinned to the bottom of the popup window itself,
@@ -385,7 +401,7 @@ export function BookingWizard({
         ) : (
           <span className="book__nav-total" aria-live="polite">
             {step === 0 && (
-              <span className="book__nav-count">{chosenServices.length} selected</span>
+              <span className="book__nav-count">{t('{count} selected', locale).replace('{count}', String(chosenServices.length))}</span>
             )}
             <b>{money(service?.price_lkr ?? 0)}</b>
           </span>
@@ -400,7 +416,7 @@ export function BookingWizard({
           disabled={submitting}
           onClick={goNext}
         >
-          {submitting ? 'Booking…' : nextLabel}
+          {submitting ? t('Booking…', locale) : nextLabel}
         </button>
       </div>
     )}
