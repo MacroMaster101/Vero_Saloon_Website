@@ -9,6 +9,7 @@ type BookingCtx = {
   enabled: boolean;
   openBooking: () => void;
   closeBooking: () => void;
+  locale: string;
 };
 
 const Ctx = createContext<BookingCtx | null>(null);
@@ -26,12 +27,14 @@ export function BookingProvider({
   stylists,
   enabled,
   prefill,
+  locale = 'en',
   children,
 }: {
   services: Service[];
   stylists: Stylist[];
   enabled: boolean;
   prefill?: BookingPrefill | null;
+  locale?: string;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -42,15 +45,15 @@ export function BookingProvider({
   const closeBooking = useCallback(() => setOpen(false), []);
 
   const value = useMemo(
-    () => ({ open, enabled, openBooking, closeBooking }),
-    [open, enabled, openBooking, closeBooking],
+    () => ({ open, enabled, openBooking, closeBooking, locale }),
+    [open, enabled, openBooking, closeBooking, locale],
   );
 
   return (
     <Ctx.Provider value={value}>
       {children}
       {enabled && (
-        <BookingModal open={open} onClose={closeBooking} services={services} stylists={stylists} prefill={prefill} />
+        <BookingModal open={open} onClose={closeBooking} services={services} stylists={stylists} prefill={prefill} locale={locale} />
       )}
     </Ctx.Provider>
   );

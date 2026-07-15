@@ -4,6 +4,7 @@ import { Icon } from '@/components/ui/icon';
 import { getAvailability } from '@/app/book/actions';
 import { cancelMyBooking, rescheduleMyBooking } from './booking-actions';
 import { RateBooking } from '@/components/account/rate-booking';
+import { t } from '@/lib/i18n/translations';
 
 export type AccountBooking = {
   id: string;
@@ -16,38 +17,60 @@ export type AccountBooking = {
 };
 
 const TZ = 'Asia/Colombo';
-const whenFmt = new Intl.DateTimeFormat('en-LK', { timeZone: TZ, weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true });
-const slotFmt = new Intl.DateTimeFormat('en-LK', { timeZone: TZ, hour: 'numeric', minute: '2-digit', hour12: true });
-const TAG_CLASS: Record<string, string> = { confirmed: 'tag--confirmed', completed: 'tag--completed', no_show: 'tag--no_show', cancelled: 'tag--cancelled' };
+const getWhenFmt = (locale: string) =>
+  new Intl.DateTimeFormat(locale === 'si' ? 'si-LK' : 'en-LK', {
+    timeZone: TZ,
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+const getSlotFmt = (locale: string) =>
+  new Intl.DateTimeFormat(locale === 'si' ? 'si-LK' : 'en-LK', {
+    timeZone: TZ,
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+const TAG_CLASS: Record<string, string> = {
+  confirmed: 'tag--confirmed',
+  completed: 'tag--completed',
+  no_show: 'tag--no_show',
+  cancelled: 'tag--cancelled',
+};
 
 // Next 7 salon-local days as YYYY-MM-DD value + short label.
-function buildDates(): { value: string; label: string }[] {
+function buildDates(locale: string): { value: string; label: string }[] {
   const out: { value: string; label: string }[] = [];
   const now = new Date();
   for (let i = 0; i < 7; i++) {
     const d = new Date(now);
     d.setDate(now.getDate() + i);
     const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    out.push({ value, label: i === 0 ? 'Today' : d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' }) });
+    out.push({
+      value,
+      label: i === 0 ? t('Today', locale) : d.toLocaleDateString(locale === 'si' ? 'si-LK' : 'en-US', { weekday: 'short', day: 'numeric', month: 'short' }),
+    });
   }
   return out;
 }
 
-function slotLabel(time: string): string {
+function slotLabel(time: string, locale: string): string {
   const [h, m] = time.split(':').map(Number);
   const d = new Date(Date.UTC(2000, 0, 1, h!, m!));
-  return slotFmt.format(d);
+  return getSlotFmt(locale).format(d);
 }
 
-export function BookingsList({ bookings }: { bookings: AccountBooking[] }) {
+export function BookingsList({ bookings, locale = 'en' }: { bookings: AccountBooking[]; locale?: string }) {
   const [items, setItems] = useState<AccountBooking[]>(bookings);
   const [rescheduleId, setRescheduleId] = useState<string | null>(null);
   const [rateId, setRateId] = useState<string | null>(null);
   const [ratedIds, setRatedIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [busy, startBusy] = useTransition();
-  // Capture "now" once so render stays pure; a session won't meaningfully cross
-  // the boundary, and actions re-verify the time server-side anyway.
   const [now] = useState(() => Date.now());
 
   function upcomingConfirmed(b: AccountBooking) {
@@ -59,7 +82,8 @@ export function BookingsList({ bookings }: { bookings: AccountBooking[] }) {
   }
 
   function cancel(b: AccountBooking) {
-    if (!window.confirm(`Cancel booking ${b.reference}?`)) return;
+    const confirmMsg = t('Cancel booking {ref}?', locale).replace('{ref}', b.reference);
+    if (!window.confirm(confirmMsg)) return;
     setError(null);
     startBusy(async () => {
       const res = await cancelMyBooking(b.id);
@@ -68,7 +92,7 @@ export function BookingsList({ bookings }: { bookings: AccountBooking[] }) {
     });
   }
 
-  if (items.length === 0) return <p className="step__hint">No bookings yet.</p>;
+  if (items.length === 0) return <p className="step__hint">{t('No bookings yet.', locale)}</p>;
 
   return (
     <div style={{ maxWidth: 560 }}>
@@ -77,22 +101,22 @@ export function BookingsList({ bookings }: { bookings: AccountBooking[] }) {
         {items.map((b) => (
           <li key={b.id} className="bk-card" style={{ flexWrap: 'wrap' }}>
             <span className="bk-card__ic"><Icon name="scissors" className="ic-lg" /></span>
-            <div className="bk-card__info"><b>{b.reference}</b><span>{whenFmt.format(new Date(b.starts_at))}</span></div>
-            <span className={`tag ${TAG_CLASS[b.status] ?? ''}`} style={{ marginLeft: 'auto' }}>{b.status}</span>
+            <div className="bk-card__info"><b>{b.reference}</b><span>{getWhenFmt(locale).format(new Date(b.starts_at))}</span></div>
+            <span className={`tag ${TAG_CLASS[b.status] ?? ''}`} style={{ marginLeft: 'auto' }}>{t(b.status, locale)}</span>
             {upcomingConfirmed(b) && (
               <div className="bk-card__actions">
                 <button type="button" className="btn btn--ghost" disabled={busy} onClick={() => { setError(null); setRescheduleId(rescheduleId === b.id ? null : b.id); }}>
-                  <Icon name="calendar" className="ic" /> Reschedule
+                  <Icon name="calendar" className="ic" /> {t('Reschedule', locale)}
                 </button>
                 <button type="button" className="btn btn--ghost" disabled={busy} onClick={() => cancel(b)}>
-                  <Icon name="xmark" className="ic" /> Cancel
+                  <Icon name="xmark" className="ic" /> {t('Cancel', locale)}
                 </button>
               </div>
             )}
             {canReview(b) && (
               <div className="bk-card__actions">
                 <button type="button" className="btn btn--ghost" onClick={() => { setError(null); setRateId(rateId === b.id ? null : b.id); }}>
-                  <Icon name="check" className="ic" /> Rate your stylist
+                  <Icon name="check" className="ic" /> {t('Rate your stylist', locale)}
                 </button>
               </div>
             )}
@@ -101,6 +125,7 @@ export function BookingsList({ bookings }: { bookings: AccountBooking[] }) {
                 bookingId={b.id}
                 onClose={() => setRateId(null)}
                 onDone={() => { setRatedIds((s) => new Set(s).add(b.id)); setRateId(null); }}
+                locale={locale}
               />
             )}
             {rescheduleId === b.id && (
@@ -114,6 +139,7 @@ export function BookingsList({ bookings }: { bookings: AccountBooking[] }) {
                 }}
                 onError={setError}
                 startBusy={startBusy}
+                locale={locale}
               />
             )}
           </li>
@@ -124,7 +150,7 @@ export function BookingsList({ bookings }: { bookings: AccountBooking[] }) {
 }
 
 function ReschedulePanel({
-  booking, busy, onClose, onDone, onError, startBusy,
+  booking, busy, onClose, onDone, onError, startBusy, locale,
 }: {
   booking: AccountBooking;
   busy: boolean;
@@ -132,8 +158,9 @@ function ReschedulePanel({
   onDone: (startsAt: string) => void;
   onError: (msg: string | null) => void;
   startBusy: (cb: () => Promise<void>) => void;
+  locale: string;
 }) {
-  const [dates] = useState(buildDates);
+  const [dates] = useState(() => buildDates(locale));
   const [date, setDate] = useState<string>(dates[0]!.value);
   const [slots, setSlots] = useState<string[]>([]);
   const [loading, startLoad] = useTransition();
@@ -187,22 +214,22 @@ function ReschedulePanel({
         ))}
       </div>
       {loading ? (
-        <p className="step__hint">Loading times…</p>
+        <p className="step__hint">{t('Loading times…', locale)}</p>
       ) : slots.length === 0 ? (
-        <p className="step__hint">No open times that day. Pick another date.</p>
+        <p className="step__hint">{t('No open times that day. Pick another date.', locale)}</p>
       ) : (
         <div className="bk-resched__slots">
           {slots.map((s) => (
             <button key={s} type="button" className={`slot${time === s ? ' sel' : ''}`} onClick={() => setTime(s)}>
-              {slotLabel(s)}
+              {slotLabel(s, locale)}
             </button>
           ))}
         </div>
       )}
       <div className="bk-resched__actions">
-        <button type="button" className="btn btn--ghost" onClick={onClose} disabled={busy}>Close</button>
+        <button type="button" className="btn btn--ghost" onClick={onClose} disabled={busy}>{t('Close', locale)}</button>
         <button type="button" className="btn btn--primary" onClick={confirm} disabled={!time || busy}>
-          {busy ? 'Saving…' : 'Confirm new time'}
+          {busy ? t('Saving…', locale) : t('Confirm new time', locale)}
         </button>
       </div>
     </div>

@@ -1,24 +1,27 @@
 'use client';
 import type { Stylist } from '@/lib/supabase/types';
 import { stylistAvatarSrc, ratingLabel } from '@/lib/stylist-card';
+import { t } from '@/lib/i18n/translations';
 
 export function StepStylist({
   stylists,
   selectedId,
   touched,
   onSelect,
+  locale = 'en',
 }: {
   stylists: Stylist[];
   selectedId: string | null;
   touched: boolean;
   /** id === null → "No preference" */
   onSelect: (id: string | null) => void;
+  locale?: string;
 }) {
   const noPref = touched && selectedId === null;
   return (
     <div className="step active" data-step="1">
-      <h3 className="step__title">Who&apos;s styling you?</h3>
-      <p className="step__hint">Pick your stylist — or let us match you with whoever&apos;s free.</p>
+      <h3 className="step__title">{t("Who's styling you?", locale)}</h3>
+      <p className="step__hint">{t("Pick your stylist — or let us match you with whoever's free.", locale)}</p>
       <div className="choices choices--2 stylist-grid" id="barberList">
         {/* "Any stylist" leads the grid as a clear, first-class option so the
             auto-assign path is obvious and consistent with the stylist cards. */}
@@ -36,13 +39,13 @@ export function StepStylist({
           <span className="stylist-card__top">
             <span className="stylist-card__av stylist-card__av--any" aria-hidden="true">✦</span>
             <span className="stylist-card__head">
-              <b>Any stylist</b>
-              <small>First available</small>
-              <span className="stylist-card__rating is-new">Soonest slots</span>
+              <b>{t('Any stylist', locale)}</b>
+              <small>{t('First available', locale)}</small>
+              <span className="stylist-card__rating is-new">{t('Soonest slots', locale)}</span>
             </span>
           </span>
           <span className="stylist-card__tags stylist-card__tags--any">
-            <span className="stylist-card__tag">Fastest booking</span>
+            <span className="stylist-card__tag">{t('Fastest booking', locale)}</span>
           </span>
         </button>
         {stylists.map((st) => {
@@ -68,7 +71,7 @@ export function StepStylist({
                 <img className="stylist-card__av" src={stylistAvatarSrc(st)} alt="" />
                 <span className="stylist-card__head">
                   <b>{st.name}</b>
-                  <small>{st.role}</small>
+                  <small>{t(st.role, locale)}</small>
                   <span className={`stylist-card__rating${rated ? '' : ' is-new'}`}>
                     {rated ? (
                       <>
@@ -76,15 +79,15 @@ export function StepStylist({
                         <span className="stylist-card__reviews">{rating.reviews}</span>
                       </>
                     ) : (
-                      'New to Vero'
+                      t('New to Vero', locale)
                     )}
                   </span>
                 </span>
               </span>
               {tags.length > 0 && (
                 <span className="stylist-card__tags">
-                  {tags.map((t) => (
-                    <span key={t} className="stylist-card__tag">{t}</span>
+                  {tags.map((tVal) => (
+                    <span key={tVal} className="stylist-card__tag">{t(tVal, locale)}</span>
                   ))}
                 </span>
               )}

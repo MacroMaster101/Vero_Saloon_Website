@@ -5,6 +5,7 @@ import type { Service, Stylist } from '@/lib/supabase/types';
 import { BookingWizard } from './booking-wizard';
 import type { BookingPrefill } from './booking-provider';
 import { ComingSoon } from './coming-soon';
+import { t } from '@/lib/i18n/translations';
 
 export function BookingModal({
   open,
@@ -12,12 +13,14 @@ export function BookingModal({
   services,
   stylists,
   prefill,
+  locale = 'en',
 }: {
   open: boolean;
   onClose: () => void;
   services: Service[];
   stylists: Stylist[];
   prefill?: BookingPrefill | null;
+  locale?: string;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
   // The wizard reports whether "Back" is available + how to trigger it, so the
@@ -73,18 +76,19 @@ export function BookingModal({
                 </svg>
               </button>
             )}
-            <h2 id="booking-modal-title" className="home-modal__title">Book your visit</h2>
+            <h2 id="booking-modal-title" className="home-modal__title">{t('Book your visit', locale)}</h2>
           </div>
           <button type="button" className="home-modal__close" aria-label="Close booking" onClick={onClose}>×</button>
         </div>
         {isComingSoon ? (
-          <ComingSoon />
+          <ComingSoon locale={locale} />
         ) : (
           <BookingWizard
             services={services}
             stylists={stylists}
             prefill={prefill}
             onBackChange={handleBackChange}
+            locale={locale}
           />
         )}
       </div>

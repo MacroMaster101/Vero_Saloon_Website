@@ -17,11 +17,13 @@ export function AccountModalsProvider({
   profile,
   userMetadata,
   hasPassword = true,
+  locale = 'en',
   children,
 }: {
   profile: Profile | null;
   userMetadata?: UserMetadata | null;
   hasPassword?: boolean;
+  locale?: string;
   children: ReactNode;
 }) {
   const [modal, setModal] = useState<AccountModal | null>(null);
@@ -45,14 +47,16 @@ export function AccountModalsProvider({
             initialPhone={profile.phone ?? ''}
             userMetadata={userMetadata}
             email={profile.email}
+            locale={locale}
           />
-          <BookingsModal open={modal === 'bookings'} onClose={close} />
+          <BookingsModal open={modal === 'bookings'} onClose={close} locale={locale} />
           <SettingsModal
             open={modal === 'settings'}
             onClose={close}
             canDelete={profile.role === 'user'}
             hasPassword={accountHasPassword}
             onPasswordSet={() => setPasswordSet(true)}
+            locale={locale}
           />
         </>
       )}

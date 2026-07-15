@@ -1,6 +1,8 @@
 'use client';
 
-export function ComingSoon() {
+import { t } from '@/lib/i18n/translations';
+
+export function ComingSoon({ locale = 'en' }: { locale?: string }) {
   return (
     <div className="home-modal__body home-modal__body--done">
       <div className="confirm" style={{ padding: '24px 8px', textAlign: 'center' }}>
@@ -46,7 +48,7 @@ export function ComingSoon() {
           WebkitTextFillColor: 'transparent',
           display: 'inline-block'
         }}>
-          Online Booking Coming Soon
+          {t('Online Booking Coming Soon', locale)}
         </h3>
         
         <p style={{ 
@@ -56,8 +58,7 @@ export function ComingSoon() {
           maxWidth: '420px',
           margin: '0 auto 28px'
         }}>
-          We are putting the final touches on our online booking platform. 
-          In the meantime, you can schedule your visit by calling us or sending a message on WhatsApp!
+          {t('We are putting the final touches on our online booking platform. In the meantime, you can schedule your visit by calling us or sending a message on WhatsApp!', locale)}
         </p>
 
         {/* ── Contact Options ── */}
@@ -84,7 +85,7 @@ export function ComingSoon() {
             <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
             </svg>
-            Message on WhatsApp
+            {t('Message on WhatsApp', locale)}
           </a>
 
           {/* Call option */}
@@ -108,7 +109,7 @@ export function ComingSoon() {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
             </svg>
-            Call Salon (077 369 9620)
+            {t('Call Salon (077 369 9620)', locale)}
           </a>
         </div>
 
@@ -124,11 +125,11 @@ export function ComingSoon() {
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '4px' }}>
             <span>📍</span>
-            <span>Attanagalla Road, Pasyala</span>
+            <span>{t('Attanagalla Road, Pasyala', locale)}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
             <span>🕙</span>
-            <span>Open Daily: 10:00 AM – 12:00 AM</span>
+            <span>{t('Open Daily: 10:00 AM – 12:00 AM', locale)}</span>
           </div>
         </div>
       </div>

@@ -6,6 +6,7 @@ import { signUpWithPassword } from './actions';
 import { checkPassword } from '@/lib/auth/password';
 import { AuthShell } from '@/components/auth/auth-shell';
 import { PasswordInput } from '@/components/auth/password-input';
+import { t } from '@/lib/i18n/translations';
 
 function GoogleMark() {
   return (
@@ -18,7 +19,7 @@ function GoogleMark() {
   );
 }
 
-export function SignupForm({ next, prefillEmail = '' }: { next: string; prefillEmail?: string }) {
+export function SignupForm({ next, prefillEmail = '', locale = 'en' }: { next: string; prefillEmail?: string; locale?: string }) {
   const [state, action] = useActionState(signUpWithPassword, undefined);
   const [pw, setPw] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -30,35 +31,35 @@ export function SignupForm({ next, prefillEmail = '' }: { next: string; prefillE
 
   if (state && 'ok' in state) {
     return (
-      <AuthShell back={{ href: '/', label: 'Back to home' }}>
-          <span className="eyebrow">Check your email</span>
-          <h1 className="h-section auth__title">Confirm your <em>account</em></h1>
-          <p className="auth__lead">We sent a confirmation link to <b>{state.email}</b>. Click it to activate your account, then sign in.</p>
-          <p className="auth__alt" style={{ textAlign: 'left' }}><Link href={loginHref}>← Back to sign in</Link></p>
+      <AuthShell back={{ href: '/', label: t('Back to home', locale) }} locale={locale}>
+          <span className="eyebrow">{t('Check your email', locale)}</span>
+          <h1 className="h-section auth__title">{t('Confirm your', locale)} <em>{t('account', locale)}</em></h1>
+          <p className="auth__lead">{t('We sent a confirmation link to', locale)} <b>{state.email}</b>. {t('Click it to activate your account, then sign in.', locale)}</p>
+          <p className="auth__alt" style={{ textAlign: 'left' }}><Link href={loginHref}>← {t('Back to sign in', locale)}</Link></p>
       </AuthShell>
     );
   }
 
   return (
-    <AuthShell back={{ href: '/', label: 'Back to home' }}>
-        <span className="eyebrow">New here</span>
-        <h1 className="h-section auth__title">Join <em>Vero</em></h1>
-        <p className="auth__lead">Book faster and keep every visit in one place.</p>
+    <AuthShell back={{ href: '/', label: t('Back to home', locale) }} locale={locale}>
+        <span className="eyebrow">{t('New here', locale)}</span>
+        <h1 className="h-section auth__title">{t('Join', locale)} <em>Vero</em></h1>
+        <p className="auth__lead">{t('Book faster and keep every visit in one place.', locale)}</p>
 
         <form action={signInWithGoogle}>
           <input type="hidden" name="next" value={next} />
-          <button className="btn btn--google btn--lg" style={{ width: '100%' }} type="submit"><GoogleMark /> Continue with Google</button>
+          <button className="btn btn--google btn--lg" style={{ width: '100%' }} type="submit"><GoogleMark /> {t('Continue with Google', locale)}</button>
         </form>
 
-        <div className="divider">or with email</div>
+        <div className="divider">{t('or with email', locale)}</div>
 
         <form action={action}>
           <input type="hidden" name="next" value={next} />
-          <div className="field"><label htmlFor="su-name">Full name</label><input id="su-name" name="full_name" placeholder="e.g. Nimal Perera" autoComplete="name" required /></div>
-          <div className="field"><label htmlFor="su-email">Email</label><input id="su-email" name="email" type="email" placeholder="verosalon@gmail.com" autoComplete="email" defaultValue={prefillEmail} required /></div>
+          <div className="field"><label htmlFor="su-name">{t('Full name', locale)}</label><input id="su-name" name="full_name" placeholder="e.g. Nimal Perera" autoComplete="name" required /></div>
+          <div className="field"><label htmlFor="su-email">{t('Email', locale)}</label><input id="su-email" name="email" type="email" placeholder="verosalon@gmail.com" autoComplete="email" defaultValue={prefillEmail} required /></div>
 
           <div className="field">
-            <label htmlFor="su-pw">Password</label>
+            <label htmlFor="su-pw">{t('Password', locale)}</label>
             <PasswordInput id="su-pw" name="password" autoComplete="new-password" required value={pw} onChange={setPw} />
             <div className={`pwmeta${pw ? ' show' : ''}`}>
               <div>
@@ -73,18 +74,18 @@ export function SignupForm({ next, prefillEmail = '' }: { next: string; prefillE
           </div>
 
           <div className="field">
-            <label htmlFor="su-cf">Confirm password</label>
+            <label htmlFor="su-cf">{t('Confirm password', locale)}</label>
             <PasswordInput id="su-cf" name="confirm" autoComplete="new-password" required value={confirm} onChange={setConfirm} />
             {confirm.length > 0 && (
-              <p className={`match ${matches ? 'ok' : 'bad'}`}>{matches ? '✓ Passwords match' : '✗ Passwords don’t match'}</p>
+              <p className={`match ${matches ? 'ok' : 'bad'}`}>{matches ? `✓ ${t('Passwords match', locale)}` : `✗ ${t('Passwords don\'t match', locale)}`}</p>
             )}
           </div>
 
           {state?.error && <p style={{ color: 'var(--error)', margin: '0 0 12px' }}>{state.error}</p>}
-          <button className="btn btn--primary btn--lg" style={{ width: '100%' }} type="submit" disabled={!check.passed || !matches}>Create account</button>
+          <button className="btn btn--primary btn--lg" style={{ width: '100%' }} type="submit" disabled={!check.passed || !matches}>{t('Create account', locale)}</button>
         </form>
 
-        <p className="auth__alt">Already have an account? <Link href={loginHref}>Sign in →</Link></p>
+        <p className="auth__alt">{t('Already have an account?', locale)} <Link href={loginHref}>{t('Sign in →', locale)}</Link></p>
     </AuthShell>
   );
 }

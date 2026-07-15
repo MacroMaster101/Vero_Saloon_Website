@@ -1,3 +1,7 @@
+import { cookies } from 'next/headers';
+import { t } from '@/lib/i18n/translations';
+import { LocaleProvider } from '@/lib/i18n/locale-context';
+import { LangToggle } from '@/components/theme/lang-toggle';
 import { BookingProvider } from '@/components/booking/booking-provider';
 import { AccountModalsProvider } from '@/components/account/account-modals';
 import { BookButton } from '@/components/site/book-button';
@@ -86,6 +90,38 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
       getProfile(),
     ]);
 
+  const cookieStore = await cookies();
+  const locale = cookieStore.get('locale')?.value || 'en';
+
+  const translatedNavLinks = NAV_LINKS.map(l => ({ ...l, label: t(l.label, locale) }));
+  const translatedStrip = STRIP.map(s => t(s, locale));
+  const translatedSteps = STEPS.map(s => ({ h: t(s.h, locale), p: t(s.p, locale) }));
+  const translatedFaqs = FAQS.map(f => ({ q: t(f.q, locale), a: t(f.a, locale) }));
+  const translatedDays = DAYS.map(d => ({ ...d, label: t(d.label, locale) }));
+
+  if (locale === 'si') {
+    hero.eyebrow = t(hero.eyebrow, locale);
+    hero.line1 = t(hero.line1, locale);
+    hero.line2Em = t(hero.line2Em, locale);
+    hero.line3 = t(hero.line3, locale);
+    hero.lead = t(hero.lead, locale);
+
+    story.eyebrow = t(story.eyebrow, locale);
+    story.heading = t(story.heading, locale);
+    story.paragraphs = story.paragraphs.map((p) => t(p, locale));
+    story.sign = t(story.sign, locale);
+
+    stats.cards = stats.cards.map((c) => ({ ...c, label: t(c.label, locale), value: t(c.value, locale) }));
+
+    cta.title = t(cta.title, locale);
+    cta.sub = t(cta.sub, locale);
+    cta.phoneLabel = t(cta.phoneLabel, locale);
+
+    contact.address = t(contact.address, locale);
+    contact.plusCode = t(contact.plusCode, locale);
+    contact.footerBlurb = t(contact.footerBlurb, locale);
+  }
+
   const sb = await createClient();
   const { data: { user } } = await sb.auth.getUser();
   const userMetadata = user?.user_metadata ?? null;
@@ -112,17 +148,19 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
         : profile.role === 'staff'
           ? '/staff' // /admin/schedule is admin-only; staff's surface is /staff
           : null;
-  const accountLabel = profile?.role === 'staff' ? 'Schedule' : profile?.role === 'admin' ? 'Admin' : profile?.role === 'owner' ? 'My shop' : 'Account';
+  const accountLabel = profile?.role === 'staff' ? t('Schedule', locale) : profile?.role === 'admin' ? t('Admin', locale) : profile?.role === 'owner' ? t('My shop', locale) : t('Account', locale);
   const accountAvatar = profile ? avatarSrc(userMetadata, profile.email ?? profile.fullName ?? 'guest') : null;
 
   return (
+    <LocaleProvider locale={locale}>
     <BookingProvider
       services={services}
       stylists={stylists}
       enabled={isCustomer}
       prefill={profile ? { name: profile.fullName ?? '', phone: profile.phone ?? '', email: profile.email ?? '' } : null}
+      locale={locale}
     >
-      <AccountModalsProvider profile={profile} userMetadata={userMetadata} hasPassword={hasPassword}>
+      <AccountModalsProvider profile={profile} userMetadata={userMetadata} hasPassword={hasPassword} locale={locale}>
       <div className="home" id="top">
         <HomeEffects />
 
@@ -142,20 +180,21 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
               <span className="home-brand__mark" aria-hidden="true">V</span>
               <span className="home-brand__name">
                 <b>Vero Salon</b>
-                <small>Unisex · Pasyala</small>
+                <small>{t('Unisex', locale)} · {t('Pasyala', locale)}</small>
               </span>
             </a>
 
             <nav className="home-nav" aria-label="Primary">
-              {NAV_LINKS.map((l) => (
+              {translatedNavLinks.map((l) => (
                 <a key={l.href} href={l.href}>{l.label}</a>
               ))}
             </nav>
 
             <div className="home-header__actions">
+              <LangToggle currentLocale={locale} className="home-header__lang" />
               <ThemeToggle />
-              <NavAuth profile={profile} userMetadata={userMetadata} />
-              <BookButton variant="primary" className="home-header__book">Book now</BookButton>
+              <NavAuth profile={profile} userMetadata={userMetadata} locale={locale} />
+              <BookButton variant="primary" className="home-header__book">{t('Book now', locale)}</BookButton>
             </div>
           </div>
         </header>
@@ -173,21 +212,21 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
                 </h1>
                 <p className="home-hero__lead">{hero.lead}</p>
                 <div className="home-hero__actions">
-                  <BookButton variant="primary">Book a visit</BookButton>
-                  <a className="home-link" href="#services">See our services <span aria-hidden="true">→</span></a>
+                  <BookButton variant="primary">{t('Book a visit', locale)}</BookButton>
+                  <a className="home-link" href="#services">{t('See our services', locale)} <span aria-hidden="true">→</span></a>
                 </div>
                 <dl className="home-hero__facts">
                   <div>
-                    <dt>Google rating</dt>
+                    <dt>{t('Google rating', locale)}</dt>
                     <dd>4.9 ★ · 120+</dd>
                   </div>
                   <div>
-                    <dt>Open daily</dt>
-                    <dd>10 AM – 12 AM</dd>
+                    <dt>{t('Open daily', locale)}</dt>
+                    <dd>{locale === 'si' ? 'පෙ.ව. 10 - මධ්‍යම රාත්‍රී 12' : '10 AM – 12 AM'}</dd>
                   </div>
                   <div>
-                    <dt>For</dt>
-                    <dd>Him &amp; her</dd>
+                    <dt>{t('For', locale)}</dt>
+                    <dd>{t('Him & her', locale)}</dd>
                   </div>
                 </dl>
               </div>
@@ -200,8 +239,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
                 <div className="home-hero__badge">
                   <span className="home-dot" aria-hidden="true" />
                   <span>
-                    <b>Open until midnight</b>
-                    <span style={{ display: 'block' }}>Walk-ins welcome</span>
+                    <b>{t('Open until midnight', locale)}</b>
+                    <span style={{ display: 'block' }}>{t('Walk-ins welcome', locale)}</span>
                   </span>
                 </div>
               </div>
@@ -211,8 +250,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
           {/* ── trust strip ── */}
           <div className="home-strip" aria-hidden="true">
             <div className="home-strip__track">
-              <span>{STRIP.map((s) => <span key={s}>{s}</span>)}</span>
-              <span>{STRIP.map((s) => <span key={`b-${s}`}>{s}</span>)}</span>
+              <span>{translatedStrip.map((s) => <span key={s}>{s}</span>)}</span>
+              <span>{translatedStrip.map((s) => <span key={`b-${s}`}>{s}</span>)}</span>
             </div>
           </div>
 
@@ -245,12 +284,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
           <section className="home-section" id="services">
             <div className="home-wrap">
               <div className="home-head home-reveal">
-                <span className="home-eyebrow home-eyebrow--center">What we offer</span>
-                <h2 className="home-h">Services &amp; <em>pricing</em></h2>
-                <p className="home-lead">Hair, colour and beauty for him &amp; her. Prices in LKR — final quote confirmed at your consultation.</p>
+                <span className="home-eyebrow home-eyebrow--center">{t('What we offer', locale)}</span>
+                <h2 className="home-h">{t('Services', locale)} &amp; <em>{t('pricing', locale)}</em></h2>
+                <p className="home-lead">{t('Hair, colour and beauty for him & her. Prices in LKR — final quote confirmed at your consultation.', locale)}</p>
               </div>
               <div className="home-reveal">
-                <ServicesTabs services={services} />
+                <ServicesTabs services={services} locale={locale} />
               </div>
             </div>
           </section>
@@ -259,13 +298,13 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
           <section className="home-section home-how" id="how">
             <div className="home-wrap">
               <div className="home-head home-reveal">
-                <span className="home-eyebrow home-eyebrow--center">How it works</span>
-                <h2 className="home-h">Your visit, <em>step by step</em></h2>
-                <p className="home-lead">From booking to the final mirror check — here is exactly what to expect.</p>
-                <span className="home-swipe" aria-hidden="true">swipe</span>
+                <span className="home-eyebrow home-eyebrow--center">{t('How it works', locale)}</span>
+                <h2 className="home-h">{t('Your visit, step by step', locale)}</h2>
+                <p className="home-lead">{t('From booking to the final mirror check — here is exactly what to expect.', locale)}</p>
+                <span className="home-swipe" aria-hidden="true">{t('swipe', locale)}</span>
               </div>
               <div className="home-steps home-car">
-                {STEPS.map((s) => (
+                {translatedSteps.map((s) => (
                   <div className="home-step home-reveal" key={s.h}>
                     <div className="home-step__n" aria-hidden="true" />
                     <h3>{s.h}</h3>
@@ -281,10 +320,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
             <section className="home-section home-story" id="looks" style={{ background: 'var(--bg-2)', borderTop: '1px solid var(--line)' }}>
               <div className="home-wrap">
                 <div className="home-head home-reveal">
-                  <span className="home-eyebrow home-eyebrow--center">Our work</span>
-                  <h2 className="home-h">The <em>lookbook</em></h2>
-                  <p className="home-lead">A glimpse of the cuts, colour and care that walk out our door.</p>
-                  <span className="home-swipe" aria-hidden="true">swipe</span>
+                  <span className="home-eyebrow home-eyebrow--center">{t('Our work', locale)}</span>
+                  <h2 className="home-h">{t('The lookbook', locale)}</h2>
+                  <p className="home-lead">{t('A glimpse of the cuts, colour and care that walk out our door.', locale)}</p>
+                  <span className="home-swipe" aria-hidden="true">{t('swipe', locale)}</span>
                 </div>
                 <div className="home-look home-car">
                   {looks.map((item) => (
@@ -308,10 +347,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
             <section className="home-section" id="team">
               <div className="home-wrap">
                 <div className="home-head home-reveal">
-                  <span className="home-eyebrow home-eyebrow--center">The artisans</span>
-                  <h2 className="home-h">Meet our <em>stylists</em></h2>
-                  <p className="home-lead">A friendly, trained team dedicated to hair craft, colour and beauty care.</p>
-                  <span className="home-swipe" aria-hidden="true">swipe</span>
+                  <span className="home-eyebrow home-eyebrow--center">{t('The artisans', locale)}</span>
+                  <h2 className="home-h">{t('Meet our stylists', locale)}</h2>
+                  <p className="home-lead">{t('A friendly, trained team dedicated to hair craft, colour and beauty care.', locale)}</p>
+                  <span className="home-swipe" aria-hidden="true">{t('swipe', locale)}</span>
                 </div>
                 <div className="home-team home-car home-car--narrow">
                   {stylists.map((s) => {
@@ -342,9 +381,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
             <section className="home-section home-story" id="reviews" style={{ background: 'var(--bg-2)', borderTop: '1px solid var(--line)' }}>
               <div className="home-wrap">
                 <div className="home-head home-reveal">
-                  <span className="home-eyebrow home-eyebrow--center">Client voices</span>
-                  <h2 className="home-h">What guests <em>say</em></h2>
-                  <span className="home-swipe" aria-hidden="true">swipe</span>
+                  <span className="home-eyebrow home-eyebrow--center">{t('Client voices', locale)}</span>
+                  <h2 className="home-h">{t('What guests say', locale)}</h2>
+                  <span className="home-swipe" aria-hidden="true">{t('swipe', locale)}</span>
                 </div>
                 <div className="home-reviews__grid home-car">
                   {reviews.slice(0, 6).map((r) => (
@@ -354,7 +393,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
                       <div className="home-review__foot">
                         <div className="home-review__by">
                           <b>{r.customer_name}</b>
-                          {r.stylist_name && <span>with {r.stylist_name}</span>}
+                          {r.stylist_name && <span>{t('with', locale)} {r.stylist_name}</span>}
                         </div>
                         <span className="home-review__date">{reviewDate.format(new Date(r.created_at))}</span>
                       </div>
@@ -369,11 +408,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
           <section className="home-section" id="faq">
             <div className="home-wrap">
               <div className="home-head home-reveal">
-                <span className="home-eyebrow home-eyebrow--center">Good to know</span>
-                <h2 className="home-h">Frequently asked <em>questions</em></h2>
+                <span className="home-eyebrow home-eyebrow--center">{t('Good to know', locale)}</span>
+                <h2 className="home-h">{t('Frequently asked questions', locale)}</h2>
               </div>
               <div className="home-reveal">
-                <Faq items={FAQS} />
+                <Faq items={translatedFaqs} />
               </div>
             </div>
           </section>
@@ -385,21 +424,21 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
                 <div className="home-reveal">
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
                     <div>
-                      <span className="home-eyebrow">Find us</span>
-                      <h2 className="home-h">Location &amp; <em>hours</em></h2>
+                      <span className="home-eyebrow">{t('Find us', locale)}</span>
+                      <h2 className="home-h">{t('Location & hours', locale)}</h2>
                     </div>
-                    <LiveStatus hours={hours} />
+                    <LiveStatus hours={hours} locale={locale} />
                   </div>
 
                   <ul className="home-hours home-card" style={{ padding: '8px 22px', marginTop: 22 }}>
-                    {DAYS.map(({ dow, label }) => {
+                    {translatedDays.map(({ dow, label }) => {
                       const h = hoursByDow.get(dow);
                       const closed = !h || h.is_closed;
                       return (
                         <li key={dow}>
                           <span className="day">{label}</span>
                           <span className={closed ? 'closed' : 'time'}>
-                            {closed ? 'Closed' : `${minutesToLabel(h!.open_minute)} – ${minutesToLabel(h!.close_minute)}`}
+                            {closed ? t('Closed', locale) : `${minutesToLabel(h!.open_minute, locale)} – ${minutesToLabel(h!.close_minute, locale)}`}
                           </span>
                         </li>
                       );
@@ -408,32 +447,32 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
 
                   <div className="home-info">
                     <div className="home-card home-info__card">
-                      <div className="k">Address</div>
+                      <div className="k">{t('Address', locale)}</div>
                       <div className="v">{contact.address}</div>
                     </div>
                     <div className="home-card home-info__card">
-                      <div className="k">Plus code</div>
+                      <div className="k">{t('Plus code', locale)}</div>
                       <div className="v">{contact.plusCode}</div>
                     </div>
                     <div className="home-card home-info__card">
-                      <div className="k">Call / WhatsApp</div>
+                      <div className="k">{t('Call / WhatsApp', locale)}</div>
                       <div className="v">{contact.phonePrimary}</div>
                     </div>
                     <div className="home-card home-info__card">
-                      <div className="k">Also</div>
+                      <div className="k">{t('Also', locale)}</div>
                       <div className="v">{contact.phoneOther}</div>
                     </div>
                   </div>
 
                   <div className="home-visit__actions">
-                    <BookButton variant="primary">Book a visit</BookButton>
+                    <BookButton variant="primary">{t('Book a visit', locale)}</BookButton>
                     <a
                       href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(contact.plusCode || contact.address)}`}
                       target="_blank" rel="noopener" className="home-btn home-btn--ghost"
                     >
-                      Get directions
+                      {t('Get directions', locale)}
                     </a>
-                    <a href={contact.facebookUrl} target="_blank" rel="noopener" className="home-btn home-btn--ghost">Facebook</a>
+                    <a href={contact.facebookUrl} target="_blank" rel="noopener" className="home-btn home-btn--ghost">{t('Facebook', locale)}</a>
                   </div>
                 </div>
 
@@ -442,7 +481,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
                       falls back to a keyless plus-code search embed. */}
                   <iframe
                     src={contact.mapEmbedUrl || `https://www.google.com/maps?q=${encodeURIComponent(contact.plusCode || contact.address)}&z=16&output=embed`}
-                    title={`Map showing ${contact.address}`}
+                    title={`${t('Map showing', locale)} ${contact.address}`}
                     loading="lazy"
                     allowFullScreen
                     referrerPolicy="strict-origin-when-cross-origin"
@@ -460,7 +499,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
               <h2>{cta.title}</h2>
               <p>{cta.sub}</p>
               <div className="home-cta__actions">
-                <BookButton variant="primary">Book a visit</BookButton>
+                <BookButton variant="primary">{t('Book a visit', locale)}</BookButton>
                 <a href={cta.phoneHref} className="home-btn home-btn--light">{cta.phoneLabel}</a>
               </div>
             </div>
@@ -476,39 +515,39 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
                   <span className="home-brand__mark" aria-hidden="true">V</span>
                   <span className="home-brand__name">
                     <b>Vero Salon</b>
-                    <small>Unisex · Pasyala</small>
+                    <small>{t('Unisex', locale)} · {t('Pasyala', locale)}</small>
                   </span>
                 </a>
                 <p>{contact.footerBlurb}</p>
               </div>
               <div>
-                <h5>Salon</h5>
+                <h5>{t('Salon', locale)}</h5>
                 <ul>
-                  {NAV_LINKS.map((l) => <li key={l.href}><a href={l.href}>{l.label}</a></li>)}
+                  {translatedNavLinks.map((l) => <li key={l.href}><a href={l.href}>{l.label}</a></li>)}
                 </ul>
               </div>
               <div>
-                <h5>Hours</h5>
+                <h5>{t('Hours', locale)}</h5>
                 <ul>
-                  <li>Open daily</li>
+                  <li>{t('Open daily', locale)}</li>
                   <li>10:00 AM – 12:00 AM</li>
-                  <li style={{ color: 'var(--accent-text)' }}>Walk-ins welcome</li>
+                  <li style={{ color: 'var(--accent-text)' }}>{t('Walk-ins welcome', locale)}</li>
                 </ul>
               </div>
               <div>
-                <h5>Contact</h5>
+                <h5>{t('Contact', locale)}</h5>
                 <ul>
                   <li><a href={`tel:${contact.phonePrimary.replace(/\s/g, '')}`}>{contact.phonePrimary}</a></li>
-                  <li><a href={contact.facebookUrl} target="_blank" rel="noopener">Facebook</a></li>
+                  <li><a href={contact.facebookUrl} target="_blank" rel="noopener">{t('Facebook', locale)}</a></li>
                   <li>{contact.address}</li>
                 </ul>
               </div>
             </div>
             <div className="home-foot__bottom">
-              <span>© 2026 Vero Salon Unisex. All rights reserved.</span>
+              <span>© 2026 Vero Salon Unisex. {t('All rights reserved.', locale)}</span>
               <span className="home-foot__legal">
-                <a href="/privacy">Privacy</a>
-                <a href="/terms">Terms</a>
+                <a href="/privacy">{t('Privacy', locale)}</a>
+                <a href="/terms">{t('Terms', locale)}</a>
               </span>
             </div>
           </div>
@@ -519,9 +558,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
           accountHref={accountHref}
           accountLabel={accountLabel}
           avatarSrc={accountAvatar}
+          locale={locale}
         />
       </div>
       </AccountModalsProvider>
     </BookingProvider>
+    </LocaleProvider>
   );
 }

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { signInWithGoogle, signInWithPassword } from './actions';
 import { AuthShell } from '@/components/auth/auth-shell';
 import { PasswordInput } from '@/components/auth/password-input';
+import { t } from '@/lib/i18n/translations';
 
 function GoogleMark() {
   return (
@@ -16,40 +17,40 @@ function GoogleMark() {
   );
 }
 
-export function LoginForm({ next, oauthError }: { next: string; oauthError?: string | null }) {
+export function LoginForm({ next, oauthError, locale = 'en' }: { next: string; oauthError?: string | null; locale?: string }) {
   const [state, action] = useActionState(signInWithPassword, undefined);
   const signupHref = next ? `/signup?next=${encodeURIComponent(next)}` : '/signup';
 
   return (
-    <AuthShell back={{ href: '/', label: 'Back to home' }}>
-        <span className="eyebrow">Your account</span>
-        <h1 className="h-section auth__title">Welcome <em>back</em></h1>
-        <p className="auth__lead">Your chair is waiting — sign in to manage your bookings.</p>
+    <AuthShell back={{ href: '/', label: t('Back to home', locale) }} locale={locale}>
+        <span className="eyebrow">{t('Your account', locale)}</span>
+        <h1 className="h-section auth__title">{t('Welcome', locale)} <em>{t('back', locale)}</em></h1>
+        <p className="auth__lead">{t('Your chair is waiting — sign in to manage your bookings.', locale)}</p>
 
         {oauthError && <p style={{ color: 'var(--error)', marginBottom: 16 }}>{oauthError}</p>}
 
         <form action={signInWithGoogle}>
           <input type="hidden" name="next" value={next} />
-          <button className="btn btn--google btn--lg" style={{ width: '100%' }} type="submit"><GoogleMark /> Continue with Google</button>
+          <button className="btn btn--google btn--lg" style={{ width: '100%' }} type="submit"><GoogleMark /> {t('Continue with Google', locale)}</button>
         </form>
 
-        <div className="divider">or sign in with email</div>
+        <div className="divider">{t('or sign in with email', locale)}</div>
 
         <form action={action}>
           <input type="hidden" name="next" value={next} />
-          <div className="field"><label htmlFor="login-email">Email</label><input id="login-email" name="email" type="email" placeholder="verosalon@gmail.com" autoComplete="email" required /></div>
+          <div className="field"><label htmlFor="login-email">{t('Email', locale)}</label><input id="login-email" name="email" type="email" placeholder="verosalon@gmail.com" autoComplete="email" required /></div>
           <div className="field">
-            <label htmlFor="login-password">Password</label>
+            <label htmlFor="login-password">{t('Password', locale)}</label>
             <PasswordInput id="login-password" name="password" autoComplete="current-password" required />
           </div>
           <p style={{ textAlign: 'right', margin: '-6px 0 14px', fontSize: 13 }}>
-            <Link href="/forgot-password">Forgot password?</Link>
+            <Link href="/forgot-password">{t('Forgot password?', locale)}</Link>
           </p>
           {state?.error && <p style={{ color: 'var(--error)', margin: '0 0 12px' }}>{state.error}</p>}
-          <button className="btn btn--primary btn--lg" style={{ width: '100%' }} type="submit">Sign in</button>
+          <button className="btn btn--primary btn--lg" style={{ width: '100%' }} type="submit">{t('Sign in', locale)}</button>
         </form>
 
-        <p className="auth__alt">New here? <Link href={signupHref}>Create an account →</Link></p>
+        <p className="auth__alt">{t('New here?', locale)} <Link href={signupHref}>{t('Create an account →', locale)}</Link></p>
     </AuthShell>
   );
 }

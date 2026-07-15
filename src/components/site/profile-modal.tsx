@@ -2,6 +2,7 @@
 import { Modal } from '@/components/ui/modal';
 import { ProfileEditor } from '@/components/account/profile-editor';
 import type { UserMetadata } from '@/lib/avatar';
+import { t } from '@/lib/i18n/translations';
 
 // Popup wrapper around the shared profile editor (also used inline on the
 // admin/owner Account pages).
@@ -13,6 +14,7 @@ export function ProfileModal({
   initialPhone,
   userMetadata,
   email,
+  locale = 'en',
 }: {
   open: boolean;
   onClose: () => void;
@@ -21,9 +23,10 @@ export function ProfileModal({
   initialPhone: string;
   userMetadata: UserMetadata | null | undefined;
   email: string | null;
+  locale?: string;
 }) {
   return (
-    <Modal open={open} onClose={onClose} title="Edit profile">
+    <Modal open={open} onClose={onClose} title={t('Edit profile', locale)}>
       <ProfileEditor
         seed={seed}
         initialName={initialName}
@@ -31,6 +34,7 @@ export function ProfileModal({
         userMetadata={userMetadata}
         email={email}
         onClose={onClose}
+        locale={locale}
       />
     </Modal>
   );

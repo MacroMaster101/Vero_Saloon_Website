@@ -5,8 +5,9 @@ import { updatePassword } from './actions';
 import { checkPassword } from '@/lib/auth/password';
 import { AuthShell } from '@/components/auth/auth-shell';
 import { PasswordInput } from '@/components/auth/password-input';
+import { t } from '@/lib/i18n/translations';
 
-export function ResetForm({ email }: { email: string }) {
+export function ResetForm({ email, locale = 'en' }: { email: string; locale?: string }) {
   const [state, action] = useActionState(updatePassword, undefined);
   const [pw, setPw] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -17,24 +18,24 @@ export function ResetForm({ email }: { email: string }) {
 
   if (state && 'ok' in state) {
     return (
-      <AuthShell back={{ href: '/', label: 'Back to home' }}>
-          <span className="eyebrow">Done</span>
-          <h1 className="h-section auth__title">Password <em>updated</em></h1>
-          <p className="auth__lead">You&apos;re signed in and your new password is active from now on.</p>
-          <p className="auth__alt" style={{ textAlign: 'left' }}><Link href="/">← Back to home</Link></p>
+      <AuthShell back={{ href: '/', label: t('Back to home', locale) }} locale={locale}>
+          <span className="eyebrow">{t('Done', locale)}</span>
+          <h1 className="h-section auth__title">{t('Password', locale)} <em>{t('updated', locale)}</em></h1>
+          <p className="auth__lead">{t("You're signed in and your new password is active.", locale)}</p>
+          <p className="auth__alt" style={{ textAlign: 'left' }}><Link href="/">← {t('Back to home', locale)}</Link></p>
       </AuthShell>
     );
   }
 
   return (
-    <AuthShell back={{ href: '/', label: 'Back to home' }}>
-        <span className="eyebrow">Reset password</span>
-        <h1 className="h-section auth__title">Choose a new <em>password</em></h1>
-        {email && <p className="auth__lead">for <b>{email}</b></p>}
+    <AuthShell back={{ href: '/', label: t('Back to home', locale) }} locale={locale}>
+        <span className="eyebrow">{t('Reset password', locale)}</span>
+        <h1 className="h-section auth__title">{t('Choose a new', locale)} <em>{t('password', locale)}</em></h1>
+        {email && <p className="auth__lead">{t('for', locale)} <b>{email}</b></p>}
 
         <form action={action}>
           <div className="field">
-            <label htmlFor="rp-pw">New password</label>
+            <label htmlFor="rp-pw">{t('New password', locale)}</label>
             <PasswordInput id="rp-pw" name="password" required value={pw} onChange={setPw} autoComplete="new-password" />
             <div className={`pwmeta${pw ? ' show' : ''}`}>
               <div>
@@ -49,15 +50,15 @@ export function ResetForm({ email }: { email: string }) {
           </div>
 
           <div className="field">
-            <label htmlFor="rp-cf">Confirm password</label>
+            <label htmlFor="rp-cf">{t('Confirm password', locale)}</label>
             <PasswordInput id="rp-cf" name="confirm" required value={confirm} onChange={setConfirm} autoComplete="new-password" />
             {confirm.length > 0 && (
-              <p className={`match ${matches ? 'ok' : 'bad'}`}>{matches ? '✓ Passwords match' : '✗ Passwords don’t match'}</p>
+              <p className={`match ${matches ? 'ok' : 'bad'}`}>{matches ? `✓ ${t('Passwords match', locale)}` : `✗ ${t("Passwords don't match", locale)}`}</p>
             )}
           </div>
 
           {state?.error && <p style={{ color: 'var(--error)', margin: '0 0 12px' }}>{state.error}</p>}
-          <button className="btn btn--primary btn--lg" style={{ width: '100%' }} type="submit" disabled={!check.passed || !matches}>Set new password</button>
+          <button className="btn btn--primary btn--lg" style={{ width: '100%' }} type="submit" disabled={!check.passed || !matches}>{t('Set new password', locale)}</button>
         </form>
     </AuthShell>
   );

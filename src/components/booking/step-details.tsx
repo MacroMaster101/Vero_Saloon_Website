@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import type { z } from 'zod';
 import { bookingDetailsSchema, type BookingDetails } from '@/lib/validators';
 import type { BookingPrefill } from './booking-provider';
+import { t } from '@/lib/i18n/translations';
 
 // Form-input shape: `notes` is optional at input (zod `.default('')`).
 type DetailsInput = z.input<typeof bookingDetailsSchema>;
@@ -16,8 +17,8 @@ export interface StepDetailsHandle {
 
 export const StepDetails = forwardRef<
   StepDetailsHandle,
-  { prefill?: BookingPrefill | null; onValidityChange?: (valid: boolean) => void; active?: boolean }
->(function StepDetails({ prefill, onValidityChange, active = true }, ref) {
+  { prefill?: BookingPrefill | null; onValidityChange?: (valid: boolean) => void; active?: boolean; locale?: string }
+>(function StepDetails({ prefill, onValidityChange, active = true, locale = 'en' }, ref) {
   const {
     register,
     trigger,
@@ -50,24 +51,24 @@ export const StepDetails = forwardRef<
 
   return (
     <div className="step active" data-step="4">
-      <h3 className="step__title">Almost done — your details</h3>
-      <p className="step__hint">We&apos;ll email your confirmation so you can find this booking anytime — and remind you the morning of.</p>
+      <h3 className="step__title">{t('Almost done — your details', locale)}</h3>
+      <p className="step__hint">{t("We'll email your confirmation so you can find this booking anytime — and remind you the morning of.", locale)}</p>
       <div className="fields-2">
         <div className={`field${errors.name ? ' invalid' : ''}`} id="f-name">
-          <label htmlFor="i-name">Full name <span className="req" aria-hidden="true">*</span></label>
+          <label htmlFor="i-name">{t('Full name', locale)} <span className="req" aria-hidden="true">*</span></label>
           <input
             id="i-name"
             type="text"
-            placeholder="e.g. Nimal Perera"
+            placeholder={t('e.g. Nimal Perera', locale)}
             autoComplete="name"
             className={errors.name ? 'err' : ''}
             disabled={!active}
             {...register('name')}
           />
-          <div className="msg">{errors.name?.message ?? 'Please enter your name.'}</div>
+          <div className="msg">{errors.name?.message ? t(errors.name.message, locale) : t('Please enter your name', locale)}</div>
         </div>
         <div className={`field${errors.phone ? ' invalid' : ''}`} id="f-phone">
-          <label htmlFor="i-phone">Mobile number <span className="req" aria-hidden="true">*</span></label>
+          <label htmlFor="i-phone">{t('Mobile number', locale)} <span className="req" aria-hidden="true">*</span></label>
           <input
             id="i-phone"
             type="tel"
@@ -77,11 +78,11 @@ export const StepDetails = forwardRef<
             disabled={!active}
             {...register('phone')}
           />
-          <div className="msg">{errors.phone?.message ?? 'Enter a valid phone number.'}</div>
+          <div className="msg">{errors.phone?.message ? t(errors.phone.message, locale) : t('Enter a valid Sri Lankan mobile number', locale)}</div>
         </div>
       </div>
       <div className={`field${errors.email ? ' invalid' : ''}`} id="f-email">
-        <label htmlFor="i-email">Email <span className="req" aria-hidden="true">*</span></label>
+        <label htmlFor="i-email">{t('Email', locale)} <span className="req" aria-hidden="true">*</span></label>
         <input
           id="i-email"
           type="email"
@@ -91,19 +92,19 @@ export const StepDetails = forwardRef<
           disabled={!active}
           {...register('email')}
         />
-        <div className="msg">{errors.email?.message ?? "That email doesn't look right."}</div>
+        <div className="msg">{errors.email?.message ? t(errors.email.message, locale) : t('Please enter your email', locale)}</div>
       </div>
       <div className="field">
         <label htmlFor="i-notes">
-          Notes for your stylist{' '}
+          {t('Notes for your stylist', locale)}{' '}
           <span style={{ textTransform: 'none', letterSpacing: 0, color: 'var(--fg-muted)', fontWeight: 500 }}>
-            (optional)
+            {t('(optional)', locale)}
           </span>
         </label>
         <textarea
           id="i-notes"
           rows={2}
-          placeholder="Shoulder length, keep the layers, a warm brown…"
+          placeholder={t('Shoulder length, keep the layers, a warm brown…', locale)}
           disabled={!active}
           {...register('notes')}
         />

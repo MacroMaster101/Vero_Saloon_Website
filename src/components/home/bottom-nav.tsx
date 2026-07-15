@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useBooking } from '@/components/booking/booking-provider';
 import { useAccountModals, type AccountModal } from '@/components/account/account-modals';
 import { signOut } from '@/app/admin/actions';
+import { t } from '@/lib/i18n/translations';
+import { LangToggle } from '@/components/theme/lang-toggle';
 
 /* Floating mobile/tablet bottom dock — the single nav surface on small screens
    (the top bar carries the brand only there). Five slots with the Book action
@@ -53,11 +55,12 @@ function Icon({ name }: { name: string }) {
   }
 }
 
-export function BottomNav({ signedIn, accountHref, accountLabel, avatarSrc }: {
+export function BottomNav({ signedIn, accountHref, accountLabel, avatarSrc, locale = 'en' }: {
   signedIn: boolean;
   accountHref: string | null;   // null → account tab opens the popup menu instead of navigating
   accountLabel: string;
   avatarSrc?: string | null;
+  locale?: string;
 }) {
   const { openBooking, enabled } = useBooking();
   const { openModal } = useAccountModals();
@@ -105,13 +108,26 @@ export function BottomNav({ signedIn, accountHref, accountLabel, avatarSrc }: {
     openModal(modal);
   }
 
+  const translatedLeft = LEFT.map((tTab) => ({
+    ...tTab,
+    label: t(tTab.label, locale),
+  }));
+
+  const translatedMoreLinks = MORE_LINKS.map((tLink) => ({
+    ...tLink,
+    label: t(tLink.label, locale),
+  }));
+
   const moreActive = MORE_LINKS.some((l) => l.id === active);
 
   return (
     <div className="home-dock" ref={moreRef}>
       {/* ── "More" sheet ── */}
       <div className={`home-dock__sheet${moreOpen ? ' is-open' : ''}`} role="menu">
-        {MORE_LINKS.map((l) => (
+        <div>
+          <LangToggle currentLocale={locale} />
+        </div>
+        {translatedMoreLinks.map((l) => (
           <a
             key={l.id}
             href={`#${l.id}`}
@@ -127,45 +143,45 @@ export function BottomNav({ signedIn, accountHref, accountLabel, avatarSrc }: {
       {/* ── "Account" sheet (signed-in customers) ── */}
       <div className={`home-dock__sheet${acctOpen ? ' is-open' : ''}`} role="menu">
         <button type="button" role="menuitem" className="home-dock__sheet-item" onClick={() => pickAccount('profile')}>
-          Edit profile
+          {t('Edit profile', locale)}
         </button>
         <button type="button" role="menuitem" className="home-dock__sheet-item" onClick={() => pickAccount('bookings')}>
-          My bookings
+          {t('My bookings', locale)}
         </button>
         <button type="button" role="menuitem" className="home-dock__sheet-item" onClick={() => pickAccount('settings')}>
-          Settings
+          {t('Settings', locale)}
         </button>
         <form action={signOut}>
           <button type="submit" role="menuitem" className="home-dock__sheet-item home-dock__sheet-item--danger">
-            Sign out
+            {t('Sign out', locale)}
           </button>
         </form>
       </div>
 
       <nav className="home-bottomnav" aria-label="Quick navigation">
-        {LEFT.map((t) => (
+        {translatedLeft.map((tTab) => (
           <a
-            key={t.id}
-            href={`#${t.id}`}
-            className={`home-bottomnav__tab${active === t.id ? ' is-active' : ''}`}
-            aria-current={active === t.id ? 'page' : undefined}
+            key={tTab.id}
+            href={`#${tTab.id}`}
+            className={`home-bottomnav__tab${active === tTab.id ? ' is-active' : ''}`}
+            aria-current={active === tTab.id ? 'page' : undefined}
             onClick={() => { setMoreOpen(false); setAcctOpen(false); }}
           >
-            <Icon name={t.icon} />
-            <span>{t.label}</span>
+            <Icon name={tTab.icon} />
+            <span>{tTab.label}</span>
           </a>
         ))}
 
         {/* ── raised centre action ── */}
         {enabled ? (
-          <button type="button" className="home-bottomnav__center" onClick={() => { setMoreOpen(false); setAcctOpen(false); openBooking(); }} aria-label="Book a visit">
+          <button type="button" className="home-bottomnav__center" onClick={() => { setMoreOpen(false); setAcctOpen(false); openBooking(); }} aria-label={t('Book a visit', locale)}>
             <Icon name="book" />
-            <span>Book</span>
+            <span>{t('Book', locale)}</span>
           </button>
         ) : (
-          <a href="#top" className="home-bottomnav__center" onClick={() => { setMoreOpen(false); setAcctOpen(false); }} aria-label="Back to top">
+          <a href="#top" className="home-bottomnav__center" onClick={() => { setMoreOpen(false); setAcctOpen(false); }} aria-label={t('Top', locale)}>
             <Icon name="home" />
-            <span>Top</span>
+            <span>{t('Top', locale)}</span>
           </a>
         )}
 
@@ -177,7 +193,7 @@ export function BottomNav({ signedIn, accountHref, accountLabel, avatarSrc }: {
           onClick={() => { setAcctOpen(false); setMoreOpen((v) => !v); }}
         >
           <Icon name="more" />
-          <span>More</span>
+          <span>{t('More', locale)}</span>
         </button>
 
         {accountHref ? (
@@ -188,7 +204,7 @@ export function BottomNav({ signedIn, accountHref, accountLabel, avatarSrc }: {
             ) : (
               <Icon name="user" />
             )}
-            <span>{signedIn ? accountLabel : 'Sign in'}</span>
+            <span>{signedIn ? accountLabel : t('Sign in', locale)}</span>
           </a>
         ) : (
           <button
