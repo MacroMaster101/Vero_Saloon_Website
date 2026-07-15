@@ -8,9 +8,9 @@ export const translations: Record<string, string> = {
   'Reviews': 'අදහස්',
   'FAQ': 'ප්‍රශ්න',
   'Visit': 'ස්ථානය',
-  'Book now': 'දැන් වෙන්කරන්න',
-  'Book a visit': 'වේලාවක් වෙන්කරන්න',
-  'Sign in': 'පිවිසෙන්න',
+  'Book now': 'දැන් වෙන් කරන්න',
+  'Book a visit': 'වේලාවක් වෙන් කරන්න',
+  'Sign in': 'පිවිසුම',
   'Sign up': 'ලියාපදිංචි වන්න',
   'Account': 'ගිණුම',
   'Schedule': 'කාලසටහන',
@@ -22,7 +22,7 @@ export const translations: Record<string, string> = {
   'My bookings': 'මගේ වෙන්කිරීම්',
   'Settings': 'සැකසුම්',
   'Sign out': 'පිටවන්න',
-  'Book': 'වෙන්කරන්න',
+  'Book': 'වෙන් කරන්න',
   'Top': 'ඉහළට',
   'More': 'තවත්',
 
@@ -85,7 +85,7 @@ export const translations: Record<string, string> = {
 
   // Booking Wizard
   'Service': 'සේවාව',
-  'Stylist': 'මෝස්තර ශිල්පියා',
+  'Stylist': 'ශිල්පියා',
   'When': 'දිනය සහ වේලාව',
   'Total': 'එකතුව',
   'Not selected': 'තෝරාගෙන නැත',
@@ -268,7 +268,7 @@ export const translations: Record<string, string> = {
   'Call Salon': 'දුරකථන ඇමතුමක් ලබාදෙන්න',
   'Call Salon (077 369 9620)': 'දුරකථන ඇමතුම (077 369 9620)',
   'Open Daily: 10:00 AM – 12:00 AM': 'දිනපතා විවෘතයි: පෙ.ව. 10:00 - මධ්‍යම රාත්‍රී 12:00',
-  'Book your visit': 'වේලාවක් වෙන්කරන්න',
+  'Book your visit': 'වේලාවක් වෙන් කරන්න',
 
   // Service tabs (filter labels)
   'Hair services': 'කොණ්ඩා සේවා',
@@ -294,7 +294,7 @@ export const translations: Record<string, string> = {
   'Waxing': 'වැක්සිං',
 
   // How it works — step headings
-  'Book a slot': 'වේලාවක් වෙන්කරන්න',
+  'Book a slot': 'වේලාවක් වෙන් කරන්න',
   'Consultation': 'උපදේශනය',
   'Sit back': 'ලිහිල්ව සිටින්න',
   'Style & finish': 'නිමාව',
