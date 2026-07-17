@@ -1442,7 +1442,7 @@ html, body { overflow-x:clip; }
   letter-spacing: .14em; color: var(--fg-muted); margin-top: 8px; }
 
 /* ── how it works ────────────────────────────────────────── */
-.home-how { background: var(--bg-2); border-block: 1px solid var(--line); }
+.home-how { background: transparent; border-block: 1px solid transparent; }
 .home-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--home-gap); counter-reset: step; }
 .home-step {
   counter-increment: step;
@@ -1590,7 +1590,7 @@ html, body { overflow-x:clip; }
 .home-review__date { font-size: 12px; color: var(--fg-muted); font-weight: 600; white-space: nowrap; }
 
 /* ── visit ───────────────────────────────────────────────── */
-.home-visit { background: var(--bg); }
+.home-visit { background: color-mix(in srgb, var(--bg-2) 35%, transparent); border-block: 1px solid var(--line); }
 .home-visit__grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--home-gap-lg); align-items: stretch; }
 .home-hours { list-style: none; margin: 22px 0 0; padding: 0; }
 .home-hours li { display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
