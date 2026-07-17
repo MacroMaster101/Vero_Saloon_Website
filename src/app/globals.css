@@ -1610,7 +1610,7 @@ html, body { overflow-x:clip; }
 
 /* ── CTA band ────────────────────────────────────────────── */
 .home-cta { position: relative; overflow: hidden; text-align: center;
-  background: var(--home-cta-bg); color: var(--home-cta-fg); border-block: 1px solid var(--line);
+  background: transparent; color: var(--home-cta-fg); border-block: 1px solid var(--line);
   transition: background-color .4s var(--ease), color .4s var(--ease), border-color .4s var(--ease); }
 .home-cta__glow { position: absolute; top: -180px; left: 50%; transform: translateX(-50%);
   width: 640px; height: 640px; border-radius: 50%; pointer-events: none;
