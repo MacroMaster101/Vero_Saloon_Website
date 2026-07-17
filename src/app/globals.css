@@ -1341,6 +1341,9 @@ html, body { overflow-x:clip; }
 .home-header__actions { display: flex; align-items: center; gap: 8px; margin-left: 18px;
   padding-left: 16px; border-left: 1px solid color-mix(in srgb, var(--line) 80%, transparent); }
 .home-nav ~ .home-header__actions { margin-left: 18px; }
+/* lang-toggle needs display:flex via CSS (not inline) so the mobile media-query can override it to none */
+.lang-toggle { display: flex; align-items: center; }
+
 
 /* theme toggle — scoped to the home header so it matches the pill nav */
 .home-header .theme-toggle {
