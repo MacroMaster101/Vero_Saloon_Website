@@ -19,6 +19,7 @@ import { getSiteContent } from '@/lib/content/get';
 import { getProfile } from '@/lib/supabase/auth';
 import { avatarSrc } from '@/lib/avatar';
 import { createClient } from '@/lib/supabase/server';
+import { LogoIcon } from '@/components/ui/logo-icon';
 import {
   getBookableServices,
   getGallery,
@@ -177,7 +178,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
         <header className="home-header">
           <div className="home-wrap home-header__inner">
             <a className="home-brand" href="#top" aria-label="Vero Salon home">
-              <span className="home-brand__mark" aria-hidden="true">V</span>
+              <span className="home-brand__mark" aria-hidden="true"><LogoIcon /></span>
               <span className="home-brand__name">
                 <b>Vero Salon</b>
                 <small>{t('Unisex', locale)} · {t('Pasyala', locale)}</small>
@@ -512,7 +513,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
             <div className="home-foot__grid">
               <div className="home-foot__brand">
                 <a className="home-brand" href="#top" aria-label="Vero Salon home">
-                  <span className="home-brand__mark" aria-hidden="true">V</span>
+                  <span className="home-brand__mark" aria-hidden="true"><LogoIcon /></span>
                   <span className="home-brand__name">
                     <b>Vero Salon</b>
                     <small>{t('Unisex', locale)} · {t('Pasyala', locale)}</small>
