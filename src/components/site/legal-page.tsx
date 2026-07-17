@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { LogoIcon } from '../ui/logo-icon';
 
 export type LegalSection = { id: string; heading: string; body: ReactNode };
 
@@ -26,7 +27,7 @@ export function LegalPage({
       <header className="legal-top">
         <div className="legal-wrap legal-top__inner">
           <Link className="home-brand" href="/" aria-label="Vero Salon home">
-            <span className="home-brand__mark" aria-hidden="true">V</span>
+            <span className="home-brand__mark" aria-hidden="true"><LogoIcon /></span>
             <span className="home-brand__name">
               <b>Vero Salon</b>
               <small>Unisex · Pasyala</small>

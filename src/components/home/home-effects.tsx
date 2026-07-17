@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
+import { useLocale } from '@/lib/i18n/locale-context';
+import { LogoIcon } from '@/components/ui/logo-icon';
 
 // Client-only mount flag without calling setState inside an effect: the store
 // never emits, so the value is simply the server snapshot (false) during SSR /
@@ -27,6 +29,7 @@ const SECTIONS = [
 export function HomeEffects() {
   const [loading, setLoading] = useState(true);
   const mounted = useMounted();
+  const locale = useLocale();
 
   useEffect(() => {
     // Always open at the very top on (re)load — stop the browser from
@@ -144,10 +147,14 @@ export function HomeEffects() {
             <div className="home-loader-badge">
               <span className="home-loader-ring home-loader-ring--outer" />
               <span className="home-loader-ring home-loader-ring--inner" />
-              <span className="home-loader-mark">V</span>
+              <span className="home-loader-mark" style={{ display: 'grid', placeItems: 'center' }}>
+                <LogoIcon />
+              </span>
             </div>
             <span className="home-loader-text">Vero Salon</span>
-            <span className="home-loader-sub">Hair · Colour · Beauty</span>
+            <span className="home-loader-sub">
+              {locale === 'si' ? 'කොණ්ඩය · වර්ණ ගැන්වීම් · රූපලාවන්‍ය' : 'Hair · Colour · Beauty'}
+            </span>
             <span className="home-loader-bar" aria-hidden="true"><i /></span>
           </div>
         </div>

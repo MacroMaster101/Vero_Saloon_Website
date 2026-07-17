@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vero Salon Color Theme Interactive Preview</title>
+  <!-- Modern Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    /* Control Panel Styles (Fixed Theme) */
+    :root {
+      --panel-bg: #0F172A;
+      --panel-card: #1E293B;
+      --panel-text: #F8FAFC;
+      --panel-text-muted: #94A3B8;
+      --panel-accent: #38BDF8;
+      --panel-border: #334155;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--panel-bg);
+      color: var(--panel-text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      overflow-y: auto;
+    }
+
+    header {
+      background-color: var(--panel-card);
+      border-bottom: 1px solid var(--panel-border);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .brand-title {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 24px;
+      color: var(--panel-text);
+    }
+
+    .brand-title span {
+      font-family: 'Poppins', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--panel-accent);
+      display: block;
+      margin-top: -4px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: var(--panel-text-muted);
+    }
+
+    .workspace-layout {
+      display: flex;
+      flex: 1;
+      min-height: calc(100vh - 78px);
+      flex-direction: row;
+    }
+
+    @media (max-width: 900px) {
+      .workspace-layout {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100% !important;
+        border-right: none !important;
+        border-bottom: 1px solid var(--panel-border);
+      }
+    }
+
+    /* Sidebar controls */
+    .sidebar {
+      width: 380px;
+      background-color: var(--panel-card);
+      border-right: 1px solid var(--panel-border);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--panel-accent);
+      margin-bottom: 12px;
+    }
+
+    .theme-card-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .theme-option {
+      background-color: rgba(255, 255, 255, 0.03);
+      border: 2px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .theme-option:hover {
+      background-color: rgba(255, 255, 255, 0.07);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .theme-option.active {
+      border-color: var(--panel-accent);
+      background-color: rgba(56, 189, 248, 0.08);
+      box-shadow: 0 0 15px -3px rgba(56, 189, 248, 0.2);
+    }
+
+    .theme-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .theme-name {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .color-swatches {
+      display: flex;
+      gap: 6px;
+    }
+
+    .swatch {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Light/Dark Toggle */
+    .mode-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      background-color: rgba(0, 0, 0, 0.2);
+      padding: 4px;
+      border-radius: 8px;
+    }
+
+    .mode-btn {
+      background: none;
+      border: none;
+      color: var(--panel-text-muted);
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .mode-btn.active {
+      background-color: var(--panel-bg);
+      color: var(--panel-text);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* CSS Variable Inspector */
+    .inspector {
+      background-color: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      padding: 12px;
+      font-family: monospace;
+      font-size: 11px;
+      color: var(--panel-text-muted);
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    .inspector span.key {
+      color: #F472B6;
+    }
+
+    .inspector span.val {
+      color: #38BDF8;
+    }
+
+    /* PREVIEW CONTAINER - Simulated Web Page */
+    .preview-pane {
+      flex: 1;
+      background-color: #E2E8F0;
+      padding: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      position: relative;
+    }
+
+    /* Mock Page variables */
+    .mock-site {
+      width: 100%;
+      max-width: 850px;
+      background-color: var(--bg);
+      color: var(--fg);
+      border-radius: 20px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+      font-family: var(--font-sans), sans-serif;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      position: relative;
+    }
+
+    /* Mock website gradient glow decoration */
+    .mock-site::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      background:
+        radial-gradient(400px 300px at 90% 0%, color-mix(in srgb, var(--accent) 15%, transparent), transparent 60%),
+        radial-gradient(350px 250px at 10% 100%, color-mix(in srgb, var(--accent-dark) 10%, transparent), transparent 62%);
+    }
+
+    /* Navbar mockup */
+    .mock-nav {
+      position: relative;
+      z-index: 2;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      background-color: var(--surface);
+    }
+
+    .mock-nav-logo {
+      font-family: var(--font-display), serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--fg);
+    }
+
+    .mock-nav-links {
+      display: flex;
+      gap: 24px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--fg-2);
+    }
+
+    .mock-nav-btn {
+      font-size: 13px;
+      font-weight: 700;
+      padding: 8px 18px;
+      border-radius: 99px;
+      cursor: pointer;
+      border: 1px solid var(--line);
+      background-color: transparent;
+      color: var(--fg);
+      transition: all 0.2s ease;
+    }
+
+    .mock-nav-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent-text);
+    }
+
+    /* Hero Banner mockup */
+    .mock-hero {
+      position: relative;
+      z-index: 2;
+      padding: 60px 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .mock-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .18em;
+      color: var(--accent-text);
+    }
+
+    .mock-eyebrow::before {
+      content: "";
+      width: 20px;
+      height: 2px;
+      background: var(--accent);
+    }
+
+    .mock-title {
+      font-family: var(--font-sans), sans-serif;
+      font-weight: 700;
+      font-size: 42px;
+      letter-spacing: -.025em;
+      line-height: 1.1;
+      color: var(--fg);
+    }
+
+    .mock-title em {
+      font-family: var(--font-display), serif;
+      font-style: italic;
+      font-weight: 500;
+      color: var(--accent-text);
+      letter-spacing: 0;
+    }
+
+    .mock-lead {
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--fg-2);
+      max-width: 500px;
+    }
+
+    .mock-cta-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .mock-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 12px 24px;
+      border-radius: 99px;
+      cursor: pointer;
+      border: 1.5px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .mock-btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: #FFFFFF;
+      box-shadow: 0 6px 15px -4px color-mix(in srgb, var(--accent-dark) 50%, transparent);
+    }
+
+    .mock-btn-primary:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+    }
+
+    .mock-btn-ghost {
+      background: transparent;
+      color: var(--fg);
+      border-color: var(--line);
+    }
+
+    .mock-btn-ghost:hover {
+      border-color: var(--accent);
+      color: var(--accent-text);
+    }
+
+    /* Content Cards Section */
+    .mock-content {
+      position: relative;
+      z-index: 2;
+      padding: 0 40px 40px 40px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .mock-content {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .mock-card {
+      background-color: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 4px 15px -4px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .mock-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+    }
+
+    .mock-card-tag {
+      align-self: flex-start;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: 99px;
+      background-color: var(--accent-tint);
+      color: var(--accent-text);
+    }
+
+    .mock-card-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--fg);
+    }
+
+    .mock-card-desc {
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: var(--fg-2);
+    }
+
+    .mock-price {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent-text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: auto;
+    }
+
+    .mock-price span {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--fg-muted);
+      text-decoration: line-through;
+    }
+
+    /* Indicator to show current mode */
+    .indicator-tag {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      background-color: rgba(0,0,0,0.06);
+      color: var(--fg-muted);
+      padding: 4px 8px;
+      border-radius: 4px;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div>
+      <h1 class="brand-title">VERO SALON<span>Interactive Design Theme Tester</span></h1>
+    </div>
+    <div class="subtitle">
+      Toggle themes & modes to preview layout changes in real-time
+    </div>
+  </header>
+
+  <div class="workspace-layout">
+    <!-- SIDEBAR CONTROLS -->
+    <div class="sidebar">
+      <div>
+        <h2 class="section-title">1. Choose Theme Mode</h2>
+        <div class="mode-selector">
+          <button id="btn-light" class="mode-btn active" onclick="setMode('light')">
+            ☀️ Light Theme
+          </button>
+          <button id="btn-dark" class="mode-btn" onclick="setMode('dark')">
+            🌙 Dark Theme
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <h2 class="section-title">2. Choose Color Theme</h2>
+        <div class="theme-card-list">
+          
+          <!-- Current Theme -->
+          <div id="theme-current" class="theme-option active" onclick="selectTheme('current')">
+            <div class="theme-header">
+              <span class="theme-name">Original Gold (Warm Luxe)</span>
+              <div class="color-swatches">
+                <div class="swatch" style="background-color: #F7F1E4;"></div>
+                <div class="swatch" style="background-color: #D99A3D;"></div>
+                <div class="swatch" style="background-color: #2E2519;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Noir Luxe -->
+          <div id="theme-noirLuxe" class="theme-option" onclick="selectTheme('noirLuxe')">
+            <div class="theme-header">
+              <span class="theme-name">Noir Luxe (Barber Premium)</span>
+              <div class="color-swatches">
+                <div class="swatch" style="background-color: #F8F8F9;"></div>
+                <div class="swatch" style="background-color: #A31D1D;"></div>
+                <div class="swatch" style="background-color: #111111;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cyber Gothic -->
+          <div id="theme-cyberGothic" class="theme-option" onclick="selectTheme('cyberGothic')">
+            <div class="theme-header">
+              <span class="theme-name">Cyber Gothic (High Contrast)</span>
+              <div class="color-swatches">
+                <div class="swatch" style="background-color: #FFFFFF;"></div>
+                <div class="swatch" style="background-color: #FF3333;"></div>
+                <div class="swatch" style="background-color: #000000;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cherry Cream -->
+          <div id="theme-cherryCream" class="theme-option" onclick="selectTheme('cherryCream')">
+            <div class="theme-header">
+              <span class="theme-name">Cherry Cream & Charcoal</span>
+              <div class="color-swatches">
+                <div class="swatch" style="background-color: #FDFBF7;"></div>
+                <div class="swatch" style="background-color: #C23B22;"></div>
+                <div class="swatch" style="background-color: #1E1A17;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vampire Gunmetal -->
+          <div id="theme-vampireGunmetal" class="theme-option" onclick="selectTheme('vampireGunmetal')">
+            <div class="theme-header">
+              <span class="theme-name">Vampire & Gunmetal (Sci-Fi)</span>
+              <div class="color-swatches">
+                <div class="swatch" style="background-color: #E5E7EB;"></div>
+                <div class="swatch" style="background-color: #EF4444;"></div>
+                <div class="swatch" style="background-color: #111827;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Luxe Merlot -->
+          <div id="theme-merlotSand" class="theme-option" onclick="selectTheme('merlotSand')">
+            <div class="theme-header">
+              <span class="theme-name">Luxe Merlot & Sand (Wine)</span>
+              <div class="color-swatches">
+                <div class="swatch" style="background-color: #FAF6F0;"></div>
+                <div class="swatch" style="background-color: #722F37;"></div>
+                <div class="swatch" style="background-color: #2C1B1D;"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div>
+        <h2 class="section-title">3. Generated CSS Variables</h2>
+        <div id="css-inspector" class="inspector">
+          <!-- Active variables displayed here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- PREVIEW AREA -->
+    <div class="preview-pane">
+      
+      <!-- Simulated Webpage Container -->
+      <div class="mock-site" id="mock-page">
+        <div class="indicator-tag" id="theme-indicator">Warm Luxe - Light</div>
+        
+        <!-- Header -->
+        <nav class="mock-nav">
+          <div class="mock-nav-logo">VERO <em>Salon</em></div>
+          <div class="mock-nav-links">
+            <div style="cursor:pointer;">Home</div>
+            <div style="cursor:pointer;">Services</div>
+            <div style="cursor:pointer;">Staff</div>
+            <div style="cursor:pointer;">Contact</div>
+          </div>
+          <button class="mock-nav-btn">Sign In</button>
+        </nav>
+
+        <!-- Hero Area -->
+        <header class="mock-hero" style="background: transparent; border: none; box-shadow: none;">
+          <div class="mock-eyebrow">Premium Salon Unisex</div>
+          <h2 class="mock-title">Redefine your style, <br>embrace <em>your confidence</em></h2>
+          <p class="mock-lead">
+            Experience premium haircuts, luxurious coloring, and personalized skin treatments. Our professional stylists bring out the absolute best in your natural beauty.
+          </p>
+          <div class="mock-cta-row">
+            <button class="mock-btn mock-btn-primary">Book Appointment</button>
+            <button class="mock-btn mock-btn-ghost">View Pricing</button>
+          </div>
+        </header>
+
+        <!-- Cards Section -->
+        <section class="mock-content">
+          <!-- Card 1 -->
+          <div class="mock-card">
+            <span class="mock-card-tag">Styling</span>
+            <h3 class="mock-card-title">Executive Haircut</h3>
+            <p class="mock-card-desc">Personalized clipper and scissor work, hair wash, scalp massage and professional styling finish.</p>
+            <div class="mock-price">$45.00 <span>$55.00</span></div>
+          </div>
+          <!-- Card 2 -->
+          <div class="mock-card">
+            <span class="mock-card-tag">Specialty</span>
+            <h3 class="mock-card-title">Hot Towel Shave</h3>
+            <p class="mock-card-desc">Traditional straight razor shave, facial massage, essential oils, and ice therapy towels.</p>
+            <div class="mock-price">$30.00</div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const themes = {
+      current: {
+        name: "Warm Luxe Gold (Current)",
+        light: {
+          bg: '#F7F1E4',
+          bg_2: '#F1E8D6',
+          surface: '#FFFFFF',
+          accent: '#D99A3D',
+          accent_dark: '#B8742A',
+          accent_tint: '#FBEFD8',
+          accent_text: '#9A5E1C',
+          fg: '#2E2519',
+          fg_2: '#6B5D49',
+          fg_muted: '#7A6A4E',
+          line: '#EBE2CF'
+        },
+        dark: {
+          bg: '#1C1611',
+          bg_2: '#241C15',
+          surface: '#2A2018',
+          accent: '#E8B05A',
+          accent_dark: '#C98F3D',
+          accent_tint: 'rgba(232,176,90,.14)',
+          accent_text: '#E8B05A',
+          fg: '#F5ECDD',
+          fg_2: '#C7B7A0',
+          fg_muted: '#9A876C',
+          line: '#3A2E22'
+        }
+      },
+      noirLuxe: {
+        name: "Noir Luxe (Barber Premium)",
+        light: {
+          bg: '#F8F8F9',
+          bg_2: '#F0F0F2',
+          surface: '#FFFFFF',
+          accent: '#A31D1D',
+          accent_dark: '#7A1010',
+          accent_tint: '#FDF2F2',
+          accent_text: '#A31D1D',
+          fg: '#111111',
+          fg_2: '#4E4E52',
+          fg_muted: '#7E7E86',
+          line: '#E1E1E6'
+        },
+        dark: {
+          bg: '#0C0C0E',
+          bg_2: '#141416',
+          surface: '#1E1E22',
+          accent: '#E53E3E',
+          accent_dark: '#C53030',
+          accent_tint: 'rgba(229, 62, 62, 0.15)',
+          accent_text: '#FC8181',
+          fg: '#F7FAFC',
+          fg_2: '#CBD5E0',
+          fg_muted: '#718096',
+          line: '#2D3748'
+        }
+      },
+      cyberGothic: {
+        name: "Cyber Gothic (High Contrast)",
+        light: {
+          bg: '#FFFFFF',
+          bg_2: '#F5F5F5',
+          surface: '#FFFFFF',
+          accent: '#FF3333',
+          accent_dark: '#CC0000',
+          accent_tint: '#FFE6E6',
+          accent_text: '#CC0000',
+          fg: '#000000',
+          fg_2: '#444444',
+          fg_muted: '#777777',
+          line: '#E5E5E5'
+        },
+        dark: {
+          bg: '#000000',
+          bg_2: '#0A0A0A',
+          surface: '#121212',
+          accent: '#FF3333',
+          accent_dark: '#CC0000',
+          accent_tint: 'rgba(255, 51, 51, 0.16)',
+          accent_text: '#FF6666',
+          fg: '#FFFFFF',
+          fg_2: '#A0A0A0',
+          fg_muted: '#666666',
+          line: '#1F1F1F'
+        }
+      },
+      cherryCream: {
+        name: "Cherry Cream & Charcoal (Retro Warm)",
+        light: {
+          bg: '#FDFBF7',
+          bg_2: '#F5EFEB',
+          surface: '#FFFFFF',
+          accent: '#C23B22',
+          accent_dark: '#982B18',
+          accent_tint: '#FDF1EE',
+          accent_text: '#982B18',
+          fg: '#1E1A17',
+          fg_2: '#5C534D',
+          fg_muted: '#8F8177',
+          line: '#EAE1D8'
+        },
+        dark: {
+          bg: '#161311',
+          bg_2: '#1E1A17',
+          surface: '#26211E',
+          accent: '#E05A47',
+          accent_dark: '#C23B22',
+          accent_tint: 'rgba(224, 90, 71, 0.15)',
+          accent_text: '#F0A093',
+          fg: '#F7F3EF',
+          fg_2: '#C4B9B0',
+          fg_muted: '#8F8177',
+          line: '#322A25'
+        }
+      },
+      vampireGunmetal: {
+        name: "Vampire & Gunmetal (Sci-Fi Dark)",
+        light: {
+          bg: '#F3F4F6',
+          bg_2: '#E5E7EB',
+          surface: '#FFFFFF',
+          accent: '#DC2626',
+          accent_dark: '#991B1B',
+          accent_tint: '#FEE2E2',
+          accent_text: '#991B1B',
+          fg: '#1F2937',
+          fg_2: '#4B5563',
+          fg_muted: '#9CA3AF',
+          line: '#D1D5DB'
+        },
+        dark: {
+          bg: '#111827',
+          bg_2: '#1F2937',
+          surface: '#111827',
+          accent: '#EF4444',
+          accent_dark: '#DC2626',
+          accent_tint: 'rgba(239, 68, 68, 0.12)',
+          accent_text: '#F87171',
+          fg: '#F9FAFB',
+          fg_2: '#D1D5DB',
+          fg_muted: '#9CA3AF',
+          line: '#374151'
+        }
+      },
+      merlotSand: {
+        name: "Luxe Merlot & Sand (Warm Editorial)",
+        light: {
+          bg: '#FAF6F0',
+          bg_2: '#F3ECE0',
+          surface: '#FFFFFF',
+          accent: '#722F37',
+          accent_dark: '#582228',
+          accent_tint: '#F5E6E8',
+          accent_text: '#582228',
+          fg: '#2C1B1D',
+          fg_2: '#5F4C4E',
+          fg_muted: '#8E7D7F',
+          line: '#EADBC8'
+        },
+        dark: {
+          bg: '#1A0F11',
+          bg_2: '#27171A',
+          surface: '#2F1E21',
+          accent: '#B04A56',
+          accent_dark: '#8D3641',
+          accent_tint: 'rgba(176, 74, 86, 0.15)',
+          accent_text: '#D98993',
+          fg: '#FAF6F7',
+          fg_2: '#D3C2C4',
+          fg_muted: '#A59294',
+          line: '#422D30'
+        }
+      }
+    };
+
+    let activeTheme = 'current';
+    let activeMode = 'light';
+
+    function setMode(mode) {
+      activeMode = mode;
+      document.getElementById('btn-light').classList.toggle('active', mode === 'light');
+      document.getElementById('btn-dark').classList.toggle('active', mode === 'dark');
+      applyActiveTheme();
+    }
+
+    function selectTheme(themeId) {
+      activeTheme = themeId;
+      
+      // Update UI active card
+      document.querySelectorAll('.theme-option').forEach(el => {
+        el.classList.remove('active');
+      });
+      document.getElementById(`theme-${themeId}`).classList.add('active');
+      
+      applyActiveTheme();
+    }
+
+    function applyActiveTheme() {
+      const page = document.getElementById('mock-page');
+      const themeData = themes[activeTheme][activeMode];
+      
+      // Apply variables to target page container
+      for (const [key, value] of Object.entries(themeData)) {
+        const formattedKey = `--${key.replace('_', '-')}`;
+        page.style.setProperty(formattedKey, value);
+      }
+
+      // Special font setup mapping to mock variables
+      page.style.setProperty('--font-sans', 'Poppins');
+      page.style.setProperty('--font-display', 'Playfair Display');
+
+      // Update indicator label
+      document.getElementById('theme-indicator').innerText = 
+        `${themes[activeTheme].name} - ${activeMode.toUpperCase()}`;
+
+      // Update Inspector Panel
+      updateInspectorCode(themeData);
+    }
+
+    function updateInspectorCode(themeData) {
+      const inspector = document.getElementById('css-inspector');
+      let htmlContent = '';
+      
+      const selector = activeMode === 'light' ? ':root' : '[data-theme="dark"]';
+      htmlContent += `<span style="color:#AE81FF">${selector}</span> {\n`;
+      
+      for (const [key, value] of Object.entries(themeData)) {
+        const formattedKey = `--${key.replace('_', '-')}`;
+        htmlContent += `  <span class="key">${formattedKey}</span>: <span class="val">${value}</span>;\n`;
+      }
+      
+      htmlContent += `}`;
+      inspector.innerHTML = `<pre>${htmlContent}</pre>`;
+    }
+
+    // Initial setup on load
+    applyActiveTheme();
+  </script>
+</body>
+</html>

@@ -1,68 +1,66 @@
 @import "tailwindcss";
 
-/* ── Warm Modern — light (default) ──────────────────────── */
+/* ── Cyber Gothic — light (default) ──────────────────────── */
 :root {
-  --bg:#F7F1E4; --bg-2:#F1E8D6; --surface:#FFFFFF;
-  --accent:#D99A3D; --accent-dark:#B8742A; --accent-tint:#FBEFD8;
-  --accent-text:#9A5E1C;
-  --fg:#2E2519; --fg-2:#6B5D49; --fg-muted:#7A6A4E; --line:#EBE2CF;
-  --error:#C0392B; --success:#167F48; --success-tint:rgba(22,127,72,.14); --gray-text:#6B6B6B; --gray-tint:rgba(120,120,120,.16);
+  --bg:#FFFFFF; --bg-2:#F5F5F5; --surface:#FFFFFF;
+  --accent:#FF3333; --accent-dark:#CC0000; --accent-tint:#FFE6E6;
+  --accent-text:#CC0000;
+  --fg:#000000; --fg-2:#444444; --fg-muted:#777777; --line:#E5E5E5;
+  --error:#FF3333; --success:#00B359; --success-tint:rgba(0,179,89,.12); --gray-text:#777777; --gray-tint:rgba(119,119,119,.12);
   --home-cta-bg:linear-gradient(165deg, var(--accent-tint) 0%, var(--bg-2) 100%); --home-cta-fg:var(--fg); --home-cta-lead:var(--fg-2); --home-cta-btn-color:var(--fg); --home-cta-btn-border:color-mix(in srgb, var(--accent) 45%, var(--line)); --home-cta-btn-hover-border:var(--accent); --home-cta-btn-hover-fg:var(--accent-dark);
   --font-sans: var(--font-poppins), system-ui, -apple-system, sans-serif;
   --font-display: var(--font-poppins), system-ui, serif; /* overridden ≥920px */
   --grad-gold: linear-gradient(135deg, var(--accent), var(--accent-dark));
   --ease-app: cubic-bezier(.34,1.56,.64,1);
   --radius-sm:14px; --radius-md:18px; --radius-lg:24px; --radius-pill:999px;
-  --shadow-sm:0 2px 8px rgba(46,37,25,.06);
-  --shadow-card:0 14px 40px -18px rgba(184,116,42,.28);
+  --shadow-sm:0 2px 8px rgba(0,0,0,.08);
+  --shadow-card:0 14px 40px -18px rgba(255,51,51,.25);
   --maxw:1240px; --ease:cubic-bezier(.22,.61,.36,1);
-  /* Warm Luxe — fluid type scale */
+  /* Cyber Gothic — fluid type scale */
   --text-h1: clamp(34px, 6vw, 64px);
   --text-h2: clamp(26px, 3.6vw, 40px);
   --text-h3: clamp(18px, 2vw, 22px);
   --text-body: 15px;
   --text-sm: 13px;
   --text-xs: 11px;
-  /* Warm Luxe — spacing scale */
+  /* Cyber Gothic — spacing scale */
   --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
   --space-5:24px; --space-6:32px; --space-7:48px; --space-8:72px;
   color-scheme:light;
 }
 
-/* ── Warm Modern — dark ─────────────────────────────────── */
+/* ── Cyber Gothic — dark ─────────────────────────────────── */
 [data-theme="dark"] {
-  --bg:#1C1611; --bg-2:#241C15; --surface:#2A2018;
-  --accent:#E8B05A; --accent-dark:#C98F3D; --accent-tint:rgba(232,176,90,.14);
-  --accent-text:#E8B05A;
-  --fg:#F5ECDD; --fg-2:#C7B7A0; --fg-muted:#9A876C; --line:#3A2E22;
-  --error:#F0857E; --success:#4ADE80; --success-tint:rgba(74,222,128,.16); --gray-text:#A3A3A3; --gray-tint:rgba(163,163,163,.18);
-  --home-cta-bg:linear-gradient(165deg, #1C1611 0%, #2A2018 55%, #3a2a14 120%); --home-cta-fg:#ffffff; --home-cta-lead:rgba(255, 255, 255, 0.78); --home-cta-btn-color:#ffffff; --home-cta-btn-border:rgba(255,255,255,0.34); --home-cta-btn-hover-border:var(--accent); --home-cta-btn-hover-fg:var(--accent);
+  --bg:#000000; --bg-2:#0A0A0A; --surface:#121212;
+  --accent:#FF3333; --accent-dark:#CC0000; --accent-tint:rgba(255,51,51,.16);
+  --accent-text:#FF6666;
+  --fg:#FFFFFF; --fg-2:#A0A0A0; --fg-muted:#666666; --line:#1F1F1F;
+  --error:#FF3333; --success:#00FF80; --success-tint:rgba(0,255,128,.16); --gray-text:#A0A0A0; --gray-tint:rgba(160,160,160,.16);
+  --home-cta-bg:linear-gradient(165deg, #000000 0%, #121212 55%, #1a0808 120%); --home-cta-fg:#ffffff; --home-cta-lead:rgba(255, 255, 255, 0.78); --home-cta-btn-color:#ffffff; --home-cta-btn-border:rgba(255,255,255,0.34); --home-cta-btn-hover-border:var(--accent); --home-cta-btn-hover-fg:var(--accent);
   --shadow-card:0 14px 40px -18px rgba(0,0,0,.5);
   color-scheme:dark;
 }
 
-/* ── Admin redesign: bright "Warm Editorial" (B1) ──────────
-   Scoped to the admin shell so the public site palette is unchanged.
-   Light: white content canvas, subtle warm sidebar, darker text.        */
+/* ── Admin redesign: Cyber Gothic style ──────────────────── */
 .shell--admin {
   --bg:#FFFFFF;          /* main content canvas */
-  --bg-2:#F4F1EA;        /* sidebar / secondary surface */
+  --bg-2:#F5F5F5;        /* sidebar / secondary surface */
   --surface:#FFFFFF;     /* cards, inputs */
-  --fg:#1F1A12;          /* primary text — darker for contrast */
-  --fg-2:#4A4133;        /* secondary text */
-  --fg-muted:#6B6353;    /* muted/labels */
-  --line:#E6E0D4;        /* borders */
-  --accent-tint:#FBEFD8; /* active-nav / segment tint */
+  --fg:#000000;          /* primary text */
+  --fg-2:#444444;        /* secondary text */
+  --fg-muted:#777777;    /* muted/labels */
+  --line:#E5E5E5;        /* borders */
+  --accent-tint:#FFE6E6; /* active-nav / segment tint */
 }
 [data-theme="dark"] .shell--admin {
-  --bg:#1C1611;
-  --bg-2:#241C15;
-  --surface:#2A2018;
-  --fg:#F5ECDD;
-  --fg-2:#C7B7A0;
-  --fg-muted:#9A876C;
-  --line:#3A2E22;
-  --accent-tint:rgba(232,176,90,.14);
+  --bg:#000000;
+  --bg-2:#0A0A0A;
+  --surface:#121212;
+  --fg:#FFFFFF;
+  --fg-2:#A0A0A0;
+  --fg-muted:#666666;
+  --line:#1F1F1F;
+  --accent-tint:rgba(255,51,51,.16);
 }
 
 /* ── Reset / Base ────────────────────────────────────────── */
