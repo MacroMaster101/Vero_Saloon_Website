@@ -20,7 +20,6 @@ export function LangToggle({ currentLocale, className }: { currentLocale: string
     <div 
       className={`lang-toggle ${className || ''}`}
       style={{ 
-        display: 'flex', 
         alignItems: 'center', 
         gap: '6px', 
         fontSize: '12px', 
