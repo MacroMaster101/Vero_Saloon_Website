@@ -318,7 +318,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
 
           {/* ── lookbook ── */}
           {looks.length > 0 && (
-            <section className="home-section home-story" id="looks" style={{ background: 'var(--bg-2)', borderTop: '1px solid var(--line)' }}>
+            <section className="home-section" id="looks" style={{ background: 'color-mix(in srgb, var(--bg-2) 35%, transparent)', borderTop: '1px solid var(--line)', borderBottom: '1px solid var(--line)' }}>
               <div className="home-wrap">
                 <div className="home-head home-reveal">
                   <span className="home-eyebrow home-eyebrow--center">{t('Our work', locale)}</span>
@@ -379,7 +379,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
 
           {/* ── reviews ── */}
           {reviews.length > 0 && (
-            <section className="home-section home-story" id="reviews" style={{ background: 'var(--bg-2)', borderTop: '1px solid var(--line)' }}>
+            <section className="home-section" id="reviews" style={{ background: 'color-mix(in srgb, var(--bg-2) 35%, transparent)', borderTop: '1px solid var(--line)', borderBottom: '1px solid var(--line)' }}>
               <div className="home-wrap">
                 <div className="home-head home-reveal">
                   <span className="home-eyebrow home-eyebrow--center">{t('Client voices', locale)}</span>
