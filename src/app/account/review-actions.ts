@@ -32,13 +32,22 @@ export async function submitReview(input: {
 
   const stars = clampStars(input.rating);
 
+  // booking_id carries the unique index from 0012: it is what stops the same
+  // completed booking being reviewed over and over to move the stylist average.
   const { error: insertError } = await admin.from('stylist_reviews').insert({
     stylist_id: booking.stylist_id,
+    booking_id: booking.id,
     customer_name: booking.customer_name,
     rating: stars,
     comment: (input.comment ?? '').slice(0, 500),
   });
-  if (insertError) return { ok: false, message: 'Could not submit your review. Please try again.' };
+  if (insertError) {
+    // 23505 = unique_violation → this booking already has a review.
+    if (insertError.code === '23505') {
+      return { ok: false, message: 'You’ve already reviewed this visit.' };
+    }
+    return { ok: false, message: 'Could not submit your review. Please try again.' };
+  }
 
   // Recompute the stylist's running average (app-side, like the mobile app).
   const { data: stylist } = await admin.from('stylists')

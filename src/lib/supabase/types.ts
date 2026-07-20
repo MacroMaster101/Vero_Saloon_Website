@@ -81,6 +81,7 @@ export interface Database {
         Row: {
           id: string;
           stylist_id: string;
+          booking_id: string | null;
           customer_name: string;
           rating: number;
           comment: string;
@@ -91,6 +92,7 @@ export interface Database {
         Insert: {
           id?: string;
           stylist_id: string;
+          booking_id?: string | null;
           customer_name: string;
           rating: number;
           comment?: string;

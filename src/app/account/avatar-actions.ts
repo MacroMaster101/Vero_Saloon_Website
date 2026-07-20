@@ -7,7 +7,18 @@ import { slLankaPhone } from '@/lib/validators';
 import { syncProfileToStylist } from '@/lib/identity/sync';
 import { getAvatarInfo } from '@/lib/avatar';
 
-const ALLOWED = ['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif'];
+// MIME → extension. The upload key is built from the validated file.type, never
+// from file.name: a client-supplied filename can smuggle path segments into the
+// storage key and, because the upload runs as service role, escape the user's
+// folder (and even the bucket) to overwrite other objects.
+const EXT_BY_TYPE: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/avif': 'avif',
+  'image/gif': 'gif',
+};
+const ALLOWED = Object.keys(EXT_BY_TYPE);
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 const BUCKET = 'avatars';
 
@@ -45,7 +56,7 @@ export async function uploadAvatar(formData: FormData): Promise<Result> {
   if (!ALLOWED.includes(file.type)) return { error: 'Use a JPG, PNG, WEBP, AVIF or GIF image' };
   if (file.size > MAX_BYTES) return { error: 'Image must be under 5 MB' };
 
-  const ext = file.name.includes('.') ? file.name.split('.').pop() : 'png';
+  const ext = EXT_BY_TYPE[file.type];
   // one file per user; upsert replaces the previous photo
   const path = `${user.id}/avatar.${ext}`;
 
