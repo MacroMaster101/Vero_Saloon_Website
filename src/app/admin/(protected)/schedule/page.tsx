@@ -1,5 +1,7 @@
 import { requireRole } from '@/lib/supabase/auth';
 import { createClient } from '@/lib/supabase/server';
+import { toUtcInstant } from '@/lib/time';
+import { SALON_TZ, salonDayKey } from '@/lib/booking-rows';
 import { ScheduleList, type SchedRow } from './schedule-list';
 
 const TZ = 'Asia/Colombo';
@@ -9,8 +11,13 @@ const timeFmt = new Intl.DateTimeFormat('en-LK', { timeZone: TZ, hour: 'numeric'
 export default async function SchedulePage() {
   await requireRole(['admin'], '/admin/schedule');
   const sb = await createClient();
+  // From the start of today forward. Without a filter this fetched EVERY booking
+  // ever: PostgREST caps the response (default 1000 rows) AFTER sorting, so once
+  // the salon passed 1000 lifetime bookings the page silently showed the 1000
+  // OLDEST and hid every upcoming one — the rows this screen exists to show.
   const { data } = await sb.from('bookings')
     .select('id, reference, starts_at, customer_name, status')
+    .gte('starts_at', toUtcInstant(salonDayKey(new Date()), 0, SALON_TZ))
     .order('starts_at', { ascending: true });
 
   const rows: SchedRow[] = ((data ?? []) as Array<{ id: string; reference: string; starts_at: string; customer_name: string; status: string }>).map((b) => {

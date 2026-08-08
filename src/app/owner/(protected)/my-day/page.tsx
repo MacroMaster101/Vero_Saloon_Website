@@ -40,7 +40,8 @@ export default async function OwnerMyDayPage() {
         <h1 className="opage__title">My day</h1>
         <p className="opage__hint">
           Your account isn&apos;t linked to your stylist profile yet, so there&apos;s no chair to show.
-          Link it under <Link href="/owner/team">My team</Link>, or ask your admin.
+          Ask your admin to link it — an owner can&apos;t set this on their own account
+          (canSetRole and the profiles_protect_privileges trigger both block it).
         </p>
       </div>
     );

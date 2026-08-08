@@ -5,6 +5,7 @@ import { getStylists } from '@/lib/queries';
 import type { BlockedSlot } from '@/lib/supabase/types';
 import { BlockForm } from '@/components/admin/block-form';
 import { DeleteForm } from '@/components/admin/form-kit';
+import { LoadError } from '@/components/admin/load-error';
 import { deleteBlock } from './block-actions';
 
 const TZ = 'Asia/Colombo';
@@ -23,7 +24,7 @@ type Row = BlockedSlot & { stylists: { name: string } | null };
 export default async function BlockedSlotsPage() {
   await requireRole(['admin'], '/admin/blocked-slots');
   const sb = await createClient();
-  const [{ data }, stylists] = await Promise.all([
+  const [{ data, error }, stylists] = await Promise.all([
     sb
       .from('blocked_slots')
       .select('*, stylists(name)')
@@ -47,7 +48,10 @@ export default async function BlockedSlotsPage() {
 
       <section style={{ marginTop: 40 }}>
         <h2 className="h-section" style={{ fontSize: 20, marginBottom: 12 }}>Upcoming blocks</h2>
-        {rows.length === 0 ? (
+        {/* Never let a failed read read as "nothing is blocked" — an admin
+            trusting that would book a client over blocked time. */}
+        <LoadError what="blocked slots" error={error} />
+        {error ? null : rows.length === 0 ? (
           <p className="lead">No upcoming blocks.</p>
         ) : (
           <ul className="alist">

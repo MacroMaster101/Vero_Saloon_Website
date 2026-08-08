@@ -4,6 +4,7 @@ import { requireRole } from '@/lib/supabase/auth';
 import { toUtcInstant } from '@/lib/time';
 import { SALON_TZ, salonDayKey, splitTodayUpcoming, type BookingJoinRow } from '@/lib/booking-rows';
 import { BookingsTable } from '@/components/admin/bookings-table';
+import { LoadError } from '@/components/admin/load-error';
 import { Icon, type IconName } from '@/components/ui/icon';
 
 // Sidebar/bottom nav already cover Bookings and My day, so the home
@@ -22,7 +23,7 @@ export default async function OwnerHome() {
   const firstName = (profile.fullName ?? 'there').split(' ')[0];
   const sb = await createClient();
 
-  const [{ data }, { count: serviceCount }, { count: stylistCount }] = await Promise.all([
+  const [{ data, error }, { count: serviceCount }, { count: stylistCount }] = await Promise.all([
     sb
       .from('bookings')
       .select('*, services(name), stylists(name)')
@@ -37,6 +38,10 @@ export default async function OwnerHome() {
     <div className="apage">
       <h1 className="opage__title">Hi {firstName} 👋</h1>
       <p className="opage__hint">Here&apos;s your shop today.</p>
+
+      {/* Sibling /owner/bookings already surfaces this; the home screen didn't,
+          so a failed read showed a confident "0 appointments today". */}
+      <LoadError what="bookings" error={error} />
 
       <div className="ostats">
         <div className="ostat"><b>{today.length}</b><span>appointments today</span></div>

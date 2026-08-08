@@ -13,7 +13,10 @@ const DESCRIPTION =
   'Book hair, colour, beard, bridal and beauty appointments online at Vero Salon — a unisex salon in Pasyala, Sri Lanka. ' +
   'Sign in with Google to save your bookings and manage appointments. Open daily 10 AM – midnight.';
 
-// Structured data helps Google understand the app is a salon booking service
+// Structured data helps Google understand the app is a salon booking service.
+// URLs come from env.siteUrl (same source as metadataBase) — hardcoding the
+// domain here silently desyncs the entity URL from the domain actually serving
+// the page, which defeats the Google branding verification this block is for.
 const STRUCTURED_DATA = JSON.stringify({
   '@context': 'https://schema.org',
   '@type': ['HairSalon', 'BeautySalon'],
@@ -21,7 +24,9 @@ const STRUCTURED_DATA = JSON.stringify({
   description:
     'Vero Salon is an online appointment-booking application for a unisex hair and beauty salon in Pasyala, Sri Lanka. ' +
     'Users may sign in with Google to book services, manage upcoming appointments and view past bookings.',
-  url: 'https://vero-salon.vercel.app',
+  url: env.siteUrl,
+  logo: `${env.siteUrl}/logo.png`,
+  image: `${env.siteUrl}/logo.png`,
   telephone: '+94773699620',
   address: {
     '@type': 'PostalAddress',
@@ -33,7 +38,7 @@ const STRUCTURED_DATA = JSON.stringify({
   priceRange: '$$',
   potentialAction: {
     '@type': 'ReserveAction',
-    target: 'https://vero-salon.vercel.app/#services',
+    target: `${env.siteUrl}/#services`,
     'result': { '@type': 'Reservation', name: 'Hair & Beauty Appointment' },
   },
 });
@@ -50,6 +55,11 @@ export const metadata: Metadata = {
     'bridal makeup Sri Lanka', 'salon near me', 'book hair appointment',
   ],
   applicationName: 'Vero Salon Online Booking',
+  icons: {
+    icon: '/icon.png',
+    shortcut: '/favicon.ico',
+    apple: '/apple-icon.png',
+  },
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,

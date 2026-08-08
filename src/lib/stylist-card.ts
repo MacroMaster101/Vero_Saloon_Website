@@ -11,10 +11,10 @@ export function stylistAvatarSrc(stylist: {
   return url !== '' ? url : dicebearUrl(stylist.slug || stylist.name);
 }
 
-// "★ 4.9" + "(42 reviews)" when rated; "★ New" otherwise. Ratings come from a
-// future reviews system; until then stylists are unrated (null rating / 0
-// count) and render as New. `rating == null` also covers `undefined`, so the
-// card renders correctly even before the rating columns exist in the DB.
+// "★ 4.9" + "(42 reviews)" when rated; "★ New" otherwise. Ratings are written
+// by the reviews system (see lib/reviews.ts + account/review-actions.ts); a
+// stylist nobody has reviewed yet has null rating / 0 count and renders as New.
+// `rating == null` also covers `undefined`.
 export function ratingLabel(
   rating: number | null,
   count: number,

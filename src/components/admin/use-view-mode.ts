@@ -6,8 +6,10 @@ export type ViewMode = 'cards' | 'rows';
 /**
  * Per-list card/row preference, persisted to localStorage (`vero-view-<key>`).
  * SSR renders the 'cards' default; the stored choice is applied after mount
- * (a momentary default beats a hydration mismatch — same trade-off the theme
- * toggle makes).
+ * (a momentary default beats a hydration mismatch). Note this is the OPPOSITE
+ * trade-off to the theme toggle, which avoids the flash entirely via the
+ * beforeInteractive script in app/layout.tsx — worth copying if this flash
+ * ever becomes annoying on the admin lists.
  */
 export function useViewMode(key: string): [ViewMode, (m: ViewMode) => void] {
   const storageKey = `vero-view-${key}`;
