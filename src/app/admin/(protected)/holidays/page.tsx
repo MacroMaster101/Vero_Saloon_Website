@@ -5,6 +5,7 @@ import type { Holiday } from '@/lib/supabase/types';
 import { salonDayKey } from '@/lib/booking-rows';
 import { HolidayForms } from '@/components/admin/holiday-form';
 import { DeleteForm } from '@/components/admin/form-kit';
+import { LoadError } from '@/components/admin/load-error';
 import { deleteHoliday } from './holiday-actions';
 
 const dateFmt = new Intl.DateTimeFormat('en-LK', {
@@ -23,7 +24,7 @@ export default async function HolidaysPage() {
   // toISOString() is UTC, which is 5:30 behind and would drop today's holiday
   // from midnight to 5:30 AM in Sri Lanka.
   const today = salonDayKey(new Date());
-  const { data } = await sb
+  const { data, error } = await sb
     .from('holidays')
     .select('*')
     .gte('date', today)
@@ -45,7 +46,10 @@ export default async function HolidaysPage() {
 
       <section style={{ marginTop: 40 }}>
         <h2 className="h-section" style={{ fontSize: 20, marginBottom: 12 }}>Upcoming closed days</h2>
-        {rows.length === 0 ? (
+        {/* The empty copy below invites a re-sync, so it must never show for a
+            failed read — that would prompt re-adding closures that already exist. */}
+        <LoadError what="holidays" error={error} />
+        {error ? null : rows.length === 0 ? (
           <p className="lead">No holidays yet — sync from Google or add one above.</p>
         ) : (
           <ul className="alist">

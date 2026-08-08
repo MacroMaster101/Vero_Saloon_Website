@@ -50,9 +50,21 @@ async function busyIntervals(stylistId: string | null, date: string): Promise<In
   return intervals;
 }
 
+// Is the salon closed for the whole day (public holiday or manual closure)?
+// The booking calendar greys these dates out, but that is a UI affordance only —
+// a stale client or a direct server-action call would otherwise book straight
+// through it, so both getAvailability and createBooking consult this.
+async function isClosedForHoliday(date: string): Promise<boolean> {
+  const admin = createAdminClient();
+  const { data } = await admin.from('holidays')
+    .select('is_closed').eq('date', date).maybeSingle();
+  return data?.is_closed === true;
+}
+
 export async function getAvailability(input: { serviceIds: string[]; stylistId: string | null; date: string }) {
   const sb = await createClient();
   if (input.serviceIds.length === 0) return { slots: [] as string[] };
+  if (await isClosedForHoliday(input.date)) return { slots: [] as string[] };
   // Combined visit: availability must fit the summed duration of all services.
   const { data: rows } = await sb.from('services').select('duration_min').in('id', input.serviceIds);
   if (!rows || rows.length === 0) return { slots: [] as string[] };
@@ -132,6 +144,11 @@ export async function createBooking(raw: CreateBookingInput): Promise<CreateResu
   // longer show; availability already trims these, this is the server guard).
   if (new Date(startsAt).getTime() < Date.now()) {
     return { ok: false, error: 'closed', message: 'That time has already passed — pick another slot.' };
+  }
+
+  // Re-check the holiday closure at insert time, for the same reason as hours.
+  if (await isClosedForHoliday(input.date)) {
+    return { ok: false, error: 'closed', message: 'We’re closed that day — pick another date.' };
   }
 
   // Re-check business hours at insert time (availability could be stale).

@@ -9,7 +9,9 @@ export type DeleteResult =
   | { ok: false; step: 'anonymize' | 'profile' | 'auth'; message: string };
 
 // Anonymize the user's bookings, delete their profile, then delete the auth user.
-// Order matters: the irreversible auth delete is LAST so a failure leaves no PII behind.
+// Order matters: the irreversible auth delete is LAST so an earlier failure is
+// retryable. Note a failure at the final step leaves an orphaned auth.users row
+// (still holding the email) after the profile is gone — retry, don't ignore.
 export async function deleteUserData(userId: string): Promise<DeleteResult> {
   const admin = createAdminClient();
   const a = await admin.rpc('anonymize_user_bookings', { target: userId });

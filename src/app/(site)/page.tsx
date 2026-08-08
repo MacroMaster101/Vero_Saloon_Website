@@ -69,7 +69,10 @@ const DAYS = [
   { dow: 0, label: 'Sunday' },
 ];
 
-const reviewDate = new Intl.DateTimeFormat('en-LK', { day: 'numeric', month: 'short', year: 'numeric' });
+// timeZone pinned like every other formatter in the app — without it this ran in
+// the host zone (UTC on Vercel), so a review left before 05:30 Colombo time
+// displayed with the previous day's date.
+const reviewDate = new Intl.DateTimeFormat('en-LK', { timeZone: 'Asia/Colombo', day: 'numeric', month: 'short', year: 'numeric' });
 
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ deleted?: string }> }) {
